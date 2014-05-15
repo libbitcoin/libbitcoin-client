@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libbitcoin-client
+Description: Client library for communicating with SX servers.
+URL: http://libbitcoin.dyne.org/libbitcoin-client/
+Version: @PACKAGE_VERSION@
+Requires: libbitcoin libzmq
+Cflags: -I${includedir}
+Libs: -L${libdir} -lbitcoin-client
