@@ -17,22 +17,40 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_HPP
+#ifndef LIBBITCOIN_CLIENT_OBELISK_CODEC_HPP
+#define LIBBITCOIN_CLIENT_OBELISK_CODEC_HPP
+
+#include <bitcoin/client/message_stream.hpp>
+
+namespace libbitcoin {
+namespace client {
 
 /**
- * @mainpage libbitcoin-client API dox
- *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to an SX-style blockchain server.
+ * Decodes and encodes messages in the obelisk protocol.
+ * This class is a pure codec; it does not talk directly to zeromq.
  */
+class BC_API obelisk_codec
+  : public message_stream
+{
+public:
+    /**
+     * Constructor.
+     * @param out a stream to receive outgoing messages created by the codec.
+     */
+    BC_API obelisk_codec(message_stream& out);
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/obelisk_codec.hpp>
+    /**
+     * Pass in a message for decoding.
+     */
+    BC_API void message(const data_chunk& data, bool more);
+
+private:
+    // Outgoing message stream:
+    message_stream& out_;
+};
+
+} // namespace client
+} // namespace libbitcoin
 
 #endif
 

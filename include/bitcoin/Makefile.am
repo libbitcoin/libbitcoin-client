@@ -4,4 +4,5 @@ bitcoin_include_HEADERS = \
 
 bitcoin_client_includedir = $(includedir)/bitcoin/client
 bitcoin_client_include_HEADERS = \
-    client/message_stream.hpp
+    client/message_stream.hpp \
+    client/obelisk_codec.hpp
