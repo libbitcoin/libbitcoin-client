@@ -20,10 +20,14 @@
 #ifndef LIBBITCOIN_CLIENT_OBELISK_CODEC_HPP
 #define LIBBITCOIN_CLIENT_OBELISK_CODEC_HPP
 
+#include <functional>
+#include <map>
 #include <bitcoin/client/message_stream.hpp>
 
 namespace libbitcoin {
 namespace client {
+
+typedef stealth_prefix address_prefix;
 
 /**
  * Decodes and encodes messages in the obelisk protocol.
@@ -44,7 +48,95 @@ public:
      */
     BC_API void message(const data_chunk& data, bool more);
 
+    // Message reply handlers:
+    typedef std::function<void (const std::error_code&)>
+        error_handler;
+    typedef std::function<void (const blockchain::history_list&)>
+        fetch_history_handler;
+    typedef std::function<void (const transaction_type&)>
+        fetch_transaction_handler;
+    typedef std::function<void (size_t)>
+        fetch_last_height_handler;
+    typedef std::function<void (const block_header_type&)>
+        fetch_block_header_handler;
+    typedef std::function<void (size_t block_height, size_t index)>
+        fetch_transaction_index_handler;
+    typedef std::function<void (const blockchain::stealth_list&)>
+        fetch_stealth_handler;
+    typedef std::function<void (const index_list& unconfirmed)>
+        validate_handler;
+    typedef std::function<void ()> empty_handler;
+
+    // Loose message handlers:
+    typedef std::function<void (const payment_address& address,
+        size_t height, const hash_digest& blk_hash, const transaction_type&)>
+        update_handler;
+
+    // Outgoing messages:
+    BC_API void fetch_history(error_handler&& on_error,
+        fetch_history_handler&& on_reply,
+        const payment_address& address, size_t from_height=0);
+    BC_API void fetch_transaction(error_handler&& on_error,
+        fetch_transaction_handler&& on_reply,
+        const hash_digest& tx_hash);
+    BC_API void fetch_last_height(error_handler&& on_error,
+        fetch_last_height_handler&& on_reply);
+    BC_API void fetch_block_header(error_handler&& on_error,
+        fetch_block_header_handler&& on_reply,
+        size_t height);
+    BC_API void fetch_block_header(error_handler&& on_error,
+        fetch_block_header_handler&& on_reply,
+        const hash_digest& blk_hash);
+    BC_API void fetch_transaction_index(error_handler&& on_error,
+        fetch_transaction_index_handler&& on_reply,
+        const hash_digest& tx_hash);
+    BC_API void fetch_stealth(error_handler&& on_error,
+        fetch_stealth_handler&& on_reply,
+        const stealth_prefix& prefix, size_t from_height=0);
+    BC_API void validate(error_handler&& on_error,
+        validate_handler&& on_reply,
+        const transaction_type& tx);
+    BC_API void fetch_unconfirmed_transaction(error_handler&& on_error,
+        fetch_transaction_handler&& on_reply,
+        const hash_digest& tx_hash);
+    BC_API void broadcast_transaction(error_handler&& on_error,
+        empty_handler&& on_reply,
+        const transaction_type& tx);
+    BC_API void address_fetch_history(error_handler&& on_error,
+        fetch_history_handler&& on_reply,
+        const payment_address& address, size_t from_height=0);
+    BC_API void subscribe(error_handler&& on_error,
+        empty_handler&& on_reply,
+        const address_prefix& prefix);
+
 private:
+    /**
+     * Sends an outgoing request, and adds the handlers to the pending
+     * request table.
+     */
+    void send_request(const std::string& command,
+        const data_chunk& payload, error_handler&& on_error);
+
+    struct obelisk_message
+    {
+        std::string command;
+        uint32_t id;
+        data_chunk payload;
+    };
+    void send(const obelisk_message& message);
+
+    // Request management:
+    uint32_t last_request_id_;
+    struct pending_request
+    {
+        obelisk_message message;
+        error_handler on_error;
+        //??? on_reply;
+        unsigned retries;
+        //time_t last_action;
+    };
+    std::map<uint32_t, pending_request> pending_requests_;
+
     // Outgoing message stream:
     message_stream& out_;
 };
