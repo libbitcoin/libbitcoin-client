@@ -10,27 +10,14 @@
  * connection to a bitcoin server.
  */
 class connection
-  : public libbitcoin::client::message_stream
 {
 public:
     connection(zmq::context_t& context, const std::string& server)
-      : socket(context, ZMQ_DEALER), codec(*this)
+      : socket(context, server), codec(socket)
     {
-        // Do not wait for unsent messages when shutting down:
-        int linger = 0;
-        socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-        socket.connect(server.c_str());
     }
 
-    void message(const libbitcoin::data_chunk& data, bool more)
-    {
-        int flags = 0;
-        if (more)
-            flags = ZMQ_SNDMORE;
-        socket.send(data.data(), data.size(), flags);
-    }
-
-    zmq::socket_t socket;
+    libbitcoin::client::zmq_socket socket;
     libbitcoin::client::obelisk_codec codec;
 };
 
@@ -89,16 +76,14 @@ int cli::run()
         items.reserve(2);
         items.push_back(terminal_.pollitem());
         if (connection_)
-            items.push_back(zmq_pollitem_t
-                {connection_->socket, 0, ZMQ_POLLIN});
+            items.push_back(connection_->socket.pollitem());
         zmq::poll(items.data(), items.size(), -1);
 
         if (items[0].revents)
             command();
         if (connection_ && items[1].revents)
         {
-            zmq::message_t msg;
-            connection_->socket.recv(&msg);
+            connection_->socket.forward(connection_->codec);
             std::cout << "server reply" << std::endl;
         }
     }
