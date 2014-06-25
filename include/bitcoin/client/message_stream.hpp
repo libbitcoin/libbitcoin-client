@@ -17,21 +17,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_HPP
+#ifndef LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
+#define LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
+
+#include <bitcoin/bitcoin.hpp>
+
+namespace libbitcoin {
+namespace client {
 
 /**
- * @mainpage libbitcoin-client API dox
+ * Represents a stream of multi-part messages.
  *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to an SX-style blockchain server.
+ * One of this library's design goals is completely separate the networking
+ * code from the message-handling code. This interface is the glue between
+ * the two worlds.
  */
+class message_stream
+{
+public:
+    /**
+     * Sends one part of a multi-part message.
+     * @param more false to indicate the last part of the message.
+     */
+    virtual void message(const data_chunk& data, bool more) = 0;
+};
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <bitcoin/client/message_stream.hpp>
+} // namespace client
+} // namespace libbitcoin
 
 #endif
 
