@@ -51,10 +51,12 @@ private:
     void cmd_connect(std::stringstream& args);
     void cmd_disconnect(std::stringstream& args);
     void cmd_height(std::stringstream& args);
+    void cmd_history(std::stringstream& args);
 
     bool check_connection();
     bool read_string(std::stringstream& args, std::string& out,
         const std::string& error_message);
+    bool read_address(std::stringstream& args, bc::payment_address& out);
 
     bool done_;
 
@@ -113,6 +115,7 @@ void cli::command()
     else if (command == "connect")      cmd_connect(reader);
     else if (command == "disconnect")   cmd_disconnect(reader);
     else if (command == "height")       cmd_height(reader);
+    else if (command == "history")      cmd_history(reader);
     else
         std::cout << "unknown command " << command << std::endl;
 
@@ -134,6 +137,7 @@ void cli::cmd_help()
     std::cout << "  connect <server>  - connect to a server" << std::endl;
     std::cout << "  disconnect        - disconnect from the server" << std::endl;
     std::cout << "  height            - get last block height" << std::endl;
+    std::cout << "  history <address> - get an address' history" << std::endl;
 }
 
 void cli::cmd_connect(std::stringstream& args)
@@ -180,6 +184,22 @@ void cli::cmd_height(std::stringstream& args)
     connection_->codec.fetch_last_height(on_error, handler);
 }
 
+void cli::cmd_history(std::stringstream& args)
+{
+    if (!check_connection())
+        return;
+    bc::payment_address address;
+    if (!read_address(args, address))
+        return;
+
+    auto handler = [](const bc::blockchain::history_list& history)
+    {
+        for (auto row: history)
+            std::cout << row.value << std::endl;
+    };
+    connection_->codec.address_fetch_history(on_error, handler, address);
+}
+
 /**
  * Verifies that a connection exists, and prints an error message otherwise.
  */
@@ -204,6 +224,23 @@ bool cli::read_string(std::stringstream& args, std::string& out,
     if (!out.size())
     {
         std::cout << error_message << std::endl;
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Reads a bitcoin address from the command-line, or prints an error if
+ * the address is missing or invalid.
+ */
+bool cli::read_address(std::stringstream& args, bc::payment_address& out)
+{
+    std::string address;
+    if (!read_string(args, address, "error: no address given"))
+        return false;
+    if (!out.set_encoded(address))
+    {
+        std::cout << "error: invalid address " << address << std::endl;
         return false;
     }
     return true;
