@@ -37,11 +37,21 @@ class BC_API obelisk_codec
   : public message_stream
 {
 public:
+    // Loose message handlers:
+    typedef std::function<void (const std::string& command)> unknown_handler;
+    typedef std::function<void (const payment_address& address,
+        size_t height, const hash_digest& blk_hash, const transaction_type&)>
+        update_handler;
+
     /**
      * Constructor.
      * @param out a stream to receive outgoing messages created by the codec.
+     * @param on_update function to handle subscription update messages.
+     * @param on_unknown function to handle malformed incoming messages.
      */
-    BC_API obelisk_codec(message_stream& out);
+    BC_API obelisk_codec(message_stream& out,
+        update_handler&& on_update=on_update_nop,
+        unknown_handler&& on_unknown=on_unknown_nop);
 
     /**
      * Pass in a message for decoding.
@@ -66,11 +76,6 @@ public:
     typedef std::function<void (const index_list& unconfirmed)>
         validate_handler;
     typedef std::function<void ()> empty_handler;
-
-    // Loose message handlers:
-    typedef std::function<void (const payment_address& address,
-        size_t height, const hash_digest& blk_hash, const transaction_type&)>
-        update_handler;
 
     // Outgoing messages:
     BC_API void fetch_history(error_handler&& on_error,
@@ -110,12 +115,46 @@ public:
         const address_prefix& prefix);
 
 private:
+    typedef deserializer<data_chunk::const_iterator> data_deserial;
+
+    /**
+     * Decodes a message and calls the appropriate callback.
+     * By the time this is called, the error code has already been read
+     * out of the payload and checked.
+     * If there is something wrong with the payload, this function should
+     * throw a end_of_stream exception.
+     */
+    typedef std::function<void (data_deserial& payload)> decoder;
+    static void decode_empty(data_deserial& payload,
+        empty_handler& handler);
+    static void decode_fetch_history(data_deserial& payload,
+        fetch_history_handler& handler);
+    static void decode_fetch_transaction(data_deserial& payload,
+        fetch_transaction_handler& handler);
+    static void decode_fetch_last_height(data_deserial& payload,
+        fetch_last_height_handler& handler);
+    static void decode_fetch_block_header(data_deserial& payload,
+        fetch_block_header_handler& handler);
+    static void decode_fetch_transaction_index(data_deserial& payload,
+        fetch_transaction_index_handler& handler);
+    static void decode_fetch_stealth(data_deserial& payload,
+        fetch_stealth_handler& handler);
+    static void decode_validate(data_deserial& payload,
+        validate_handler& handler);
+
+    /**
+     * Verifies that the deserializer has reached the end of the payload,
+     * and throws end_of_stream if not.
+     */
+    static void check_end(data_deserial& payload);
+
     /**
      * Sends an outgoing request, and adds the handlers to the pending
      * request table.
      */
     void send_request(const std::string& command,
-        const data_chunk& payload, error_handler&& on_error);
+        const data_chunk& payload,
+        error_handler&& on_error, decoder&& on_reply);
 
     struct obelisk_message
     {
@@ -124,6 +163,25 @@ private:
         data_chunk payload;
     };
     void send(const obelisk_message& message);
+    void receive(const obelisk_message& message);
+    void decode_update(const obelisk_message& message);
+    void decode_reply(const obelisk_message& message,
+        error_handler& on_error, decoder& on_reply);
+
+    BC_API static void on_unknown_nop(const std::string&);
+    BC_API static void on_update_nop(const payment_address&,
+        size_t, const hash_digest&, const transaction_type&);
+
+    // Incoming message assembly:
+    obelisk_message wip_message_;
+    enum message_part
+    {
+        command_part,
+        id_part,
+        payload_part,
+        error_part
+    };
+    message_part next_part_;
 
     // Request management:
     uint32_t last_request_id_;
@@ -131,11 +189,15 @@ private:
     {
         obelisk_message message;
         error_handler on_error;
-        //??? on_reply;
+        decoder on_reply;
         unsigned retries;
         //time_t last_action;
     };
     std::map<uint32_t, pending_request> pending_requests_;
+
+    // Loose-message event handlers:
+    unknown_handler on_unknown_;
+    update_handler on_update_;
 
     // Outgoing message stream:
     message_stream& out_;

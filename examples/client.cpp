@@ -5,6 +5,18 @@
 #include "read_line.hpp"
 #include <bitcoin/client.hpp>
 
+static void on_unknown(const std::string& command)
+{
+    std::cout << "unknown message:" << command << std::endl;
+}
+
+static void on_update(const bc::payment_address& address,
+    size_t height, const bc::hash_digest& blk_hash,
+    const bc::transaction_type&)
+{
+    std::cout << "update:" << address.encoded() << std::endl;
+}
+
 /**
  * A dynamically-allocated structure holding the resources needed for a
  * connection to a bitcoin server.
@@ -13,7 +25,7 @@ class connection
 {
 public:
     connection(zmq::context_t& context, const std::string& server)
-      : socket(context, server), codec(socket)
+      : socket(context, server), codec(socket, on_update, on_unknown)
     {
     }
 
@@ -82,10 +94,7 @@ int cli::run()
         if (items[0].revents)
             command();
         if (connection_ && items[1].revents)
-        {
             connection_->socket.forward(connection_->codec);
-            std::cout << "server reply" << std::endl;
-        }
     }
     return 0;
 }
