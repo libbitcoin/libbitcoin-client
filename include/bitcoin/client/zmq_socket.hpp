@@ -38,15 +38,20 @@ public:
     /**
      * Creates a zeromq pollitem_t structure suitable for passing to the
      * zmq_poll function. When zmq_poll indicates that there is data waiting
-     * to be read, simply call the `forward` method to process them.
+     * to be read, simply call the `forward` method to handle it.
      */
     BC_API zmq_pollitem_t pollitem();
 
     /**
-     * Processes pending input messages, forwarding them to the given
-     * message_stream interface.
+     * Forwards pending input messages to the given message_stream interface.
      */
     BC_API void forward(message_stream& dest);
+
+    /**
+     * Forwards pending input messages to the given zeromq socket in a
+     * zero-copy manner.
+     */
+    BC_API void forward(zmq_socket& dest);
 
     /**
      * Sends an outgoing message through the socket.
@@ -54,6 +59,11 @@ public:
     BC_API virtual void message(const data_chunk& data, bool more);
 
 private:
+    /**
+     * Returns true if there are pending input messages.
+     */
+    bool pending();
+
     zmq::socket_t socket_;
 };
 

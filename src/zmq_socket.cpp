@@ -40,14 +40,8 @@ BC_API zmq_pollitem_t zmq_socket::pollitem()
 
 BC_API void zmq_socket::forward(message_stream& dest)
 {
-    while (true)
+    while (pending())
     {
-        int events = 0;
-        size_t size = sizeof(events);
-        socket_.getsockopt(ZMQ_EVENTS, &events, &size);
-        if (!(events & ZMQ_POLLIN))
-            break;
-
         zmq::message_t msg;
         socket_.recv(&msg, ZMQ_DONTWAIT);
 
@@ -57,12 +51,34 @@ BC_API void zmq_socket::forward(message_stream& dest)
     }
 }
 
+BC_API void zmq_socket::forward(zmq_socket& dest)
+{
+    while (pending())
+    {
+        zmq::message_t msg;
+        socket_.recv(&msg, ZMQ_DONTWAIT);
+
+        int flags = 0;
+        if (msg.more())
+            flags = ZMQ_SNDMORE;
+        dest.socket_.send(msg, flags);
+    }
+}
+
 BC_API void zmq_socket::message(const data_chunk& data, bool more)
 {
     int flags = 0;
     if (more)
         flags = ZMQ_SNDMORE;
     socket_.send(data.data(), data.size(), flags);
+}
+
+bool zmq_socket::pending()
+{
+    int events = 0;
+    size_t size = sizeof(events);
+    socket_.getsockopt(ZMQ_EVENTS, &events, &size);
+    return events & ZMQ_POLLIN;
 }
 
 } // namespace client
