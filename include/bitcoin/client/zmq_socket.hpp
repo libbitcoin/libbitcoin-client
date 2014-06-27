@@ -20,7 +20,7 @@
 #ifndef LIBBITCOIN_CLIENT_SOCKET_HPP
 #define LIBBITCOIN_CLIENT_SOCKET_HPP
 
-#include <zmq.hpp>
+#include <zmq.h>
 #include <bitcoin/client/message_stream.hpp>
 
 namespace libbitcoin {
@@ -33,7 +33,22 @@ class BC_API zmq_socket
   : public message_stream
 {
 public:
-    BC_API zmq_socket(zmq::context_t& context, const std::string& server);
+    BC_API ~zmq_socket();
+    BC_API zmq_socket(void* context, int type=ZMQ_DEALER);
+
+    /**
+     * Connects to a remote server.
+     * @return false if something went wrong. The socket will be unusable
+     * in that case.
+     */
+    BC_API bool connect(const std::string& address);
+
+    /**
+     * Begins listening for incoming connections.
+     * @return false if something went wrong. The socket will be unusable
+     * in that case.
+     */
+    BC_API bool bind(const std::string& address);
 
     /**
      * Creates a zeromq pollitem_t structure suitable for passing to the
@@ -45,13 +60,13 @@ public:
     /**
      * Forwards pending input messages to the given message_stream interface.
      */
-    BC_API void forward(message_stream& dest);
+    BC_API bool forward(message_stream& dest);
 
     /**
      * Forwards pending input messages to the given zeromq socket in a
      * zero-copy manner.
      */
-    BC_API void forward(zmq_socket& dest);
+    BC_API bool forward(zmq_socket& dest);
 
     /**
      * Sends an outgoing message through the socket.
@@ -64,7 +79,7 @@ private:
      */
     bool pending();
 
-    zmq::socket_t socket_;
+    void* socket_;
 };
 
 } // namespace client

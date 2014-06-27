@@ -21,13 +21,32 @@
 namespace libbitcoin {
 namespace client {
 
-BC_API zmq_socket::zmq_socket(zmq::context_t& context, const std::string& server)
-  : socket_(context, ZMQ_DEALER)
+BC_API zmq_socket::~zmq_socket()
 {
-    // Do not wait for unsent messages when shutting down:
-    int linger = 0;
-    socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-    socket_.connect(server.c_str());
+    if (socket_)
+        zmq_close(socket_);
+}
+
+BC_API zmq_socket::zmq_socket(void* context, int type)
+  : socket_(nullptr)
+{
+    socket_ = ::zmq_socket(context, type);
+    if (socket_)
+    {
+        // Do not wait for unsent messages when shutting down:
+        int linger = 0;
+        zmq_setsockopt(socket_, ZMQ_LINGER, &linger, sizeof(linger));
+    }
+}
+
+BC_API bool zmq_socket::connect(const std::string& address)
+{
+    return socket_ && 0 <= zmq_connect(socket_, address.c_str());
+}
+
+BC_API bool zmq_socket::bind(const std::string& address)
+{
+    return socket_ && 0 <= zmq_bind(socket_, address.c_str());
 }
 
 BC_API zmq_pollitem_t zmq_socket::pollitem()
@@ -38,31 +57,45 @@ BC_API zmq_pollitem_t zmq_socket::pollitem()
     };
 }
 
-BC_API void zmq_socket::forward(message_stream& dest)
+BC_API bool zmq_socket::forward(message_stream& dest)
 {
     while (pending())
     {
-        zmq::message_t msg;
-        socket_.recv(&msg, ZMQ_DONTWAIT);
+        zmq_msg_t msg;
+        zmq_msg_init(&msg);
 
-        const char* raw = reinterpret_cast<const char*>(msg.data());
-        libbitcoin::data_chunk data(raw, raw + msg.size());
-        dest.message(data, msg.more());
+        if (zmq_msg_recv(&msg, socket_, ZMQ_DONTWAIT) < 0)
+            return false;
+
+        const char* raw = reinterpret_cast<const char*>(zmq_msg_data(&msg));
+        libbitcoin::data_chunk data(raw, raw + zmq_msg_size(&msg));
+        dest.message(data, zmq_msg_more(&msg));
+        zmq_msg_close(&msg);
     }
+    return true;
 }
 
-BC_API void zmq_socket::forward(zmq_socket& dest)
+BC_API bool zmq_socket::forward(zmq_socket& dest)
 {
     while (pending())
     {
-        zmq::message_t msg;
-        socket_.recv(&msg, ZMQ_DONTWAIT);
+        zmq_msg_t msg;
+        zmq_msg_init(&msg);
+
+        if (zmq_msg_recv(&msg, socket_, ZMQ_DONTWAIT) < 0)
+            return false;
 
         int flags = 0;
-        if (msg.more())
+        if (zmq_msg_more(&msg))
             flags = ZMQ_SNDMORE;
-        dest.socket_.send(msg, flags);
+        if (zmq_msg_send(&msg, dest.socket_, flags) < 0)
+        {
+            zmq_msg_close(&msg);
+            return false;
+        }
+
     }
+    return true;
 }
 
 BC_API void zmq_socket::message(const data_chunk& data, bool more)
@@ -70,14 +103,17 @@ BC_API void zmq_socket::message(const data_chunk& data, bool more)
     int flags = 0;
     if (more)
         flags = ZMQ_SNDMORE;
-    socket_.send(data.data(), data.size(), flags);
+    // The message won't go through if this fails,
+    // but we are prepared for that possibility anyhow:
+    zmq_send(socket_, data.data(), data.size(), flags);
 }
 
 bool zmq_socket::pending()
 {
     int events = 0;
     size_t size = sizeof(events);
-    socket_.getsockopt(ZMQ_EVENTS, &events, &size);
+    if (zmq_getsockopt(socket_, ZMQ_EVENTS, &events, &size) < 0)
+        return false;
     return events & ZMQ_POLLIN;
 }
 

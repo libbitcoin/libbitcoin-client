@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <zmq.hpp>
 #include "read_line.hpp"
 #include <bitcoin/client.hpp>
 
@@ -24,8 +23,8 @@ static void on_update(const bc::payment_address& address,
 class connection
 {
 public:
-    connection(zmq::context_t& context, const std::string& server)
-      : socket(context, server), codec(socket, on_update, on_unknown)
+    connection(zmq::context_t& context)
+      : socket(context), codec(socket, on_update, on_unknown)
     {
     }
 
@@ -158,14 +157,12 @@ void cli::cmd_connect(std::stringstream& args)
     std::cout << "connecting to " << server << std::endl;
 
     delete connection_;
-    connection_ = nullptr;
-    try
-    {
-        connection_ = new connection(context_, server);
-    }
-    catch (zmq::error_t)
+    connection_ = new connection(context_);
+    if (!connection_->socket.connect(server))
     {
         std::cout << "error: failed to connect" << std::endl;
+        delete connection_;
+        connection_ = nullptr;
     }
 }
 
