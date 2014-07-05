@@ -25,8 +25,10 @@ namespace client {
 using std::placeholders::_1;
 
 BC_API obelisk_codec::obelisk_codec(message_stream& out,
-    update_handler&& on_update, unknown_handler&& on_unknown)
+    update_handler&& on_update, unknown_handler&& on_unknown,
+    std::chrono::milliseconds timeout, unsigned retries)
   : next_part_(command_part), last_request_id_(0),
+    timeout_(timeout), retries_(retries),
     on_unknown_(std::move(on_unknown)),
     on_update_(std::move(on_update)),
     out_(out)
@@ -67,6 +69,41 @@ BC_API void obelisk_codec::message(const data_chunk& data, bool more)
     }
     else if (next_part_ < error_part)
         next_part_ = static_cast<message_part>(next_part_ + 1);
+}
+
+BC_API std::chrono::milliseconds obelisk_codec::wakeup()
+{
+    std::chrono::milliseconds next_delay(0);
+    auto i = pending_requests_.begin();
+    while (i != pending_requests_.end())
+    {
+        auto request = i++;
+        auto now = std::chrono::steady_clock::now();
+        auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - request->second.last_action);
+        if (timeout_ <= delay)
+        {
+            if (request->second.retries < retries_)
+            {
+                // Resend:
+                ++request->second.retries;
+                request->second.last_action = now;
+                send(request->second.message);
+                if (!next_delay.count())
+                    next_delay = timeout_;
+            }
+            else
+            {
+                // Cancel:
+                auto ec = std::make_error_code(std::errc::timed_out);
+                request->second.on_error(ec);
+                pending_requests_.erase(request);
+            }
+        }
+        else if (!next_delay.count() || timeout_ - delay < next_delay)
+            next_delay = timeout_ - delay;
+    }
+    return next_delay;
 }
 
 BC_API void obelisk_codec::fetch_history(error_handler&& on_error,
@@ -341,7 +378,7 @@ void obelisk_codec::send_request(const std::string& command,
     request.on_error = std::move(on_error);
     request.on_reply = std::move(on_reply);
     request.retries = 0;
-    //request.last_action = get_time()
+    request.last_action = std::chrono::steady_clock::now();
     send(request.message);
 }
 

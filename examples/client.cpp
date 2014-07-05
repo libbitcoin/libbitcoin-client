@@ -86,12 +86,18 @@ int cli::run()
 
     while (!done_)
     {
+        int delay = -1;
         std::vector<zmq_pollitem_t> items;
         items.reserve(2);
         items.push_back(terminal_.pollitem());
         if (connection_)
+        {
             items.push_back(connection_->socket.pollitem());
-        zmq::poll(items.data(), items.size(), -1);
+            auto next_wakeup = connection_->codec.wakeup();
+            if (next_wakeup.count())
+                delay = next_wakeup.count();
+        }
+        zmq::poll(items.data(), items.size(), delay);
 
         if (items[0].revents)
             command();
