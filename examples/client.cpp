@@ -53,12 +53,15 @@ private:
     void cmd_height(std::stringstream& args);
     void cmd_history(std::stringstream& args);
 
+    bc::client::obelisk_codec::error_handler error_handler();
+    void request_done();
     bool check_connection();
     bool read_string(std::stringstream& args, std::string& out,
         const std::string& error_message);
     bool read_address(std::stringstream& args, bc::payment_address& out);
 
     bool done_;
+    bool pending_request_;
 
     zmq::context_t context_;
     read_line terminal_;
@@ -71,7 +74,8 @@ cli::~cli()
 }
 
 cli::cli()
-  : done_(false), terminal_(context_), connection_(nullptr)
+  : done_(false), pending_request_(false),
+    terminal_(context_), connection_(nullptr)
 {
 }
 
@@ -126,7 +130,7 @@ void cli::command()
         std::cout << "unknown command " << command << std::endl;
 
     // Display another prompt, if needed:
-    if (!done_)
+    if (!done_ && !pending_request_)
         terminal_.show_prompt();
 }
 
@@ -173,21 +177,18 @@ void cli::cmd_disconnect(std::stringstream& args)
     connection_ = nullptr;
 }
 
-static void on_error(const std::error_code& ec)
-{
-    std::cout << "error: " << ec.message() << std::endl;
-}
-
 void cli::cmd_height(std::stringstream& args)
 {
     if (!check_connection())
         return;
 
-    auto handler = [](size_t height)
+    auto handler = [this](size_t height)
     {
         std::cout << "height: " << height << std::endl;
+        request_done();
     };
-    connection_->codec.fetch_last_height(on_error, handler);
+    pending_request_ = true;
+    connection_->codec.fetch_last_height(error_handler(), handler);
 }
 
 void cli::cmd_history(std::stringstream& args)
@@ -198,12 +199,36 @@ void cli::cmd_history(std::stringstream& args)
     if (!read_address(args, address))
         return;
 
-    auto handler = [](const bc::blockchain::history_list& history)
+    auto handler = [this](const bc::blockchain::history_list& history)
     {
         for (auto row: history)
             std::cout << row.value << std::endl;
+        request_done();
     };
-    connection_->codec.address_fetch_history(on_error, handler, address);
+    pending_request_ = true;
+    connection_->codec.address_fetch_history(error_handler(),
+        handler, address);
+}
+
+/**
+ * Obtains a simple error-handling functor object.
+ */
+bc::client::obelisk_codec::error_handler cli::error_handler()
+{
+    return [this](const std::error_code& ec)
+    {
+        std::cout << "error: " << ec.message() << std::endl;
+        request_done();
+    };
+}
+
+/**
+ * Call this to display a new prompt once a request has finished.
+ */
+void cli::request_done()
+{
+    pending_request_ = false;
+    terminal_.show_prompt();
 }
 
 /**
