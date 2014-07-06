@@ -16,7 +16,7 @@ read_line::read_line(zmq::context_t& context)
     socket_.bind("inproc://terminal");
     // The thread must be constructed after the socket is already bound.
     // The context must be passed by pointer to avoid copying.
-    auto functor = std::bind(&read_line::run, this , &context);
+    auto functor = std::bind(&read_line::run, this, &context);
     thread_ = new std::thread(functor);
 }
 
