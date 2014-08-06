@@ -28,7 +28,7 @@ public:
     {
     }
 
-    libbitcoin::client::zmq_socket socket;
+    libbitcoin::client::zeromq_socket socket;
     libbitcoin::client::obelisk_codec codec;
 };
 

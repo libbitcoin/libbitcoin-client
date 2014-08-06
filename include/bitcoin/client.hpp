@@ -34,7 +34,7 @@
 #include <bitcoin/client/message_stream.hpp>
 #include <bitcoin/client/obelisk_codec.hpp>
 #include <bitcoin/client/sleeper.hpp>
-#include <bitcoin/client/zmq_socket.hpp>
+#include <bitcoin/client/zeromq_socket.hpp>
 
 #endif
 

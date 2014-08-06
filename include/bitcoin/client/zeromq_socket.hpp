@@ -29,12 +29,12 @@ namespace client {
 /**
  * Represents a connection to the bitcoin server.
  */
-class BC_API zmq_socket
+class BC_API zeromq_socket
   : public message_stream
 {
 public:
-    BC_API ~zmq_socket();
-    BC_API zmq_socket(void* context, int type=ZMQ_DEALER);
+    BC_API ~zeromq_socket();
+    BC_API zeromq_socket(void* context, int type=ZMQ_DEALER);
 
     /**
      * Connects to a remote server.
@@ -66,7 +66,7 @@ public:
      * Forwards pending input messages to the given zeromq socket in a
      * zero-copy manner.
      */
-    BC_API bool forward(zmq_socket& dest);
+    BC_API bool forward(zeromq_socket& dest);
 
     /**
      * Sends an outgoing message through the socket.

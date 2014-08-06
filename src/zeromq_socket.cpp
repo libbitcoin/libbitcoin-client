@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/zmq_socket.hpp>
+#include <bitcoin/client/zeromq_socket.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-BC_API zmq_socket::~zmq_socket()
+BC_API zeromq_socket::~zeromq_socket()
 {
     if (socket_)
         zmq_close(socket_);
 }
 
-BC_API zmq_socket::zmq_socket(void* context, int type)
+BC_API zeromq_socket::zeromq_socket(void* context, int type)
   : socket_(nullptr)
 {
-    socket_ = ::zmq_socket(context, type);
+    socket_ = zmq_socket(context, type);
     if (socket_)
     {
         // Do not wait for unsent messages when shutting down:
@@ -39,17 +39,17 @@ BC_API zmq_socket::zmq_socket(void* context, int type)
     }
 }
 
-BC_API bool zmq_socket::connect(const std::string& address)
+BC_API bool zeromq_socket::connect(const std::string& address)
 {
     return socket_ && 0 <= zmq_connect(socket_, address.c_str());
 }
 
-BC_API bool zmq_socket::bind(const std::string& address)
+BC_API bool zeromq_socket::bind(const std::string& address)
 {
     return socket_ && 0 <= zmq_bind(socket_, address.c_str());
 }
 
-BC_API zmq_pollitem_t zmq_socket::pollitem()
+BC_API zmq_pollitem_t zeromq_socket::pollitem()
 {
     return zmq_pollitem_t
     {
@@ -57,7 +57,7 @@ BC_API zmq_pollitem_t zmq_socket::pollitem()
     };
 }
 
-BC_API bool zmq_socket::forward(message_stream& dest)
+BC_API bool zeromq_socket::forward(message_stream& dest)
 {
     while (pending())
     {
@@ -75,7 +75,7 @@ BC_API bool zmq_socket::forward(message_stream& dest)
     return true;
 }
 
-BC_API bool zmq_socket::forward(zmq_socket& dest)
+BC_API bool zeromq_socket::forward(zeromq_socket& dest)
 {
     while (pending())
     {
@@ -98,7 +98,7 @@ BC_API bool zmq_socket::forward(zmq_socket& dest)
     return true;
 }
 
-BC_API void zmq_socket::message(const data_chunk& data, bool more)
+BC_API void zeromq_socket::message(const data_chunk& data, bool more)
 {
     int flags = 0;
     if (more)
@@ -108,7 +108,7 @@ BC_API void zmq_socket::message(const data_chunk& data, bool more)
     zmq_send(socket_, data.data(), data.size(), flags);
 }
 
-bool zmq_socket::pending()
+bool zeromq_socket::pending()
 {
     int events = 0;
     size_t size = sizeof(events);
