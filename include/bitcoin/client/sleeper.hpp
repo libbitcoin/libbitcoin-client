@@ -39,6 +39,8 @@ namespace client {
 class sleeper
 {
 public:
+    virtual ~sleeper() {}
+
     /**
      * Performs any pending time-based work, and returns the number of
      * milliseconds between now and the next time work needs to be done.

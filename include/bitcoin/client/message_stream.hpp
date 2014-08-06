@@ -35,6 +35,8 @@ namespace client {
 class message_stream
 {
 public:
+    virtual ~message_stream() {}
+
     /**
      * Sends one part of a multi-part message.
      * @param more false to indicate the last part of the message.
