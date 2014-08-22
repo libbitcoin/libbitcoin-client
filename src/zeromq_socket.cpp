@@ -51,6 +51,8 @@ BC_API bool zeromq_socket::bind(const std::string& address)
 
 BC_API zmq_pollitem_t zeromq_socket::pollitem()
 {
+    BITCOIN_ASSERT(socket_);
+
     return zmq_pollitem_t
     {
         socket_, 0, ZMQ_POLLIN, 0
@@ -59,6 +61,8 @@ BC_API zmq_pollitem_t zeromq_socket::pollitem()
 
 BC_API bool zeromq_socket::forward(message_stream& dest)
 {
+    BITCOIN_ASSERT(socket_);
+
     while (pending())
     {
         zmq_msg_t msg;
@@ -77,6 +81,8 @@ BC_API bool zeromq_socket::forward(message_stream& dest)
 
 BC_API bool zeromq_socket::forward(zeromq_socket& dest)
 {
+    BITCOIN_ASSERT(socket_);
+
     while (pending())
     {
         zmq_msg_t msg;
@@ -100,6 +106,8 @@ BC_API bool zeromq_socket::forward(zeromq_socket& dest)
 
 BC_API void zeromq_socket::message(const data_chunk& data, bool more)
 {
+    BITCOIN_ASSERT(socket_);
+
     int flags = 0;
     if (more)
         flags = ZMQ_SNDMORE;
