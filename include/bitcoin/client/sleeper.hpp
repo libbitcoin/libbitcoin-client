@@ -21,9 +21,12 @@
 #define LIBBITCOIN_CLIENT_SLEEPER_HPP
 
 #include <chrono>
+#include <algorithm>
 
 namespace libbitcoin {
 namespace client {
+
+typedef std::chrono::milliseconds sleep_time;
 
 /**
  * An interface for objects that need to perform delayed work in a
@@ -46,8 +49,20 @@ public:
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    virtual std::chrono::milliseconds wakeup() = 0;
+    virtual sleep_time wakeup() = 0;
 };
+
+/**
+ * Returns the smaller of two time periods, treating 0 as infinity.
+ */
+inline sleep_time min_sleep(sleep_time a, sleep_time b)
+{
+    if (!a.count())
+        return b;
+    if (!b.count())
+        return a;
+    return std::min(a, b);
+}
 
 } // namespace client
 } // namespace libbitcoin

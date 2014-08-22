@@ -53,7 +53,7 @@ public:
     BC_API obelisk_codec(message_stream& out,
         update_handler&& on_update=on_update_nop,
         unknown_handler&& on_unknown=on_unknown_nop,
-        std::chrono::milliseconds timeout=std::chrono::seconds(2),
+        sleep_time timeout=std::chrono::seconds(2),
         unsigned retries=1);
 
     /**
@@ -62,7 +62,7 @@ public:
     BC_API void message(const data_chunk& data, bool more);
 
     // sleeper interface:
-    BC_API std::chrono::milliseconds wakeup();
+    BC_API sleep_time wakeup();
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
@@ -202,7 +202,7 @@ private:
     std::map<uint32_t, pending_request> pending_requests_;
 
     // Timeout parameters:
-    std::chrono::milliseconds timeout_;
+    sleep_time timeout_;
     unsigned retries_;
 
     // Loose-message event handlers:

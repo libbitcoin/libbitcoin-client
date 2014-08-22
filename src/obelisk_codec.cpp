@@ -26,7 +26,7 @@ using std::placeholders::_1;
 
 BC_API obelisk_codec::obelisk_codec(message_stream& out,
     update_handler&& on_update, unknown_handler&& on_unknown,
-    std::chrono::milliseconds timeout, unsigned retries)
+    sleep_time timeout, unsigned retries)
   : next_part_(command_part), last_request_id_(0),
     timeout_(timeout), retries_(retries),
     on_unknown_(std::move(on_unknown)),
@@ -71,26 +71,26 @@ BC_API void obelisk_codec::message(const data_chunk& data, bool more)
         next_part_ = static_cast<message_part>(next_part_ + 1);
 }
 
-BC_API std::chrono::milliseconds obelisk_codec::wakeup()
+BC_API sleep_time obelisk_codec::wakeup()
 {
-    std::chrono::milliseconds next_delay(0);
+    sleep_time next_wakeup(0);
+    auto now = std::chrono::steady_clock::now();
+
     auto i = pending_requests_.begin();
     while (i != pending_requests_.end())
     {
         auto request = i++;
-        auto now = std::chrono::steady_clock::now();
-        auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(
+        auto elapsed = std::chrono::duration_cast<sleep_time>(
             now - request->second.last_action);
-        if (timeout_ <= delay)
+        if (timeout_ <= elapsed)
         {
             if (request->second.retries < retries_)
             {
                 // Resend:
                 ++request->second.retries;
                 request->second.last_action = now;
+                next_wakeup = min_sleep(next_wakeup, timeout_);
                 send(request->second.message);
-                if (!next_delay.count())
-                    next_delay = timeout_;
             }
             else
             {
@@ -100,10 +100,10 @@ BC_API std::chrono::milliseconds obelisk_codec::wakeup()
                 pending_requests_.erase(request);
             }
         }
-        else if (!next_delay.count() || timeout_ - delay < next_delay)
-            next_delay = timeout_ - delay;
+        else
+            next_wakeup = min_sleep(next_wakeup, timeout_ - elapsed);
     }
-    return next_delay;
+    return next_wakeup;
 }
 
 BC_API void obelisk_codec::fetch_history(error_handler&& on_error,
