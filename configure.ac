@@ -2,12 +2,7 @@ AC_INIT([libbitcoin-client], [0.0.2], [genjix@riseup.net])
 AC_USE_SYSTEM_EXTENSIONS
 AC_LANG(C++)
 AC_CONFIG_AUX_DIR([build-aux])
-
-# The BOOST_ROOT environment variable is *not* prioritize by the m4 tests.
-# As a result there may be dependency conflicts between installed versions
-# and a version specified in BOOST_ROOT.
 AC_CONFIG_MACRO_DIR([m4])
-
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AM_PROG_AR
 LT_INIT
@@ -16,11 +11,6 @@ AC_PROG_LIBTOOL
 AC_GNU_SOURCE
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-
-# Boost doesn't publish package configs but has m4 tests.
-# The current versions produce incorrect error message text.
-AX_BOOST_BASE([1.50],,
-    [AC_MSG_ERROR([Boost 1.50 or later is required but was not found.])])
 
 PKG_PROG_PKG_CONFIG
 
