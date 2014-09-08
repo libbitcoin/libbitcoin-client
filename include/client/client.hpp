@@ -26,15 +26,14 @@
  * @section intro_sec Introduction
  *
  * This library will contain the logic and communications code needed to talk
- * to an SX-style blockchain server.
+ * to a libbitcoin-server.
  */
 
 // Convenience header that includes everything
 // Not to be used internally. For API users.
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/obelisk_codec.hpp>
-#include <bitcoin/client/sleeper.hpp>
-#include <bitcoin/client/zeromq_socket.hpp>
+#include <client/message_stream.hpp>
+#include <client/obelisk_codec.hpp>
+#include <client/sleeper.hpp>
+#include <client/zeromq_socket.hpp>
 
 #endif
-
