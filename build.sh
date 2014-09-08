@@ -77,6 +77,7 @@ build_library()
     # This script args are passed to configure of each build.
     github_build jedisct1 libsodium master "$@"
     github_build zeromq libzmq master "$@"
+    github_build bitcoin secp256k1 master "$@" $SECP256K1_OPTIONS
     github_build libbitcoin libbitcoin develop "$@"
     github_build $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH "$@"
 }
