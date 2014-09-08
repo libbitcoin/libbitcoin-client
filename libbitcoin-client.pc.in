@@ -4,9 +4,15 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libbitcoin-client
-Description: Client library for communicating with SX servers.
-URL: http://libbitcoin.dyne.org/libbitcoin-client/
+Description: Client Protocol Implementation
+URL: https://github.com/libbitcoin/libbitcoin_client
 Version: @PACKAGE_VERSION@
-Requires: libbitcoin libzmq
-Cflags: -I${includedir}
+
+# Our dependencies that publish package configuration.
+Requires: libsodium >= 0.6.0 libzmq >= 4.0.0 libbitcoin >= 2.0.1
+
+# Our own include directory and any other compiler flags we require.
+Cflags: -I${includedir} -std=c++11
+
+# Our own lib and any we require that do not publish package configuration.
 Libs: -L${libdir} -lbitcoin-client

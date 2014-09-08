@@ -22,8 +22,8 @@
 
 #include <functional>
 #include <map>
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/sleeper.hpp>
+#include <client/message_stream.hpp>
+#include <client/sleeper.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -121,7 +121,7 @@ public:
         const address_prefix& prefix);
 
 private:
-    typedef deserializer<data_chunk::const_iterator> data_deserial;
+    typedef deserializer<data_chunk::const_iterator, true> data_deserial;
 
     /**
      * Decodes a message and calls the appropriate callback.
