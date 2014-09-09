@@ -31,6 +31,7 @@
 
 // Convenience header that includes everything
 // Not to be used internally. For API users.
+#include <client/define.hpp>
 #include <client/message_stream.hpp>
 #include <client/obelisk_codec.hpp>
 #include <client/sleeper.hpp>
