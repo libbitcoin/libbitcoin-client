@@ -1,4 +1,4 @@
-libbitcoin_client_includedir = $(includedir)
+libbitcoin_client_includedir = $(includedir)/client
 libbitcoin_client_include_HEADERS = \
     client.hpp \
     message_stream.hpp \
