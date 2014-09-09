@@ -68,7 +68,6 @@
     <ClInclude Include="..\..\..\..\examples\cli.hpp" />
     <ClInclude Include="..\..\..\..\examples\connection.hpp" />
     <ClInclude Include="..\..\..\..\examples\read_line.hpp" />
-    <ClInclude Include="..\..\..\..\examples\zmq.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\examples\cli.cpp" />

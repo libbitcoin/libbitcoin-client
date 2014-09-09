@@ -22,7 +22,7 @@
 
 #include <string>
 #include <thread>
-#include "zmq.hpp"
+#include <client/client.hpp>
 
 /*
  * Reads lines from the terminal in a separate thread.

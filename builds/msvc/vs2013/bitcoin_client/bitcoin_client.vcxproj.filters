@@ -29,9 +29,6 @@
     <ClInclude Include="..\..\..\..\examples\read_line.hpp">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\examples\zmq.hpp">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\examples\connection.hpp">
       <Filter>include</Filter>
     </ClInclude>

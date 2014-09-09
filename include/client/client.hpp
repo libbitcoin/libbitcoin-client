@@ -35,5 +35,6 @@
 #include <client/obelisk_codec.hpp>
 #include <client/sleeper.hpp>
 #include <client/zeromq_socket.hpp>
+#include <client/zmq.hpp>
 
 #endif
