@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <zmq.h>
 #include "zmq.hpp"
 #include <bitcoin/bitcoin.hpp>
 #include <client/client.hpp>
