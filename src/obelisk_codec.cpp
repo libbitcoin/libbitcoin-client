@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of libbitcoin_client.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
+ * libbitcoin_client is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
  * any later version. For more information see LICENSE.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
@@ -24,13 +24,13 @@ namespace client {
 
 using std::placeholders::_1;
 
+// The previous technique of callback referencing produces a cross-compile 
+// break, so this has been modified to accept simple references.
 BC_API obelisk_codec::obelisk_codec(message_stream& out,
-    update_handler&& on_update, unknown_handler&& on_unknown,
+    const update_handler& on_update, const unknown_handler& on_unknown,
     sleep_time timeout, uint8_t retries)
-  : next_part_(command_part), last_request_id_(0),
-    timeout_(timeout), retries_(retries),
-    on_unknown_(std::move(on_unknown)),
-    on_update_(std::move(on_update)),
+  : next_part_(command_part), last_request_id_(0), timeout_(timeout),
+    retries_(retries), on_unknown_(on_unknown), on_update_(on_update),
     out_(out)
 {
 }

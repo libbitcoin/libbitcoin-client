@@ -3,15 +3,15 @@
  *
  * This file is part of libbitcoin_client.
  *
- * libbitcoin_client is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
+ * libbitcoin_client is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
  * any later version. For more information see LICENSE.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
@@ -49,12 +49,13 @@ public:
      * @param out a stream to receive outgoing messages created by the codec.
      * @param on_update function to handle subscription update messages.
      * @param on_unknown function to handle malformed incoming messages.
+     * @param timeout the call timeout, defaults to 2 seconds.
+     * @param retries the number of retries to attempt, details to one.
      */
     BCC_API obelisk_codec(message_stream& out,
-        update_handler&& on_update=on_update_nop,
-        unknown_handler&& on_unknown=on_unknown_nop,
-        sleep_time timeout=std::chrono::seconds(2),
-        uint8_t retries = 1);
+        const update_handler& on_update=on_update_nop,
+        const unknown_handler& on_unknown = on_unknown_nop,
+        sleep_time timeout=std::chrono::seconds(2), uint8_t retries=1);
 
     /**
      * Pass in a message for decoding.

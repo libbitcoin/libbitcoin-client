@@ -65,11 +65,15 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\examples\cli.hpp" />
+    <ClInclude Include="..\..\..\..\examples\connection.hpp" />
     <ClInclude Include="..\..\..\..\examples\read_line.hpp" />
     <ClInclude Include="..\..\..\..\examples\zmq.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\client.cpp" />
+    <ClCompile Include="..\..\..\..\examples\cli.cpp" />
+    <ClCompile Include="..\..\..\..\examples\connection.cpp" />
+    <ClCompile Include="..\..\..\..\examples\main.cpp" />
     <ClCompile Include="..\..\..\..\examples\read_line.cpp" />
   </ItemGroup>
   <ItemGroup>
