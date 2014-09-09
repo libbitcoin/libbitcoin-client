@@ -17,23 +17,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_HPP
+#ifndef BITCOIN_CLIENT_CONNECTION_HPP
+#define BITCOIN_CLIENT_CONNECTION_HPP
+
+#include "zmq.hpp"
+#include <client/client.hpp>
 
 /**
- * @mainpage libbitcoin-client API dox
- *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to a libbitcoin-server.
+ * A dynamically-allocated structure holding the resources needed for a
+ * connection to a bitcoin server.
  */
+class connection
+{
+public:
+    connection(zmq::context_t& context);
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <client/message_stream.hpp>
-#include <client/obelisk_codec.hpp>
-#include <client/sleeper.hpp>
-#include <client/zeromq_socket.hpp>
+    bc::client::zeromq_socket socket;
+    bc::client::obelisk_codec codec;
+};
 
 #endif

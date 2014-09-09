@@ -17,23 +17,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_HPP
+#ifndef DEFINE_HPP
+#define DEFINE_HPP
 
-/**
- * @mainpage libbitcoin-client API dox
- *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to a libbitcoin-server.
- */
+#include <bitcoin/bitcoin.hpp>
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <client/message_stream.hpp>
-#include <client/obelisk_codec.hpp>
-#include <client/sleeper.hpp>
-#include <client/zeromq_socket.hpp>
+// We use the generic helper definitions in libbitcoin to define BCX_API 
+// and BCX_INTERNAL. BCX_API is used for the public API symbols. It either DLL
+// imports or DLL exports (or does nothing for static build) BCX_INTERNAL is 
+// used for non-api symbols.
+
+#if defined BCC_STATIC
+#define BCC_API
+#define BCC_INTERNAL
+#elif defined BCS_DLL
+#define BCC_API      BC_HELPER_DLL_EXPORT
+#define BCC_INTERNAL BC_HELPER_DLL_LOCAL
+#else
+#define BCC_API      BC_HELPER_DLL_IMPORT
+#define BCC_INTERNAL BC_HELPER_DLL_LOCAL
+#endif
 
 #endif

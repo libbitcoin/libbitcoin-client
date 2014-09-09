@@ -17,23 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_HPP
+#include <boost/test/test_tools.hpp>
+#include <boost/test/unit_test_suite.hpp>
+#include <bitcoin/bitcoin.hpp>
+#include <client/client.hpp>
 
-/**
- * @mainpage libbitcoin-client API dox
- *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to a libbitcoin-server.
- */
+using namespace bc::client;
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <client/message_stream.hpp>
-#include <client/obelisk_codec.hpp>
-#include <client/sleeper.hpp>
-#include <client/zeromq_socket.hpp>
+BOOST_AUTO_TEST_SUITE(client_tests)
 
-#endif
+BOOST_AUTO_TEST_CASE(client_test)
+{
+}
+
+BOOST_AUTO_TEST_SUITE_END()

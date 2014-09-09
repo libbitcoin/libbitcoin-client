@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of libbitcoin_client.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
+ * libbitcoin_client is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
  * any later version. For more information see LICENSE.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
@@ -24,13 +24,13 @@ namespace client {
 
 using std::placeholders::_1;
 
+// The previous technique of callback referencing produces a cross-compile 
+// break, so this has been modified to accept simple references.
 BC_API obelisk_codec::obelisk_codec(message_stream& out,
-    update_handler&& on_update, unknown_handler&& on_unknown,
-    sleep_time timeout, unsigned retries)
-  : next_part_(command_part), last_request_id_(0),
-    timeout_(timeout), retries_(retries),
-    on_unknown_(std::move(on_unknown)),
-    on_update_(std::move(on_update)),
+    const update_handler& on_update, const unknown_handler& on_unknown,
+    sleep_time timeout, uint8_t retries)
+  : next_part_(command_part), last_request_id_(0), timeout_(timeout),
+    retries_(retries), on_unknown_(on_unknown), on_update_(on_update),
     out_(out)
 {
 }
@@ -115,7 +115,7 @@ BC_API void obelisk_codec::fetch_history(error_handler&& on_error,
     auto serial = make_serializer(data.begin());
     serial.write_byte(address.version());
     serial.write_short_hash(address.hash());
-    serial.write_4_bytes(from_height);
+    serial.write_4_bytes(static_cast<uint32_t>(from_height));
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("blockchain.fetch_history", data, std::move(on_error),
@@ -148,7 +148,8 @@ BC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
     fetch_block_header_handler&& on_reply,
     size_t height)
 {
-    data_chunk data = to_data_chunk(to_little_endian<uint32_t>(height));
+    data_chunk data = to_data_chunk(
+        to_little_endian(static_cast<uint32_t>(height)));
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
@@ -188,13 +189,13 @@ BC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     data_chunk data(1 + prefix.num_blocks() + 4);
     auto serial = make_serializer(data.begin());
     // number_bits
-    serial.write_byte(prefix.size());
+    serial.write_byte(static_cast<uint8_t>(prefix.size()));
     // Serialize bitfield to raw bytes and serialize
     data_chunk bitfield(prefix.num_blocks());
     boost::to_block_range(prefix, bitfield.begin());
     serial.write_data(bitfield);
     // from_height
-    serial.write_4_bytes(from_height);
+    serial.write_4_bytes(static_cast<uint32_t>(from_height));
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("blockchain.fetch_stealth", data, std::move(on_error),
@@ -250,7 +251,7 @@ BC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
     auto serial = make_serializer(data.begin());
     serial.write_byte(address.version());
     serial.write_short_hash(address.hash());
-    serial.write_4_bytes(from_height);
+    serial.write_4_bytes(static_cast<uint32_t>(from_height));
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("address.fetch_history", data, std::move(on_error),
@@ -263,7 +264,7 @@ BC_API void obelisk_codec::subscribe(error_handler&& on_error,
 {
     BITCOIN_ASSERT(prefix.size() <= 255);
     data_chunk data(1 + prefix.num_blocks());
-    data[0] = prefix.size();
+    data[0] = static_cast<uint8_t>(prefix.size());
     boost::to_block_range(prefix, data.begin() + 1);
 
     send_request("address.subscribe", data, std::move(on_error),

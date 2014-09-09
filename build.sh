@@ -80,6 +80,12 @@ build_library()
     github_build bitcoin secp256k1 master "$@" $SECP256K1_OPTIONS
     github_build libbitcoin libbitcoin develop "$@"
     github_build $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH "$@"
+
+    # Build and run unit tests.
+    cd libbitcoin_client/test
+    ./make.sh
+    ./libbitcoin_client_test $BOOST_UNIT_TEST_PARAMETERS
+    cd ../..
 }
 
 # Exit this script on the first error (any statement returns non-true value).
