@@ -81,8 +81,9 @@ build_library()
     github_build libbitcoin libbitcoin develop "$@"
     github_build $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH "$@"
 
-    # Run unit tests.
+    # Build and run unit tests.
     cd libbitcoin_client/test
+    ./make.sh
     ./libbitcoin_client_test $BOOST_UNIT_TEST_PARAMETERS
     cd ../..
 }
