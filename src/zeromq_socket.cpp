@@ -18,6 +18,8 @@
  */
 #include <client/zeromq_socket.hpp>
 
+#include <client/define.hpp>
+
 namespace libbitcoin {
 namespace client {
 
@@ -73,7 +75,7 @@ BC_API bool zeromq_socket::forward(message_stream& dest)
 
         const char* raw = reinterpret_cast<const char*>(zmq_msg_data(&msg));
         libbitcoin::data_chunk data(raw, raw + zmq_msg_size(&msg));
-        dest.message(data, zmq_msg_more(&msg));
+        dest.message(data, zmq_msg_more(&msg) != 0);
         zmq_msg_close(&msg);
     }
     return true;

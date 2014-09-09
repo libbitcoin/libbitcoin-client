@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of libbitcoin_client.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * libbitcoin_client is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -22,6 +22,7 @@
 
 #include <functional>
 #include <map>
+#include <client/define.hpp>
 #include <client/message_stream.hpp>
 #include <client/sleeper.hpp>
 
@@ -34,15 +35,14 @@ typedef stealth_prefix address_prefix;
  * Decodes and encodes messages in the obelisk protocol.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class BC_API obelisk_codec
+class BCC_API obelisk_codec
   : public message_stream, public sleeper
 {
 public:
     // Loose message handlers:
     typedef std::function<void (const std::string& command)> unknown_handler;
-    typedef std::function<void (const payment_address& address,
-        size_t height, const hash_digest& blk_hash, const transaction_type&)>
-        update_handler;
+    typedef std::function<void (const payment_address& address, size_t height,
+        const hash_digest& blk_hash, const transaction_type&)> update_handler;
 
     /**
      * Constructor.
@@ -50,19 +50,19 @@ public:
      * @param on_update function to handle subscription update messages.
      * @param on_unknown function to handle malformed incoming messages.
      */
-    BC_API obelisk_codec(message_stream& out,
+    BCC_API obelisk_codec(message_stream& out,
         update_handler&& on_update=on_update_nop,
         unknown_handler&& on_unknown=on_unknown_nop,
         sleep_time timeout=std::chrono::seconds(2),
-        unsigned retries=1);
+        uint8_t retries = 1);
 
     /**
      * Pass in a message for decoding.
      */
-    BC_API void message(const data_chunk& data, bool more);
+    BCC_API void message(const data_chunk& data, bool more);
 
     // sleeper interface:
-    BC_API sleep_time wakeup();
+    BCC_API sleep_time wakeup();
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
@@ -84,39 +84,39 @@ public:
     typedef std::function<void ()> empty_handler;
 
     // Outgoing messages:
-    BC_API void fetch_history(error_handler&& on_error,
+    BCC_API void fetch_history(error_handler&& on_error,
         fetch_history_handler&& on_reply,
         const payment_address& address, size_t from_height=0);
-    BC_API void fetch_transaction(error_handler&& on_error,
+    BCC_API void fetch_transaction(error_handler&& on_error,
         fetch_transaction_handler&& on_reply,
         const hash_digest& tx_hash);
-    BC_API void fetch_last_height(error_handler&& on_error,
+    BCC_API void fetch_last_height(error_handler&& on_error,
         fetch_last_height_handler&& on_reply);
-    BC_API void fetch_block_header(error_handler&& on_error,
+    BCC_API void fetch_block_header(error_handler&& on_error,
         fetch_block_header_handler&& on_reply,
         size_t height);
-    BC_API void fetch_block_header(error_handler&& on_error,
+    BCC_API void fetch_block_header(error_handler&& on_error,
         fetch_block_header_handler&& on_reply,
         const hash_digest& blk_hash);
-    BC_API void fetch_transaction_index(error_handler&& on_error,
+    BCC_API void fetch_transaction_index(error_handler&& on_error,
         fetch_transaction_index_handler&& on_reply,
         const hash_digest& tx_hash);
-    BC_API void fetch_stealth(error_handler&& on_error,
+    BCC_API void fetch_stealth(error_handler&& on_error,
         fetch_stealth_handler&& on_reply,
         const stealth_prefix& prefix, size_t from_height=0);
-    BC_API void validate(error_handler&& on_error,
+    BCC_API void validate(error_handler&& on_error,
         validate_handler&& on_reply,
         const transaction_type& tx);
-    BC_API void fetch_unconfirmed_transaction(error_handler&& on_error,
+    BCC_API void fetch_unconfirmed_transaction(error_handler&& on_error,
         fetch_transaction_handler&& on_reply,
         const hash_digest& tx_hash);
-    BC_API void broadcast_transaction(error_handler&& on_error,
+    BCC_API void broadcast_transaction(error_handler&& on_error,
         empty_handler&& on_reply,
         const transaction_type& tx);
-    BC_API void address_fetch_history(error_handler&& on_error,
+    BCC_API void address_fetch_history(error_handler&& on_error,
         fetch_history_handler&& on_reply,
         const payment_address& address, size_t from_height=0);
-    BC_API void subscribe(error_handler&& on_error,
+    BCC_API void subscribe(error_handler&& on_error,
         empty_handler&& on_reply,
         const address_prefix& prefix);
 
@@ -203,7 +203,7 @@ private:
 
     // Timeout parameters:
     sleep_time timeout_;
-    unsigned retries_;
+    uint8_t retries_;
 
     // Loose-message event handlers:
     unknown_handler on_unknown_;

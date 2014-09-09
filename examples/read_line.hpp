@@ -1,6 +1,6 @@
 #include <string>
 #include <thread>
-#include <zmq.hpp>
+#include "zmq.hpp"
 
 /*
  * Reads lines from the terminal in a separate thread.

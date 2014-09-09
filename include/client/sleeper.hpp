@@ -61,7 +61,7 @@ inline sleep_time min_sleep(sleep_time a, sleep_time b)
         return b;
     if (!b.count())
         return a;
-    return std::min(a, b);
+    return min(a, b);
 }
 
 } // namespace client

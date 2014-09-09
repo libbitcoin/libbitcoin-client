@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 #include "read_line.hpp"
-#include <bitcoin/client.hpp>
+#include <client/client.hpp>
 
 static void on_unknown(const std::string& command)
 {
@@ -89,7 +89,7 @@ int cli::run()
 
     while (!done_)
     {
-        int delay = -1;
+        size_t delay = -1;
         std::vector<zmq_pollitem_t> items;
         items.reserve(2);
         items.push_back(terminal_.pollitem());
@@ -100,7 +100,8 @@ int cli::run()
             if (next_wakeup.count())
                 delay = next_wakeup.count();
         }
-        zmq::poll(items.data(), items.size(), delay);
+        zmq::poll(items.data(), static_cast<long>(items.size()), 
+            static_cast<long>(delay));
 
         if (items[0].revents)
             command();
