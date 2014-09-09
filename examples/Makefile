@@ -6,7 +6,7 @@ default: all
 .cpp.o:
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
-client: client.o read_line.o
+client: cli.o connection.o main.o read_line.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 all: client
