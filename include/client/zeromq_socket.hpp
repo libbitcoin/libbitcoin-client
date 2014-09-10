@@ -30,49 +30,49 @@ namespace client {
 /**
  * Represents a connection to the bitcoin server.
  */
-class BC_API zeromq_socket
+class BCC_API zeromq_socket
   : public message_stream
 {
 public:
-    BC_API ~zeromq_socket();
-    BC_API zeromq_socket(void* context, int type=ZMQ_DEALER);
+    BCC_API ~zeromq_socket();
+    BCC_API zeromq_socket(void* context, int type=ZMQ_DEALER);
 
     /**
      * Connects to a remote server.
      * @return false if something went wrong. The socket will be unusable
      * in that case.
      */
-    BC_API bool connect(const std::string& address);
+    BCC_API bool connect(const std::string& address);
 
     /**
      * Begins listening for incoming connections.
      * @return false if something went wrong. The socket will be unusable
      * in that case.
      */
-    BC_API bool bind(const std::string& address);
+    BCC_API bool bind(const std::string& address);
 
     /**
      * Creates a zeromq pollitem_t structure suitable for passing to the
      * zmq_poll function. When zmq_poll indicates that there is data waiting
      * to be read, simply call the `forward` method to handle it.
      */
-    BC_API zmq_pollitem_t pollitem();
+    BCC_API zmq_pollitem_t pollitem();
 
     /**
      * Forwards pending input messages to the given message_stream interface.
      */
-    BC_API bool forward(message_stream& dest);
+    BCC_API bool forward(message_stream& dest);
 
     /**
      * Forwards pending input messages to the given zeromq socket in a
      * zero-copy manner.
      */
-    BC_API bool forward(zeromq_socket& dest);
+    BCC_API bool forward(zeromq_socket& dest);
 
     /**
      * Sends an outgoing message through the socket.
      */
-    BC_API virtual void message(const data_chunk& data, bool more);
+    BCC_API virtual void message(const data_chunk& data, bool more);
 
 private:
     /**

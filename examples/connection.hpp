@@ -20,7 +20,6 @@
 #ifndef BITCOIN_CLIENT_CONNECTION_HPP
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include "zmq.hpp"
 #include <client/client.hpp>
 
 /**

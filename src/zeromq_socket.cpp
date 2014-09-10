@@ -24,13 +24,13 @@
 namespace libbitcoin {
 namespace client {
 
-BC_API zeromq_socket::~zeromq_socket()
+BCC_API zeromq_socket::~zeromq_socket()
 {
     if (socket_)
         zmq_close(socket_);
 }
 
-BC_API zeromq_socket::zeromq_socket(void* context, int type)
+BCC_API zeromq_socket::zeromq_socket(void* context, int type)
   : socket_(nullptr)
 {
     socket_ = zmq_socket(context, type);
@@ -42,17 +42,17 @@ BC_API zeromq_socket::zeromq_socket(void* context, int type)
     }
 }
 
-BC_API bool zeromq_socket::connect(const std::string& address)
+BCC_API bool zeromq_socket::connect(const std::string& address)
 {
     return socket_ && 0 <= zmq_connect(socket_, address.c_str());
 }
 
-BC_API bool zeromq_socket::bind(const std::string& address)
+BCC_API bool zeromq_socket::bind(const std::string& address)
 {
     return socket_ && 0 <= zmq_bind(socket_, address.c_str());
 }
 
-BC_API zmq_pollitem_t zeromq_socket::pollitem()
+BCC_API zmq_pollitem_t zeromq_socket::pollitem()
 {
     BITCOIN_ASSERT(socket_);
 
@@ -62,7 +62,7 @@ BC_API zmq_pollitem_t zeromq_socket::pollitem()
     };
 }
 
-BC_API bool zeromq_socket::forward(message_stream& dest)
+BCC_API bool zeromq_socket::forward(message_stream& dest)
 {
     BITCOIN_ASSERT(socket_);
 
@@ -82,7 +82,7 @@ BC_API bool zeromq_socket::forward(message_stream& dest)
     return true;
 }
 
-BC_API bool zeromq_socket::forward(zeromq_socket& dest)
+BCC_API bool zeromq_socket::forward(zeromq_socket& dest)
 {
     BITCOIN_ASSERT(socket_);
 
@@ -107,7 +107,7 @@ BC_API bool zeromq_socket::forward(zeromq_socket& dest)
     return true;
 }
 
-BC_API void zeromq_socket::message(const data_chunk& data, bool more)
+BCC_API void zeromq_socket::message(const data_chunk& data, bool more)
 {
     BITCOIN_ASSERT(socket_);
 

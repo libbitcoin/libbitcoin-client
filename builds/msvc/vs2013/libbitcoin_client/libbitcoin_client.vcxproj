@@ -74,6 +74,7 @@
     <ClInclude Include="..\..\..\..\include\client\obelisk_codec.hpp" />
     <ClInclude Include="..\..\..\..\include\client\sleeper.hpp" />
     <ClInclude Include="..\..\..\..\include\client\zeromq_socket.hpp" />
+    <ClInclude Include="..\..\..\..\include\client\zmq.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp" />

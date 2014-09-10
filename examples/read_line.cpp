@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include "zmq.hpp"
+#include <client/client.hpp>
 
 read_line::~read_line()
 {

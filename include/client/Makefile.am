@@ -5,4 +5,5 @@ libbitcoin_client_include_HEADERS = \
     message_stream.hpp \
     obelisk_codec.hpp \
     sleeper.hpp \
-    zeromq_socket.hpp
+    zeromq_socket.hpp \
+    zmq.hpp
