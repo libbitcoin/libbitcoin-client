@@ -26,7 +26,7 @@ using std::placeholders::_1;
 
 // The previous technique of callback referencing produces a cross-compile 
 // break, so this has been modified to accept simple references.
-BC_API obelisk_codec::obelisk_codec(message_stream& out,
+BCC_API obelisk_codec::obelisk_codec(message_stream& out,
     const update_handler& on_update, const unknown_handler& on_unknown,
     sleep_time timeout, uint8_t retries)
   : next_part_(command_part), last_request_id_(0), timeout_(timeout),
@@ -35,7 +35,7 @@ BC_API obelisk_codec::obelisk_codec(message_stream& out,
 {
 }
 
-BC_API void obelisk_codec::message(const data_chunk& data, bool more)
+BCC_API void obelisk_codec::message(const data_chunk& data, bool more)
 {
     switch (next_part_)
     {
@@ -71,7 +71,7 @@ BC_API void obelisk_codec::message(const data_chunk& data, bool more)
         next_part_ = static_cast<message_part>(next_part_ + 1);
 }
 
-BC_API sleep_time obelisk_codec::wakeup()
+BCC_API sleep_time obelisk_codec::wakeup()
 {
     sleep_time next_wakeup(0);
     auto now = std::chrono::steady_clock::now();
@@ -106,7 +106,7 @@ BC_API sleep_time obelisk_codec::wakeup()
     return next_wakeup;
 }
 
-BC_API void obelisk_codec::fetch_history(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_history(error_handler&& on_error,
     fetch_history_handler&& on_reply,
     const payment_address& address, size_t from_height)
 {
@@ -122,7 +122,7 @@ BC_API void obelisk_codec::fetch_history(error_handler&& on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_transaction(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_transaction(error_handler&& on_error,
     fetch_transaction_handler&& on_reply,
     const hash_digest& tx_hash)
 {
@@ -136,7 +136,7 @@ BC_API void obelisk_codec::fetch_transaction(error_handler&& on_error,
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_last_height(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_last_height(error_handler&& on_error,
     fetch_last_height_handler&& on_reply)
 {
     send_request("blockchain.fetch_last_height", data_chunk(),
@@ -144,7 +144,7 @@ BC_API void obelisk_codec::fetch_last_height(error_handler&& on_error,
         std::bind(decode_fetch_last_height, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
     fetch_block_header_handler&& on_reply,
     size_t height)
 {
@@ -155,7 +155,7 @@ BC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
     fetch_block_header_handler&& on_reply,
     const hash_digest& blk_hash)
 {
@@ -168,7 +168,7 @@ BC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_transaction_index(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_transaction_index(error_handler&& on_error,
     fetch_transaction_index_handler&& on_reply,
     const hash_digest& tx_hash)
 {
@@ -182,7 +182,7 @@ BC_API void obelisk_codec::fetch_transaction_index(error_handler&& on_error,
         std::bind(decode_fetch_transaction_index, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
+BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     fetch_stealth_handler&& on_reply,
     const stealth_prefix& prefix, size_t from_height)
 {
@@ -202,7 +202,7 @@ BC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
         std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::validate(error_handler&& on_error,
+BCC_API void obelisk_codec::validate(error_handler&& on_error,
     validate_handler&& on_reply,
     const transaction_type& tx)
 {
@@ -214,7 +214,7 @@ BC_API void obelisk_codec::validate(error_handler&& on_error,
         std::bind(decode_validate, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::fetch_unconfirmed_transaction(
+BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
     error_handler&& on_error,
     fetch_transaction_handler&& on_reply,
     const hash_digest& tx_hash)
@@ -230,7 +230,7 @@ BC_API void obelisk_codec::fetch_unconfirmed_transaction(
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::broadcast_transaction(error_handler&& on_error,
+BCC_API void obelisk_codec::broadcast_transaction(error_handler&& on_error,
     empty_handler&& on_reply,
     const transaction_type& tx)
 {
@@ -242,7 +242,7 @@ BC_API void obelisk_codec::broadcast_transaction(error_handler&& on_error,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
+BCC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
     fetch_history_handler&& on_reply,
     const payment_address& address, size_t from_height)
 {
@@ -258,7 +258,7 @@ BC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
-BC_API void obelisk_codec::subscribe(error_handler&& on_error,
+BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
     empty_handler&& on_reply,
     const address_prefix& prefix)
 {
@@ -454,11 +454,11 @@ void obelisk_codec::decode_reply(const obelisk_message& message,
         on_error(ec);
 }
 
-BC_API void obelisk_codec::on_unknown_nop(const std::string&)
+BCC_API void obelisk_codec::on_unknown_nop(const std::string&)
 {
 }
 
-BC_API void obelisk_codec::on_update_nop(const payment_address&,
+BCC_API void obelisk_codec::on_update_nop(const payment_address&,
     size_t, const hash_digest&, const transaction_type&)
 {
 }

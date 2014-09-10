@@ -44,6 +44,10 @@ public:
     typedef std::function<void (const payment_address& address, size_t height,
         const hash_digest& blk_hash, const transaction_type&)> update_handler;
 
+    BCC_API static void on_unknown_nop(const std::string&);
+    BCC_API static void on_update_nop(const payment_address&,
+        size_t, const hash_digest&, const transaction_type&);
+
     /**
      * Constructor.
      * @param out a stream to receive outgoing messages created by the codec.
@@ -174,10 +178,6 @@ private:
     void decode_update(const obelisk_message& message);
     void decode_reply(const obelisk_message& message,
         error_handler& on_error, decoder& on_reply);
-
-    BC_API static void on_unknown_nop(const std::string&);
-    BC_API static void on_update_nop(const payment_address&,
-        size_t, const hash_digest&, const transaction_type&);
 
     // Incoming message assembly:
     obelisk_message wip_message_;
