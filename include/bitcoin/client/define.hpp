@@ -30,7 +30,7 @@
 #if defined BCC_STATIC
 #define BCC_API
 #define BCC_INTERNAL
-#elif defined BCS_DLL
+#elif defined BCC_DLL
 #define BCC_API      BC_HELPER_DLL_EXPORT
 #define BCC_INTERNAL BC_HELPER_DLL_LOCAL
 #else
