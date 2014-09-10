@@ -41,6 +41,6 @@
 // cppzmq (zmq.hpp) is not presently usable with versions of libzmq since 
 // 2014.01.28. Expecting a patch: https://github.com/zeromq/cppzmq/issues/40
 // Until then this will fail with recent libzmq versions.
-#include <bitcoin/client/zmq.hpp>
+//#include <bitcoin/client/zmq.hpp>
 
 #endif
