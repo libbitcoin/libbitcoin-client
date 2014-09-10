@@ -68,15 +68,6 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\include\client\client.hpp" />
-    <ClInclude Include="..\..\..\..\include\client\define.hpp" />
-    <ClInclude Include="..\..\..\..\include\client\message_stream.hpp" />
-    <ClInclude Include="..\..\..\..\include\client\obelisk_codec.hpp" />
-    <ClInclude Include="..\..\..\..\include\client\sleeper.hpp" />
-    <ClInclude Include="..\..\..\..\include\client\zeromq_socket.hpp" />
-    <ClInclude Include="..\..\..\..\include\client\zmq.hpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp" />
     <ClCompile Include="..\..\..\..\src\zeromq_socket.cpp" />
   </ItemGroup>
@@ -84,6 +75,15 @@
     <None Include="packages.config">
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\define.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\message_stream.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_codec.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\zeromq_socket.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\zmq.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionSettings">

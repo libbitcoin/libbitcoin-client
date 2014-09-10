@@ -22,7 +22,7 @@
 
 #include <string>
 #include <thread>
-#include <client/client.hpp>
+#include <bitcoin/client.hpp>
 
 /*
  * Reads lines from the terminal in a separate thread.

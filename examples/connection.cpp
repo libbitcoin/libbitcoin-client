@@ -21,8 +21,7 @@
 
 #include <iostream>
 #include <string>
-#include <bitcoin/bitcoin.hpp>
-#include <client/client.hpp>
+#include <bitcoin/client.hpp>
 
 using namespace bc;
 

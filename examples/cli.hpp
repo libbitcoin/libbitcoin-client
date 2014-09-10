@@ -23,8 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <bitcoin/bitcoin.hpp>
-#include <client/client.hpp>
+#include <bitcoin/client.hpp>
 #include "connection.hpp"
 #include "read_line.hpp"
 

@@ -32,6 +32,6 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
-AC_CONFIG_FILES([Makefile include/client/Makefile src/Makefile libbitcoin-client.pc])
+AC_CONFIG_FILES([Makefile include/bitcoin/Makefile src/Makefile libbitcoin-client.pc])
 AC_OUTPUT
 

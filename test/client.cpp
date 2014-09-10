@@ -19,8 +19,7 @@
  */
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test_suite.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <client/client.hpp>
+#include <bitcoin/client.hpp>
 
 using namespace bc::client;
 

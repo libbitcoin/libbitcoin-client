@@ -34,6 +34,28 @@ check_travis()
     fi
 }
 
+clean_usr_local()
+{
+    # Remove previous usr/local libbitcoin installations.
+    # Only installations conforming to the directory structure are cleaned.
+
+    # Includes
+    sudo rm --force /usr/local/include/bitcoin/bitcoin.hpp
+    sudo rm --force /usr/local/include/bitcoin/client.hpp
+    sudo rm --force --recursive /usr/local/include/bitcoin/bitcoin
+    sudo rm --force --recursive /usr/local/include/bitcoin/client
+
+    # Archives
+    sudo rm --force /usr/local/lib/libbitcoin.a
+    sudo rm --force /usr/local/lib/libbitcoin.la
+    sudo rm --force /usr/local/lib/libbitcoin.so
+    sudo rm --force /usr/local/lib/libbitcoin.so.*
+    sudo rm --force /usr/local/lib/libbitcoin-client.a
+    sudo rm --force /usr/local/lib/libbitcoin-client.la
+    sudo rm --force /usr/local/lib/libbitcoin-client.so
+    sudo rm --force /usr/local/lib/libbitcoin-client.so.*
+}
+
 github_build()
 {
     # This function parameters.
@@ -64,14 +86,28 @@ github_build()
     cd ..
 }
 
-build_library()
+create_build_directory()
 {
-    # Modify $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH if running in Travis.
-    check_travis
+    # Notify that this script will do something destructive.
+    echo "This script will erase and build in: "$BUILD_DIRECTORY
+
+    # Cache credentials for subsequent sudo calls.
+    sudo rm --force --recursive $BUILD_DIRECTORY
+    mkdir $BUILD_DIRECTORY
+    cd $BUILD_DIRECTORY
 
     # Initialize git repository at the root of the build directory.
     git init
     git config user.name anonymous
+}
+
+build_library()
+{
+    # Modify build targets if running in Travis.
+    check_travis
+
+    # Purge previous installations.
+    clean_usr_local
 
     # Download, build and install all unpackaged dependencies.
     # This script args are passed to configure of each build.
@@ -88,24 +124,24 @@ build_library()
     cd ../..
 }
 
+delete_build_directory()
+{
+    # This precludes use of a 'make uninstall' however that would need to be 
+    # applied to dependencies as well. Typically each time a git pull occurs 
+    # into a build directory the uninstall is potentially invalidated. This 
+    # approach allows us to perform a complete uninstall across all versions.
+    sudo rm --force --recursive $BUILD_DIRECTORY
+}
+
 # Exit this script on the first error (any statement returns non-true value).
 set -e
 
-# Warn that this script will do something destructive.
-echo "This script will erase and build in the subdirectory: "$BUILD_DIRECTORY
+# Create and move to a temporary build directory.
+create_build_directory
 
-# Create and move to the build directory.
-# Cache credentials for subsequent sudo calls and clean the build directory.
-sudo rm -rf $BUILD_DIRECTORY
-mkdir $BUILD_DIRECTORY
-cd $BUILD_DIRECTORY
-
-# Build client.
+# Build libbitcoin.
 build_library "$@"
 
-# If we succeed clean up the build directory.
-# This precludes use of 'make uninstall' however that would need to be applied
-# to dependencies as well. Typically each time a git pull occurs into a build
-# directory the uninstall is potentially invalidated. This approach allows us
-# to provide a script which performs a complete uninstall across all versions.
-sudo rm -rf $BUILD_DIRECTORY
+# If the build succeeded clean up the build directory.
+delete_build_directory
+

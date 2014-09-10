@@ -31,15 +31,16 @@
 
 // Convenience header that includes everything
 // Not to be used internally. For API users.
-#include <client/define.hpp>
-#include <client/message_stream.hpp>
-#include <client/obelisk_codec.hpp>
-#include <client/sleeper.hpp>
-#include <client/zeromq_socket.hpp>
+#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/obelisk_codec.hpp>
+#include <bitcoin/client/sleeper.hpp>
+#include <bitcoin/client/zeromq_socket.hpp>
 
 // cppzmq (zmq.hpp) is not presently usable with versions of libzmq since 
 // 2014.01.28. Expecting a patch: https://github.com/zeromq/cppzmq/issues/40
 // Until then this will fail with recent libzmq versions.
-// #include <client/zmq.hpp>
+#include <bitcoin/client/zmq.hpp>
 
 #endif

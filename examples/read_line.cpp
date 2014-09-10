@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include <client/client.hpp>
+#include <bitcoin/client.hpp>
 
 read_line::~read_line()
 {

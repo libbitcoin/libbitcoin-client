@@ -22,9 +22,9 @@
 
 #include <functional>
 #include <map>
-#include <client/define.hpp>
-#include <client/message_stream.hpp>
-#include <client/sleeper.hpp>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/sleeper.hpp>
 
 namespace libbitcoin {
 namespace client {

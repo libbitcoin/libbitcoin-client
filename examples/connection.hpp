@@ -20,7 +20,7 @@
 #ifndef BITCOIN_CLIENT_CONNECTION_HPP
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include <client/client.hpp>
+#include <bitcoin/client.hpp>
 
 /**
  * A dynamically-allocated structure holding the resources needed for a

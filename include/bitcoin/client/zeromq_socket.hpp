@@ -21,8 +21,8 @@
 #define LIBBITCOIN_CLIENT_SOCKET_HPP
 
 #include <zmq.h>
-#include <client/define.hpp>
-#include <client/message_stream.hpp>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
 
 namespace libbitcoin {
 namespace client {
