@@ -5,7 +5,7 @@
     <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <ProjectGuid>{A56A00C6-669B-4535-9DC2-772A931B04C2}</ProjectGuid>
     <ProjectName>libbitcoin_client_test</ProjectName>
-    <NuGetPackageImportStamp>d928a83f</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>20a124ea</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDEXE|Win32">
@@ -81,8 +81,8 @@
     <Import Project="..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\libsodium_vc120.0.4.5.1\build\native\libsodium_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.4.5.1\build\native\libsodium_vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.4\build\native\libzmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.4\build\native\libzmq_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -95,8 +95,8 @@
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.4.5.1\build\native\libsodium_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libsodium_vc120.0.4.5.1\build\native\libsodium_vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.4\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.4\build\native\libzmq_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets'))" />
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\libbitcoin_client\libbitcoin_client.vcxproj">
