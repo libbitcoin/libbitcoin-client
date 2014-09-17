@@ -64,7 +64,8 @@ public:
     /**
      * Pass in a message for decoding.
      */
-    BCC_API void message(const data_chunk& data, bool more);
+    //BCC_API void message(const data_chunk& data, bool more);
+    BCC_API void write(const data_stack& data);
 
     // sleeper interface:
     BCC_API sleep_time wakeup();

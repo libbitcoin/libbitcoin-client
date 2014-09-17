@@ -17,6 +17,8 @@ PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([bitcoin], [libbitcoin >= 2.0.1])
 PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
 PKG_CHECK_MODULES([zmq], [libzmq >= 4.0.0])
+PKG_CHECK_MODULES([czmq], [libczmq >= 2.2.0])
+PKG_CHECK_MODULES([czmqpp], [libczmq++ >= 0.4.1])
 
 # Do not add contextual build parameters in configuration.
 # http://stackoverflow.com/a/4680578
@@ -32,6 +34,6 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
-AC_CONFIG_FILES([Makefile include/bitcoin/Makefile src/Makefile libbitcoin-client.pc])
+AC_CONFIG_FILES([Makefile include/bitcoin/Makefile src/Makefile examples/Makefile libbitcoin_client.pc])
 AC_OUTPUT
 

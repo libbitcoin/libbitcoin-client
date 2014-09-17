@@ -25,17 +25,23 @@
 #include <thread>
 #include <bitcoin/client.hpp>
 
+uint32_t signal_halt = 0;
+uint32_t signal_continue = 1;
+
 read_line::~read_line()
 {
-    socket_.send("", 1);
+    czmqpp::message message;
+    message.append(bc::to_data_chunk(bc::to_little_endian(signal_halt)));
+    message.send(socket_);
     thread_->join();
     delete thread_;
 }
 
-read_line::read_line(zmq::context_t& context)
+read_line::read_line(czmqpp::context& context)
   : socket_(context, ZMQ_REQ)
 {
     socket_.bind("inproc://terminal");
+
     // The thread must be constructed after the socket is already bound.
     // The context must be passed by pointer to avoid copying.
     auto functor = std::bind(&read_line::run, this, &context);
@@ -45,39 +51,74 @@ read_line::read_line(zmq::context_t& context)
 void read_line::show_prompt()
 {
     std::cout << "> " << std::flush;
-    socket_.send("", 0);
-}
-
-zmq_pollitem_t read_line::pollitem()
-{
-    return zmq_pollitem_t
-    {
-        socket_, 0, ZMQ_POLLIN, 0
-    };
+    czmqpp::message message;
+    message.append(bc::to_data_chunk(bc::to_little_endian(signal_continue)));
+    message.send(socket_);
 }
 
 std::string read_line::get_line()
 {
-    char line[1000];
-    size_t size = socket_.recv(line, sizeof(line), ZMQ_DONTWAIT);
-    return std::string(line, size);
+    std::string data;
+    czmqpp::message message;
+    czmqpp::poller poller(socket_);
+
+    czmqpp::socket which = poller.wait(1);
+
+    if (!poller.expired() && !poller.terminated() && (which == socket_))
+    {
+        if (message.receive(socket_))
+        {
+            data = std::string(message.parts()[0].begin(), message.parts()[0].end());
+        }
+    }
+
+    return data;
 }
 
-void read_line::run(zmq::context_t* context)
+void read_line::run(czmqpp::context* context)
 {
-    zmq::socket_t socket(*context, ZMQ_REP);
+    czmqpp::socket socket(*context, ZMQ_REP);
     socket.connect("inproc://terminal");
 
     while (true)
     {
-        // Wait for a socket request:
-        char request[1];
-        if (socket.recv(request, sizeof(request)))
-            return;
+        czmqpp::message request;
 
-        // Read the input:
-        char line[1000];
-        std::cin.getline(line, sizeof(line));
-        socket.send(line, std::strlen(line));
+        // Wait for a socket request:
+        if (request.receive(socket))
+        {
+            czmqpp::data_stack stack = request.parts();
+
+            uint32_t signal = bc::from_little_endian<uint32_t>((*(stack.begin())).begin());
+
+            if (signal == signal_halt)
+            {
+                break;
+            }
+
+            // Read input:
+            char line[1000];
+            std::cin.getline(line, sizeof(line));
+
+            std::string response_text(line);
+
+            czmqpp::message response;
+            response.append(czmqpp::data_chunk(response_text.begin(), response_text.end()));
+            response.send(socket);
+        }
+        else
+        {
+            break;
+        }
     }
+}
+
+void read_line::add(czmqpp::poller& poller)
+{
+    poller.add(socket_);
+}
+
+bool read_line::matches(czmqpp::poller& poller, czmqpp::socket& which)
+{
+    return !poller.expired() && !poller.terminated() && (which == socket_);
 }

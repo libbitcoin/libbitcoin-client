@@ -17,34 +17,47 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
-#define LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
+#ifndef LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
+#define LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
 
-#include <bitcoin/bitcoin.hpp>
+#include <czmq++/czmq.hpp>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/zmq_pollable.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-/**
- * Represents a stream of multi-part messages.
- *
- * One of this library's design goals is completely separate the networking
- * code from the message-handling code. This interface is the glue between
- * the two worlds.
- */
-class message_stream
+class BCC_API socket_message_stream
+: public message_stream, public zmq_pollable
 {
 public:
-    virtual ~message_stream() {}
 
-    /**
-     * Sends one multi-part message.
-     */
-    virtual void write(const data_stack& data) = 0;
+    socket_message_stream();
+
+    socket_message_stream(czmqpp::socket& socket);
+
+    socket_message_stream(const socket_message_stream&) = delete;
+
+    ~socket_message_stream();
+
+    virtual void write(const data_stack& data);
+
+    virtual void add(czmqpp::poller& poller);
+
+    virtual bool matches(czmqpp::poller& poller, czmqpp::socket& which);
+
+    bool forward(message_stream& stream);
+
+    bool forward(czmqpp::socket& socket);
+
+private:
+
+    czmqpp::socket socket_;
 };
 
-} // namespace client
-} // namespace libbitcoin
+}
+}
 
 #endif
 

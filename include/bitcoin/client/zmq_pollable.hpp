@@ -17,32 +17,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "connection.hpp"
 
-#include <iostream>
-#include <string>
-#include <bitcoin/client.hpp>
+#ifndef LIBBITCOIN_CLIENT_ZMQ_POLLABLE_HPP
+#define LIBBITCOIN_CLIENT_ZMQ_POLLABLE_HPP
 
-using namespace bc;
+#include <czmq++/czmq.hpp>
 
-/**
- * Unknown message callback handler.
- */
-static void on_unknown(const std::string& command)
+namespace libbitcoin {
+namespace client {
+
+class zmq_pollable
 {
-    std::cout << "unknown message:" << command << std::endl;
+public:
+
+    ~zmq_pollable() {};
+
+    virtual void add(czmqpp::poller& poller) = 0;
+
+    virtual bool matches(czmqpp::poller& poller, czmqpp::socket& which) = 0;
+};
+
+}
 }
 
-/**
- * Update message callback handler.
- */
-static void on_update(const payment_address& address, size_t height,
-    const hash_digest& blk_hash, const transaction_type&)
-{
-    std::cout << "update:" << address.encoded() << std::endl;
-}
-
-connection::connection(czmqpp::socket& socket)
-    : stream(socket), codec(stream, on_update, on_unknown)
-{
-}
+#endif

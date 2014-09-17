@@ -118,10 +118,10 @@ clean_usr_local()
     sudo rm --force /usr/local/lib/libbitcoin.la
     sudo rm --force /usr/local/lib/libbitcoin.so
     sudo rm --force /usr/local/lib/libbitcoin.so.*
-    sudo rm --force /usr/local/lib/libbitcoin-client.a
-    sudo rm --force /usr/local/lib/libbitcoin-client.la
-    sudo rm --force /usr/local/lib/libbitcoin-client.so
-    sudo rm --force /usr/local/lib/libbitcoin-client.so.*
+    sudo rm --force /usr/local/lib/libbitcoin_client.a
+    sudo rm --force /usr/local/lib/libbitcoin_client.la
+    sudo rm --force /usr/local/lib/libbitcoin_client.so
+    sudo rm --force /usr/local/lib/libbitcoin_client.so.*
 }
 
 create_build_directory()
