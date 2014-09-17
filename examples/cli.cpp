@@ -158,8 +158,6 @@ void cli::command()
     std::string command;
     reader >> command;
 
-    std::cout << "received: '" << command << "'" << std::endl;
-
     if (command == "exit")              cmd_exit();
     else if (command == "help")         cmd_help();
     else if (command == "connect")      cmd_connect(reader);
