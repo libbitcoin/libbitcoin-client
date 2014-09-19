@@ -126,6 +126,8 @@ public:
         empty_handler&& on_reply,
         const address_prefix& prefix);
 
+    BCC_API uint64_t outstanding_call_count() const;
+
 private:
     typedef deserializer<data_chunk::const_iterator, true> data_deserial;
 

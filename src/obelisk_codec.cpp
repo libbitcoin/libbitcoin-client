@@ -35,6 +35,11 @@ BCC_API obelisk_codec::obelisk_codec(message_stream& out,
 {
 }
 
+BCC_API uint64_t obelisk_codec::outstanding_call_count() const
+{
+    return pending_requests_.size();
+}
+
 BCC_API void obelisk_codec::write(const data_stack& data)
 {
     if (data.size() == 3)
