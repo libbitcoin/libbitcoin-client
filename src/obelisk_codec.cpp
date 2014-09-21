@@ -35,6 +35,26 @@ BCC_API obelisk_codec::obelisk_codec(message_stream& out,
 {
 }
 
+BCC_API void obelisk_codec::set_on_update(const update_handler& on_update)
+{
+    on_update_ = on_update;
+}
+
+BCC_API void obelisk_codec::set_on_unknown(const unknown_handler& on_unknown)
+{
+    on_unknown_ = on_unknown;
+}
+
+BCC_API void obelisk_codec::set_retries(uint8_t retries)
+{
+    retries_ = retries;
+}
+
+BCC_API void obelisk_codec::set_timeout(sleep_time timeout)
+{
+    timeout_ = timeout;
+}
+
 BCC_API uint64_t obelisk_codec::outstanding_call_count() const
 {
     return pending_requests_.size();

@@ -61,6 +61,14 @@ public:
         const unknown_handler& on_unknown = on_unknown_nop,
         sleep_time timeout=std::chrono::seconds(2), uint8_t retries=1);
 
+    BCC_API void set_on_update(const update_handler& on_update);
+
+    BCC_API void set_on_unknown(const unknown_handler& on_unknown);
+
+    BCC_API void set_retries(uint8_t retries);
+
+    BCC_API void set_timeout(sleep_time timeout);
+
     /**
      * Pass in a message for decoding.
      */
