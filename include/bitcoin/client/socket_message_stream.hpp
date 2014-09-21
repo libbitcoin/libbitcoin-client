@@ -23,13 +23,12 @@
 #include <czmq++/czmq.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/zmq_pollable.hpp>
 
 namespace libbitcoin {
 namespace client {
 
 class BCC_API socket_message_stream
-: public message_stream, public zmq_pollable
+: public message_stream
 {
 public:
 
@@ -43,9 +42,7 @@ public:
 
     virtual void write(const data_stack& data);
 
-    virtual void add(czmqpp::poller& poller);
-
-    virtual bool matches(czmqpp::poller& poller, czmqpp::socket& which);
+    virtual czmqpp::socket& get_socket();
 
     bool forward(message_stream& stream);
 

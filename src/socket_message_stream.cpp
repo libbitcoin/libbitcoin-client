@@ -48,14 +48,9 @@ void socket_message_stream::write(const data_stack& data)
     message.send(socket_);
 }
 
-void socket_message_stream::add(czmqpp::poller& poller)
+czmqpp::socket& socket_message_stream::get_socket()
 {
-    poller.add(socket_);
-}
-
-bool socket_message_stream::matches(czmqpp::poller& poller, czmqpp::socket& which)
-{
-    return !poller.expired() && !poller.terminated() && (which == socket_);
+    return socket_;
 }
 
 bool socket_message_stream::forward(message_stream& stream)
