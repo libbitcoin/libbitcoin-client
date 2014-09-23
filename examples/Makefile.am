@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
-lib_LTLIBRARIES = libbitcoin_client.la
+bin_PROGRAMS = client
 
 AM_CPPFLAGS = \
     -I$(srcdir)/../include \
@@ -11,11 +11,14 @@ AM_CPPFLAGS = \
     ${czmqpp_CFLAGS}
 
     
-libbitcoin_client_la_SOURCES = \
-    obelisk_codec.cpp \
-    socket_message_stream.cpp
+client_SOURCES = \
+    cli.cpp \
+    connection.cpp \
+    read_line.cpp \
+    main.cpp
 
-libbitcoin_client_la_LIBADD = \
+LDADD = \
+    -L../src/ -lbitcoin_client \
     ${bitcoin_LIBS} \
     ${sodium_LIBS} \
     ${zmq_LIBS} \

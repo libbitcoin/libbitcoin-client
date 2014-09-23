@@ -35,40 +35,71 @@ BCC_API obelisk_codec::obelisk_codec(message_stream& out,
 {
 }
 
-BCC_API void obelisk_codec::message(const data_chunk& data, bool more)
+BCC_API void obelisk_codec::set_on_update(const update_handler& on_update)
 {
-    switch (next_part_)
-    {
-        case command_part:
-            wip_message_.command = std::string(data.begin(), data.end());
-            break;
+    on_update_ = on_update;
+}
 
-        case id_part:
-            if (4 != data.size())
+BCC_API void obelisk_codec::set_on_unknown(const unknown_handler& on_unknown)
+{
+    on_unknown_ = on_unknown;
+}
+
+BCC_API void obelisk_codec::set_retries(uint8_t retries)
+{
+    retries_ = retries;
+}
+
+BCC_API void obelisk_codec::set_timeout(sleep_time timeout)
+{
+    timeout_ = timeout;
+}
+
+BCC_API uint64_t obelisk_codec::outstanding_call_count() const
+{
+    return pending_requests_.size();
+}
+
+BCC_API void obelisk_codec::write(const data_stack& data)
+{
+    if (data.size() == 3)
+    {
+        bool success = true;
+        obelisk_message message;
+
+        auto it = data.begin();
+
+        if (success)
+        {
+            // read command
+            message.command = std::string((*it).begin(), (*it).end());
+            it++;
+        }
+
+        if (success)
+        {
+            // read id
+            if ((*it).size() == 4)
             {
-                next_part_ = error_part;
-                break;
+                message.id = from_little_endian<uint32_t>((*it).begin());
             }
-            wip_message_.id = from_little_endian<uint32_t>(data.begin());
-            break;
+            else
+            {
+                success = false;
+            }
 
-        case payload_part:
-            wip_message_.payload = data;
-            break;
+            it++;
+        }
 
-        case error_part:
-            break;
+        if (success)
+        {
+            // read payload
+            message.payload = (*it);
+            it++;
+        }
+
+        receive(message);
     }
-    if (!more)
-    {
-        if (next_part_ == payload_part)
-            receive(wip_message_);
-        else
-            on_unknown_(wip_message_.command);
-        next_part_ = command_part;
-    }
-    else if (next_part_ < error_part)
-        next_part_ = static_cast<message_part>(next_part_ + 1);
 }
 
 BCC_API sleep_time obelisk_codec::wakeup()
@@ -385,9 +416,11 @@ void obelisk_codec::send_request(const std::string& command,
 
 void obelisk_codec::send(const obelisk_message& message)
 {
-    out_.message(to_data_chunk(message.command), true);
-    out_.message(to_data_chunk(to_little_endian(message.id)), true);
-    out_.message(message.payload, false);
+    data_stack data;
+    data.push_back(to_data_chunk(message.command));
+    data.push_back(to_data_chunk(to_little_endian(message.id)));
+    data.push_back(message.payload);
+    out_.write(data);
 }
 
 void obelisk_codec::receive(const obelisk_message& message)

@@ -23,6 +23,7 @@
 #include <string>
 #include <thread>
 #include <bitcoin/client.hpp>
+#include <czmq++/czmq.hpp>
 
 /*
  * Reads lines from the terminal in a separate thread.
@@ -47,11 +48,11 @@
  * If you attempt to destroy this class while reading a line, the destructor
  * will block until the user finishes their entry.
  */
-class read_line
+class read_line : public libbitcoin::client::zmq_pollable
 {
 public:
     ~read_line();
-    read_line(zmq::context_t& context);
+    read_line(czmqpp::context& context);
 
     /**
      * Displays a command prompt and begins reading a line in the background.
@@ -59,22 +60,19 @@ public:
     void show_prompt();
 
     /**
-     * Creates a zeromq pollitem_t structure suitable for passing to the
-     * zmq_poll function. The zmq_poll function will indicate that there is
-     * data waiting to be read once a line is available.
-     */
-    zmq_pollitem_t pollitem();
-
-    /**
      * Retrieves the line requested by `show_prompt`. This method will
      * return a blank string if no line is available yet.
      */
     std::string get_line();
 
-private:
-    void run(zmq::context_t* context);
+    virtual void add(czmqpp::poller& poller);
 
-    zmq::socket_t socket_;
+    virtual bool matches(czmqpp::poller& poller, czmqpp::socket& which);
+
+private:
+    void run(czmqpp::context* context);
+
+    czmqpp::socket socket_;
     std::thread* thread_;
 };
 

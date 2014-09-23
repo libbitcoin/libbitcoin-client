@@ -20,7 +20,9 @@
 #ifndef BITCOIN_CLIENT_CONNECTION_HPP
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
+#include <memory>
 #include <bitcoin/client.hpp>
+#include <czmq++/czmq.hpp>
 
 /**
  * A dynamically-allocated structure holding the resources needed for a
@@ -29,9 +31,9 @@
 class connection
 {
 public:
-    connection(zmq::context_t& context);
+    connection(czmqpp::socket& socket);
 
-    bc::client::zeromq_socket socket;
+    bc::client::socket_message_stream stream;
     bc::client::obelisk_codec codec;
 };
 

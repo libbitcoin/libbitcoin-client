@@ -61,10 +61,19 @@ public:
         const unknown_handler& on_unknown = on_unknown_nop,
         sleep_time timeout=std::chrono::seconds(2), uint8_t retries=1);
 
+    BCC_API void set_on_update(const update_handler& on_update);
+
+    BCC_API void set_on_unknown(const unknown_handler& on_unknown);
+
+    BCC_API void set_retries(uint8_t retries);
+
+    BCC_API void set_timeout(sleep_time timeout);
+
     /**
      * Pass in a message for decoding.
      */
-    BCC_API void message(const data_chunk& data, bool more);
+    //BCC_API void message(const data_chunk& data, bool more);
+    BCC_API void write(const data_stack& data);
 
     // sleeper interface:
     BCC_API sleep_time wakeup();
@@ -124,6 +133,8 @@ public:
     BCC_API void subscribe(error_handler&& on_error,
         empty_handler&& on_reply,
         const address_prefix& prefix);
+
+    BCC_API uint64_t outstanding_call_count() const;
 
 private:
     typedef deserializer<data_chunk::const_iterator, true> data_deserial;

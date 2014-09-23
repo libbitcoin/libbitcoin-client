@@ -17,32 +17,44 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "connection.hpp"
+#ifndef LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
+#define LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
 
-#include <iostream>
-#include <string>
-#include <bitcoin/client.hpp>
+#include <czmq++/czmq.hpp>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
 
-using namespace bc;
+namespace libbitcoin {
+namespace client {
 
-/**
- * Unknown message callback handler.
- */
-static void on_unknown(const std::string& command)
+class BCC_API socket_message_stream
+: public message_stream
 {
-    std::cout << "unknown message:" << command << std::endl;
+public:
+
+    socket_message_stream();
+
+    socket_message_stream(czmqpp::socket& socket);
+
+    socket_message_stream(const socket_message_stream&) = delete;
+
+    ~socket_message_stream();
+
+    virtual void write(const data_stack& data);
+
+    virtual czmqpp::socket& get_socket();
+
+    bool forward(message_stream& stream);
+
+    bool forward(czmqpp::socket& socket);
+
+private:
+
+    czmqpp::socket socket_;
+};
+
+}
 }
 
-/**
- * Update message callback handler.
- */
-static void on_update(const payment_address& address, size_t height,
-    const hash_digest& blk_hash, const transaction_type&)
-{
-    std::cout << "update:" << address.encoded() << std::endl;
-}
+#endif
 
-connection::connection(czmqpp::socket& socket)
-    : stream(socket), codec(stream, on_update, on_unknown)
-{
-}

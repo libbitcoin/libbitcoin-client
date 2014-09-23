@@ -12,7 +12,7 @@
 /libtool
 Makefile
 Makefile.in
-libbitcoin-client.pc
+libbitcoin_client.pc
 
 # IDE's and editors:
 *~

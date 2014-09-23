@@ -29,14 +29,14 @@
 using namespace bc;
 
 cli::cli()
-  : done_(false), pending_request_(false), terminal_(context_), 
-  connection_(nullptr)
+  : done_(false),
+    pending_request_(false),
+    terminal_(context_)
 {
 }
 
 cli::~cli()
 {
-    delete connection_;
 }
 
 void cli::cmd_exit()
@@ -62,13 +62,15 @@ void cli::cmd_connect(std::stringstream& args)
         return;
     std::cout << "connecting to " << server << std::endl;
 
-    delete connection_;
-    connection_ = new connection(context_);
-    if (!connection_->socket.connect(server))
+    czmqpp::socket obelisk_socket(context_, ZMQ_DEALER);
+
+    if (obelisk_socket.connect(server) >= 0)
+    {
+        connection_.reset(new connection(obelisk_socket));
+    }
+    else
     {
         std::cout << "error: failed to connect" << std::endl;
-        delete connection_;
-        connection_ = nullptr;
     }
 }
 
@@ -76,8 +78,7 @@ void cli::cmd_disconnect(std::stringstream& args)
 {
     if (!check_connection())
         return;
-    delete connection_;
-    connection_ = nullptr;
+    connection_.reset();
 }
 
 void cli::cmd_height(std::stringstream& args)
@@ -121,23 +122,33 @@ int cli::run()
     while (!done_)
     {
         long delay = -1;
-        std::vector<zmq_pollitem_t> items;
-        items.reserve(2);
-        items.push_back(terminal_.pollitem());
+        czmqpp::poller poller;
+
+        terminal_.add(poller);
+
         if (connection_)
         {
-            items.push_back(connection_->socket.pollitem());
+            connection_->stream.add(poller);
+
             auto next_wakeup = connection_->codec.wakeup();
             if (next_wakeup.count())
+            {
                 delay = static_cast<long>(next_wakeup.count());
+            }
         }
-        zmq::poll(items.data(), static_cast<long>(items.size()), delay);
 
-        if (items[0].revents)
+        czmqpp::socket which = poller.wait(delay);
+
+        if (terminal_.matches(poller, which))
+        {
             command();
-        if (connection_ && items[1].revents)
-            connection_->socket.forward(connection_->codec);
+        }
+        else if (connection_->stream.matches(poller, which))
+        {
+            connection_->stream.forward(connection_->codec);
+        }
     }
+
     return 0;
 }
 

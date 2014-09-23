@@ -8,5 +8,4 @@ bitcoin_client_include_HEADERS = \
     client/message_stream.hpp \
     client/obelisk_codec.hpp \
     client/sleeper.hpp \
-    client/zeromq_socket.hpp \
-    client/zmq.hpp
+    client/socket_message_stream.hpp 

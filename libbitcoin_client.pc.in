@@ -3,16 +3,16 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libbitcoin-client
+Name: libbitcoin_client
 Description: Client Protocol Implementation
 URL: https://github.com/libbitcoin/libbitcoin_client
 Version: @PACKAGE_VERSION@
 
 # Our dependencies that publish package configuration.
-Requires: libsodium >= 0.6.0 libzmq >= 4.0.0 libbitcoin >= 2.0.1
+Requires: libsodium >= 0.6.0 libzmq >= 4.0.0 libczmq >= 2.2.0 libczmq++ >= 0.4.1 libbitcoin >= 2.0.1
 
 # Our own include directory and any other compiler flags we require.
 Cflags: -I${includedir} -std=c++11
 
 # Our own lib and any we require that do not publish package configuration.
-Libs: -L${libdir} -lbitcoin-client
+Libs: -L${libdir} -lbitcoin_client
