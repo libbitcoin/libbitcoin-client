@@ -17,18 +17,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <bitcoin/client/socket_message_stream.hpp>
+
+#include <czmq++/czmqpp.hpp>
 
 namespace libbitcoin {
 namespace client {
 
 socket_message_stream::socket_message_stream()
+  : socket_()
 {
 }
 
 socket_message_stream::socket_message_stream(czmqpp::socket& socket)
-: socket_(socket.self())
+  : socket_(socket.self())
 {
 }
 

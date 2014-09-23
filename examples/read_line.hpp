@@ -22,8 +22,8 @@
 
 #include <string>
 #include <thread>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
-#include <czmq++/czmq.hpp>
 
 /*
  * Reads lines from the terminal in a separate thread.
