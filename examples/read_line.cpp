@@ -113,12 +113,8 @@ void read_line::run(czmqpp::context* context)
     }
 }
 
-void read_line::add(czmqpp::poller& poller)
+czmqpp::socket& read_line::get_socket()
 {
-    poller.add(socket_);
+    return socket_;
 }
 
-bool read_line::matches(czmqpp::poller& poller, czmqpp::socket& which)
-{
-    return !poller.expired() && !poller.terminated() && (which == socket_);
-}
