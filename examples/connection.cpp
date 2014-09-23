@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;

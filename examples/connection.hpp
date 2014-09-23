@@ -21,8 +21,8 @@
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
 #include <memory>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
-#include <czmq++/czmq.hpp>
 
 /**
  * A dynamically-allocated structure holding the resources needed for a

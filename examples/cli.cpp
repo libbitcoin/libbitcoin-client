@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 #include "connection.hpp"
 #include "read_line.hpp"

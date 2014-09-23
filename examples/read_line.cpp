@@ -23,6 +23,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 uint32_t signal_halt = 0;

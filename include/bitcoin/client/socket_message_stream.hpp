@@ -20,7 +20,7 @@
 #ifndef LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
 #define LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
 
-#include <czmq++/czmq.hpp>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
 
