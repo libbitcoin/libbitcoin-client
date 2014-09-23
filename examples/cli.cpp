@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 #include "connection.hpp"
 #include "read_line.hpp"
@@ -124,11 +125,11 @@ int cli::run()
         long delay = -1;
         czmqpp::poller poller;
 
-        terminal_.add(poller);
+        poller.add(terminal_.get_socket());
 
         if (connection_)
         {
-            connection_->stream.add(poller);
+            poller.add(connection_->stream.get_socket());
 
             auto next_wakeup = connection_->codec.wakeup();
             if (next_wakeup.count())
@@ -139,13 +140,22 @@ int cli::run()
 
         czmqpp::socket which = poller.wait(delay);
 
-        if (terminal_.matches(poller, which))
+        if (poller.terminated())
         {
-            command();
+            break;
         }
-        else if (connection_->stream.matches(poller, which))
+
+        if (!poller.expired())
         {
-            connection_->stream.forward(connection_->codec);
+            if (which == terminal_.get_socket())
+            {
+                command();
+            }
+
+            else if (which == connection_->stream.get_socket())
+            {
+                connection_->stream.forward(connection_->codec);
+            }
         }
     }
 

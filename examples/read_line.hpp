@@ -48,7 +48,7 @@
  * If you attempt to destroy this class while reading a line, the destructor
  * will block until the user finishes their entry.
  */
-class read_line : public libbitcoin::client::zmq_pollable
+class read_line
 {
 public:
     ~read_line();
@@ -65,9 +65,7 @@ public:
      */
     std::string get_line();
 
-    virtual void add(czmqpp::poller& poller);
-
-    virtual bool matches(czmqpp::poller& poller, czmqpp::socket& which);
+    virtual czmqpp::socket& get_socket();
 
 private:
     void run(czmqpp::context* context);
