@@ -150,6 +150,8 @@ build_library()
     # Download, build and install all unpackaged dependencies.
     build_from_github jedisct1 libsodium master "$@"
     build_from_github zeromq libzmq master "$@"
+    build_from_github zeromq czmq master "$@"
+    build_from_github zeromq czmqpp master "$@"
     build_from_github bitcoin secp256k1 master "$@" $SECP256K1_OPTIONS
     build_from_github libbitcoin libbitcoin develop "$@"
 
