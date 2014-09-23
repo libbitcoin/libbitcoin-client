@@ -77,7 +77,7 @@ build_tests()
 {
     # Build and run unit tests relative to the primary directory.
     pushd test
-    ./make
+    make
     ./libbitcoin_client_test $BOOST_UNIT_TEST_PARAMETERS
     popd
 }
