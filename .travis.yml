@@ -22,4 +22,4 @@ install:
 
 script:
   # Download and build unpackaged dependencies and build libbitcoin client.
-  - ./install-libbitcoin-client.sh CFLAGS="-s"
+  - ./install-libbitcoin_client.sh CFLAGS="-s"
