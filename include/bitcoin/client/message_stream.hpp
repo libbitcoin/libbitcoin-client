@@ -38,10 +38,9 @@ public:
     virtual ~message_stream() {}
 
     /**
-     * Sends one part of a multi-part message.
-     * @param more false to indicate the last part of the message.
+     * Sends one multi-part message.
      */
-    virtual void message(const data_chunk& data, bool more) = 0;
+    virtual void write(const data_stack& data) = 0;
 };
 
 } // namespace client

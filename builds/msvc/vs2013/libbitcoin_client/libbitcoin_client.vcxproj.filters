@@ -12,10 +12,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\src\zeromq_socket.cpp">
+    <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp">
+    <ClCompile Include="..\..\..\..\src\socket_message_stream.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,10 +38,7 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\zeromq_socket.hpp">
-      <Filter>include\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\zmq.hpp">
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_message_stream.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,6 +20,8 @@
 #ifndef BITCOIN_CLIENT_CONNECTION_HPP
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
+#include <memory>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 /**
@@ -29,9 +31,9 @@
 class connection
 {
 public:
-    connection(zmq::context_t& context);
+    connection(czmqpp::socket& socket);
 
-    bc::client::zeromq_socket socket;
+    bc::client::socket_message_stream stream;
     bc::client::obelisk_codec codec;
 };
 

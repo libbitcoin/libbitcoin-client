@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 #include "connection.hpp"
 #include "read_line.hpp"
@@ -85,7 +86,9 @@ private:
      * Parses a string argument out of the command line, or prints an error 
      * message if there is none.
      */
-    bool read_string(std::stringstream& args, std::string& out,
+    bool read_string(
+        std::stringstream& args,
+        std::string& out,
         const std::string& error_message);
 
     /**
@@ -99,9 +102,9 @@ private:
      */
     bool done_;
     bool pending_request_;
-    zmq::context_t context_;
+    czmqpp::context context_;
     read_line terminal_;
-    connection* connection_;
+    std::shared_ptr<connection> connection_;
 };
 
 #endif

@@ -58,7 +58,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType Condition="$(Configuration.IndexOf('DLL')) == -1">StaticLibrary</ConfigurationType>
     <ConfigurationType Condition="$(Configuration.IndexOf('DLL')) != -1">DynamicLibrary</ConfigurationType>
-    <NuGetPackageImportStamp>3c1cf5c1</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>7835f506</NuGetPackageImportStamp>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -69,7 +69,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp" />
-    <ClCompile Include="..\..\..\..\src\zeromq_socket.cpp" />
+    <ClCompile Include="..\..\..\..\src\socket_message_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -82,8 +82,7 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\message_stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_codec.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\zeromq_socket.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\zmq.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_message_stream.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionSettings">
@@ -93,8 +92,10 @@
     <Import Project="..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -106,7 +107,9 @@
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.6\build\native\libzmq_vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets'))" />
   </Target>
 </Project>
