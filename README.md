@@ -60,11 +60,16 @@ You can run the install script from any directory on your system. This will buil
 
 The install script should not normally be executed using sudo. Instead it will immediately prompt you for a super user password if required. This ensures that only the necessary installation steps are executed as a super user, as opposed to the entire build process.
 
-The build script clones, builds and installs three unpackaged repositories, namely:
+The build script clones, builds and installs six unpackaged repositories, namely:
 
 - [bitcoin/secp256k1](https://github.com/bitcoin/secp256k1)
 - [libbitcoin/libbitcoin](https://github.com/libbitcoin/libbitcoin)
 - [libbitcoin/libbitcoin_client](https://github.com/libbitcoin/libbitcoin_client)
+- [zeromq/libzmq](https://github.com/zeromq/libzmq)
+- [zeromq/czmq](https://github.com/zeromq/czmq)
+- [zeromq/czmqpp](https://github.com/zeromq/czmqpp)
+
+Of these libraries, only libzmq is packaged. However we require a more recent version of the library in order to take advantage of new features such as the [SOCKS](http://wikipedia.org/wiki/SOCKS) proxy, so we build it as well.
 
 #### Build Options
 
@@ -134,6 +139,9 @@ The required set of NuGet packages can be viewed using the [NuGet package manage
 * Packages maintained by [evoskuil](http://www.nuget.org/profiles/evoskuil)
  * [libgmp\_vc120](http://www.nuget.org/packages/libgmp_vc120)
  * [secp256k1\_gmp\_vc120](http://www.nuget.org/packages/secp256k1_gmp_vc120)
+ * [libzmq](https://www.nuget.org/packages/libzmq_vc120)
+ * [czmq](https://www.nuget.org/packages/czmq_vc120)
+ * [czmqpp](https://www.nuget.org/packages/czmqpp_vc120)
 
 > The GMP for Windows project is called [MPIR](http://www.mpir.org) and has binary compatibility with GMP.
 
