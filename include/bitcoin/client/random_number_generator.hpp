@@ -17,30 +17,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_CLIENT_HPP
 
-/**
- * @mainpage libbitcoin-client API dox
- *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to a libbitcoin-server.
- */
+#ifndef LIBBITCOIN_CLIENT_RANDOM_NUMBER_GENERATOR_HPP
+#define LIBBITCOIN_CLIENT_RANDOM_NUMBER_GENERATOR_HPP
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/protocol.hpp>
-#include <bitcoin/client/define.hpp>
-#include <bitcoin/client/random_number_generator.hpp>
-#include <bitcoin/client/request_stream.hpp>
-#include <bitcoin/client/response_stream.hpp>
-#include <bitcoin/client/server_codec.hpp>
-#include <bitcoin/client/server_codec_impl.hpp>
-#include <bitcoin/client/sleeper.hpp>
-#include <bitcoin/client/socket_stream.hpp>
-#include <bitcoin/client/uniform_uint32_generator.hpp>
+namespace libbitcoin {
+namespace client {
+
+template<class ResultType>
+class random_number_generator
+{
+public:
+
+    virtual ResultType operator()() = 0;
+};
+
+}
+}
 
 #endif
+

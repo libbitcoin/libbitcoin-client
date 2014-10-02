@@ -17,34 +17,36 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
-#define LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
 
-#include <bitcoin/bitcoin.hpp>
+#ifndef LIBBITCOIN_CLIENT_SOCKET_STREAM_HPP
+#define LIBBITCOIN_CLIENT_SOCKET_STREAM_HPP
+
+#include <memory>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/response_stream.hpp>
+#include <bitcoin/client/request_stream.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-/**
- * Represents a stream of multi-part messages.
- *
- * One of this library's design goals is completely separate the networking
- * code from the message-handling code. This interface is the glue between
- * the two worlds.
- */
-class message_stream
+class BCC_API socket_stream : public request_stream
 {
 public:
-    virtual ~message_stream() {}
 
-    /**
-     * Sends one multi-part message.
-     */
-    virtual void write(const data_stack& data) = 0;
+    socket_stream(std::shared_ptr<czmqpp::socket> socket);
+
+    virtual ~socket_stream();
+
+    virtual void write(const std::shared_ptr<bc::protocol::request>& request);
+
+    virtual bool signal_response(std::shared_ptr<response_stream> stream);
+
+private:
+
+    std::shared_ptr<czmqpp::socket> socket_;
 };
 
-} // namespace client
-} // namespace libbitcoin
+}
+}
 
 #endif
-
