@@ -22,6 +22,7 @@ BUILD_DIRECTORY="libbitcoin_client_build"
 BUILD_ACCOUNT="libbitcoin"
 BUILD_REPO="libbitcoin_client"
 BUILD_BRANCH="master"
+BUILD_SUBPATH="."
 
 # http://bit.ly/1pKbuFP
 BOOST_UNIT_TEST_PARAMETERS=\
@@ -55,9 +56,10 @@ build_from_github()
     ACCOUNT=$1
     REPO=$2
     BRANCH=$3
+    SUBPATH=$4
 
     # Shift the first three parameters out of @.
-    shift 3
+    shift 4 
 
     # Show the user what repo we are building.
     FORK="$ACCOUNT/$REPO"
@@ -69,7 +71,9 @@ build_from_github()
 
     # Build the local repo clone.
     pushd $REPO
+    pushd $SUBPATH
     automake_current_directory "$@"
+    popd
     popd
 }
 
@@ -92,7 +96,7 @@ build_primary()
         build_tests
     else
         # Otherwise we pull the primary repo down for the single file install.
-        build_from_github $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH "$@"
+        build_from_github $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH $BUILD_SUBPATH "$@"
 
         # Build the tests and drop out of build directory.
         pushd $BUILD_REPO
@@ -118,6 +122,10 @@ clean_usr_local()
     sudo rm --force /usr/local/lib/libbitcoin.la
     sudo rm --force /usr/local/lib/libbitcoin.so
     sudo rm --force /usr/local/lib/libbitcoin.so.*
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.a
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.la
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.so
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.so.*
     sudo rm --force /usr/local/lib/libbitcoin_client.a
     sudo rm --force /usr/local/lib/libbitcoin_client.la
     sudo rm --force /usr/local/lib/libbitcoin_client.so
@@ -148,12 +156,14 @@ build_library()
     create_build_directory
 
     # Download, build and install all unpackaged dependencies.
-    build_from_github jedisct1 libsodium master "$@"
-    build_from_github zeromq libzmq master "$@"
-    build_from_github zeromq czmq master "$@"
-    build_from_github evoskuil czmqpp master "$@"
-    build_from_github bitcoin secp256k1 master "$@" $SECP256K1_OPTIONS
-    build_from_github libbitcoin libbitcoin develop "$@"
+    build_from_github jedisct1 libsodium master . "$@"
+    build_from_github zeromq libzmq master . "$@"
+    build_from_github zeromq czmq master . "$@"
+    build_from_github evoskuil czmqpp master . "$@"
+    build_from_github bitcoin secp256k1 master . "$@" $SECP256K1_OPTIONS
+    build_from_github libbitcoin libbitcoin develop . "$@"
+    build_from_github google protobuf master . "$@"
+    build_from_github pmienk libbitcoin_protocol master cpp "$@"
 
     # The primary build is not downloaded if we are running in Travis.
     build_primary "$@"
