@@ -23,27 +23,34 @@
 
 #include <memory>
 #include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
 #include <bitcoin/client/response_stream.hpp>
 #include <bitcoin/client/request_stream.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-class BCC_API socket_stream : public request_stream
+class BCC_API socket_stream : public message_stream, public request_stream
 {
 public:
 
-    socket_stream(std::shared_ptr<czmqpp::socket> socket);
+    socket_stream(czmqpp::socket& socket);
 
     virtual ~socket_stream();
 
+    virtual void write(const data_stack& data);
+
     virtual void write(const std::shared_ptr<bc::protocol::request>& request);
+
+    virtual bool signal_response(std::shared_ptr<message_stream> stream);
 
     virtual bool signal_response(std::shared_ptr<response_stream> stream);
 
+    czmqpp::socket& get_socket();
+
 private:
 
-    std::shared_ptr<czmqpp::socket> socket_;
+    czmqpp::socket socket_;
 };
 
 }

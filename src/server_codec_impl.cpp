@@ -143,8 +143,8 @@ void server_codec_impl::get_block_headers(
         get_block_headers->set_results_per_page(results_per_page);
     }
 
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_get_block_headers(
         get_block_headers.release());
@@ -167,8 +167,8 @@ void server_codec_impl::post_block(
     std::unique_ptr<bc::protocol::block> post_block(
         new bc::protocol::block(block));
 
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_post_block(
         post_block.release());
@@ -191,8 +191,8 @@ void server_codec_impl::validate_block(
     std::unique_ptr<bc::protocol::block> validate_block(
         new bc::protocol::block(block));
 
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_validate_block(
         validate_block.release());
@@ -216,8 +216,8 @@ void server_codec_impl::get_transactions(
     std::shared_ptr<bc::protocol::block_id> start,
     uint32_t results_per_page)
 {
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_get_transactions(
         get_transactions_request(
@@ -246,8 +246,8 @@ void server_codec_impl::get_transaction_hashes(
     std::shared_ptr<bc::protocol::block_id> start,
     uint32_t results_per_page)
 {
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_get_transactions(
         get_transactions_request(
@@ -276,8 +276,8 @@ void server_codec_impl::get_utxos(
     std::shared_ptr<bc::protocol::block_id> start,
     uint32_t results_per_page)
 {
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_get_transactions(
         get_transactions_request(
@@ -305,8 +305,8 @@ void server_codec_impl::post_transaction(
     std::unique_ptr<bc::protocol::tx> post_transaction(
         new bc::protocol::tx(transaction));
 
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_post_transaction(
         post_transaction.release());
@@ -329,8 +329,8 @@ void server_codec_impl::validate_transaction(
     std::unique_ptr<bc::protocol::tx> validate_transaction(
         new bc::protocol::tx(transaction));
 
-    std::shared_ptr<bc::protocol::request> request(
-        new bc::protocol::request());
+    std::shared_ptr<bc::protocol::request> request
+        = std::make_shared<bc::protocol::request>();
 
     request->set_allocated_validate_transaction(
         validate_transaction.release());
@@ -515,7 +515,7 @@ void server_codec_impl::handle_validate_transaction(
     }
 }
 
-bc::protocol::transactions_request* get_transactions_request(
+bc::protocol::transactions_request* server_codec_impl::get_transactions_request(
     const bc::protocol::filter_list& query,
     bc::protocol::transaction_results result_type,
     bc::protocol::locations location_type,

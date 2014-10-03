@@ -67,7 +67,8 @@ void cli::cmd_connect(std::stringstream& args)
 
     if (obelisk_socket.connect(server) >= 0)
     {
-        connection_.reset(new connection(obelisk_socket));
+        connection_ = std::make_shared<connection>(obelisk_socket);
+        connection_->codec->set_timeout(std::chrono::seconds(60));
     }
     else
     {
@@ -93,7 +94,7 @@ void cli::cmd_height(std::stringstream& args)
         request_done();
     };
     pending_request_ = true;
-    connection_->codec.fetch_last_height(error_handler(), handler);
+    connection_->codec->fetch_last_height(error_handler(), handler);
 }
 
 void cli::cmd_history(std::stringstream& args)
@@ -111,7 +112,7 @@ void cli::cmd_history(std::stringstream& args)
         request_done();
     };
     pending_request_ = true;
-    connection_->codec.address_fetch_history(error_handler(),
+    connection_->codec->address_fetch_history(error_handler(),
         handler, address);
 }
 
@@ -129,9 +130,9 @@ int cli::run()
 
         if (connection_)
         {
-            poller.add(connection_->stream.get_socket());
+            poller.add(connection_->stream->get_socket());
 
-            auto next_wakeup = connection_->codec.wakeup();
+            auto next_wakeup = connection_->codec->wakeup();
             if (next_wakeup.count())
             {
                 delay = static_cast<long>(next_wakeup.count());
@@ -152,9 +153,9 @@ int cli::run()
                 command();
             }
 
-            else if (which == connection_->stream.get_socket())
+            else if (which == connection_->stream->get_socket())
             {
-                connection_->stream.forward(connection_->codec);
+                connection_->stream->signal_response(connection_->codec);
             }
         }
     }

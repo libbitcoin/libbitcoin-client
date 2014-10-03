@@ -15,6 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 PKG_PROG_PKG_CONFIG
 
 PKG_CHECK_MODULES([bitcoin], [libbitcoin >= 2.0.1])
+PKG_CHECK_MODULES([protobuf], [protobuf >= 2.6.0])
 PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin_protocol >= 0.0.1])
 PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
 PKG_CHECK_MODULES([zmq], [libzmq >= 4.0.0])
