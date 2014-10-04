@@ -77,10 +77,7 @@ build_from_github()
 build_tests()
 {
     # Build and run unit tests relative to the primary directory.
-    pushd test
-    make
-    ./libbitcoin_client_test $BOOST_UNIT_TEST_PARAMETERS
-    popd
+    TEST_FLAGS="$BOOST_UNIT_TEST_PARAMETERS" make check
 }
 
 build_primary()
@@ -162,7 +159,7 @@ build_library()
     build_from_github bitcoin secp256k1 master "$@" $SECP256K1_OPTIONS
     build_from_github libbitcoin libbitcoin develop "$@"
     build_from_github google protobuf master "$@"
-    build_from_github pmienk libbitcoin_protocol master "$@"
+    build_from_github libbitcoin libbitcoin_protocol master "$@"
 
     # The primary build is not downloaded if we are running in Travis.
     build_primary "$@"
