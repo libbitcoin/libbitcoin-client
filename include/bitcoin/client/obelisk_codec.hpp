@@ -29,7 +29,15 @@
 namespace libbitcoin {
 namespace client {
 
-typedef stealth_prefix address_prefix;
+typedef uint32_t stealth_bitfield;
+
+struct BCC_API stealth_prefix
+{
+    uint8_t number_bits;
+    stealth_bitfield bitfield;
+};
+
+typedef bc::stealth_prefix address_prefix;
 
 /**
  * Decodes and encodes messages in the obelisk protocol.
@@ -121,6 +129,9 @@ public:
     BCC_API void fetch_stealth(error_handler&& on_error,
         fetch_stealth_handler&& on_reply,
         const stealth_prefix& prefix, size_t from_height=0);
+    BCC_API void fetch_stealth(error_handler&& on_error,
+        fetch_stealth_handler&& on_reply,
+        const bc::stealth_prefix& prefix, size_t from_height=0);
     BCC_API void validate(error_handler&& on_error,
         validate_handler&& on_reply,
         const transaction_type& tx);
@@ -133,6 +144,9 @@ public:
     BCC_API void address_fetch_history(error_handler&& on_error,
         fetch_history_handler&& on_reply,
         const payment_address& address, size_t from_height=0);
+    BCC_API void subscribe(error_handler&& on_error,
+        empty_handler&& on_reply,
+        const bc::payment_address& address);
     BCC_API void subscribe(error_handler&& on_error,
         empty_handler&& on_reply,
         const address_prefix& prefix);

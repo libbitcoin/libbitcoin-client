@@ -229,6 +229,21 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     fetch_stealth_handler&& on_reply,
     const stealth_prefix& prefix, size_t from_height)
 {
+    data_chunk data(9);
+    auto serial = make_serializer(data.begin());
+    serial.write_byte(prefix.number_bits);
+    serial.write_4_bytes(prefix.bitfield);
+    serial.write_4_bytes(from_height);
+    BITCOIN_ASSERT(serial.iterator() == data.end());
+
+    send_request("blockchain.fetch_stealth", data, std::move(on_error),
+        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
+}
+
+BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
+    fetch_stealth_handler&& on_reply,
+    const bc::stealth_prefix& prefix, size_t from_height)
+{
     data_chunk data(1 + prefix.num_blocks() + 4);
     auto serial = make_serializer(data.begin());
     // number_bits
@@ -299,6 +314,20 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
 
     send_request("address.fetch_history", data, std::move(on_error),
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
+}
+
+BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
+    empty_handler&& on_reply,
+    const bc::payment_address& address)
+{
+    data_chunk data(1 + short_hash_size);
+    auto serial = make_serializer(data.begin());
+    serial.write_byte(address.version());
+    serial.write_short_hash(address.hash());
+    BITCOIN_ASSERT(serial.iterator() == data.end());
+
+    send_request("address.subscribe", data, std::move(on_error),
+        std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
 BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
