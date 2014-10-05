@@ -17,27 +17,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BITCOIN_CLIENT_CONNECTION_HPP
-#define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include <memory>
-#include <czmq++/czmqpp.hpp>
-#include <bitcoin/client.hpp>
+#ifndef LIBBITCOIN_CLIENT_RANDOM_NUMBER_GENERATOR_HPP
+#define LIBBITCOIN_CLIENT_RANDOM_NUMBER_GENERATOR_HPP
 
-/**
- * A dynamically-allocated structure holding the resources needed for a
- * connection to a bitcoin server.
- */
-class connection
+namespace libbitcoin {
+namespace client {
+
+template<class ResultType>
+class random_number_generator
 {
 public:
-    connection(czmqpp::socket& socket);
 
-    std::shared_ptr<bc::client::socket_stream> stream;
-    std::shared_ptr<bc::client::obelisk_codec> codec;
-
-    // std::shared_ptr<bc::client::socket_stream> get_stream();
-    // std::shared_ptr<bc::client::obelisk_codec> get_codec();
+    virtual ResultType operator()() = 0;
 };
 
+}
+}
+
 #endif
+

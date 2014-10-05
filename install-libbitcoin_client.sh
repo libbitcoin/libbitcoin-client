@@ -22,6 +22,7 @@ BUILD_DIRECTORY="libbitcoin_client_build"
 BUILD_ACCOUNT="libbitcoin"
 BUILD_REPO="libbitcoin_client"
 BUILD_BRANCH="master"
+BUILD_SUBPATH="."
 
 # http://bit.ly/1pKbuFP
 BOOST_UNIT_TEST_PARAMETERS=\
@@ -76,10 +77,7 @@ build_from_github()
 build_tests()
 {
     # Build and run unit tests relative to the primary directory.
-    pushd test
-    make
-    ./libbitcoin_client_test $BOOST_UNIT_TEST_PARAMETERS
-    popd
+    TEST_FLAGS="$BOOST_UNIT_TEST_PARAMETERS" make check
 }
 
 build_primary()
@@ -92,7 +90,7 @@ build_primary()
         build_tests
     else
         # Otherwise we pull the primary repo down for the single file install.
-        build_from_github $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH "$@"
+        build_from_github $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH $BUILD_SUBPATH "$@"
 
         # Build the tests and drop out of build directory.
         pushd $BUILD_REPO
@@ -112,12 +110,18 @@ clean_usr_local()
     sudo rm --force /usr/local/include/bitcoin/client.hpp
     sudo rm --force --recursive /usr/local/include/bitcoin/bitcoin
     sudo rm --force --recursive /usr/local/include/bitcoin/client
+    sudo rm --force /usr/local/include/bitcoin/protocol.hpp
+    sudo rm --force --recursive /usr/local/include/bitcoin/protocol
 
     # Archives
     sudo rm --force /usr/local/lib/libbitcoin.a
     sudo rm --force /usr/local/lib/libbitcoin.la
     sudo rm --force /usr/local/lib/libbitcoin.so
     sudo rm --force /usr/local/lib/libbitcoin.so.*
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.a
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.la
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.so
+    sudo rm --force /usr/local/lib/libbitcoin_protocol.so.*
     sudo rm --force /usr/local/lib/libbitcoin_client.a
     sudo rm --force /usr/local/lib/libbitcoin_client.la
     sudo rm --force /usr/local/lib/libbitcoin_client.so
@@ -154,6 +158,8 @@ build_library()
     build_from_github evoskuil czmqpp master "$@"
     build_from_github bitcoin secp256k1 master "$@" $SECP256K1_OPTIONS
     build_from_github libbitcoin libbitcoin develop "$@"
+    build_from_github google protobuf master "$@"
+    build_from_github libbitcoin libbitcoin_protocol master "$@"
 
     # The primary build is not downloaded if we are running in Travis.
     build_primary "$@"

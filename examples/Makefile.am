@@ -5,6 +5,8 @@ bin_PROGRAMS = client
 AM_CPPFLAGS = \
     -I$(srcdir)/../include \
     ${bitcoin_CFLAGS} \
+    $(protobuf_CFLAGS) \
+    ${bitcoin_protocol_CFLAGS} \
     ${sodium_CFLAGS} \
     ${zmq_CFLAGS} \
     ${czmq_CFLAGS} \
@@ -20,6 +22,8 @@ client_SOURCES = \
 LDADD = \
     -L../src/ -lbitcoin_client \
     ${bitcoin_LIBS} \
+    ${protobuf_LIBS} \
+    ${bitcoin_protocol_LIBS} \
     ${sodium_LIBS} \
     ${zmq_LIBS} \
     ${czmq_LIBS} \

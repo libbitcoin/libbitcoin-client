@@ -1,8 +1,10 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
-noinst_PROGRAMS = libbitcoin_client_test
+TESTS = libbitcoin_client_test
 
-AM_CPPFLAGS = \
+check_PROGRAMS = libbitcoin_client_test
+
+libbitcoin_client_test_CPPFLAGS = \
     -I$(srcdir)/../include \
     ${bitcoin_CFLAGS} \
     ${sodium_CFLAGS} \

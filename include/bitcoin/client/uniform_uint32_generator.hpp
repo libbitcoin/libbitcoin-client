@@ -17,27 +17,38 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BITCOIN_CLIENT_CONNECTION_HPP
-#define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include <memory>
-#include <czmq++/czmqpp.hpp>
-#include <bitcoin/client.hpp>
+#ifndef LIBBITCOIN_CLIENT_UNIFORM_UINT32_GENERATOR_HPP
+#define LIBBITCOIN_CLIENT_UNIFORM_UINT32_GENERATOR_HPP
 
-/**
- * A dynamically-allocated structure holding the resources needed for a
- * connection to a bitcoin server.
- */
-class connection
+#include <boost/random.hpp>
+#include <bitcoin/client/random_number_generator.hpp>
+
+namespace libbitcoin {
+namespace client {
+
+class uniform_uint32_generator : random_number_generator<uint32_t>
 {
 public:
-    connection(czmqpp::socket& socket);
 
-    std::shared_ptr<bc::client::socket_stream> stream;
-    std::shared_ptr<bc::client::obelisk_codec> codec;
+    uniform_uint32_generator();
 
-    // std::shared_ptr<bc::client::socket_stream> get_stream();
-    // std::shared_ptr<bc::client::obelisk_codec> get_codec();
+    virtual uint32_t operator()();
+
+private:
+
+    boost::random::mt19937 engine_;
+
+    boost::random::uniform_int_distribution<uint32_t> distribution_;
+
+    boost::random::variate_generator<
+        boost::random::mt19937,
+        boost::random::uniform_int_distribution<uint32_t>> source_;
+
 };
 
+}
+}
+
 #endif
+

@@ -26,7 +26,7 @@
 namespace libbitcoin {
 namespace client {
 
-typedef std::chrono::milliseconds sleep_time;
+typedef std::chrono::milliseconds period_ms;
 
 /**
  * An interface for objects that need to perform delayed work in a
@@ -49,13 +49,13 @@ public:
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    virtual sleep_time wakeup() = 0;
+    virtual period_ms wakeup(bool enable_sideeffects = true) = 0;
 };
 
 /**
  * Returns the smaller of two time periods, treating 0 as infinity.
  */
-inline sleep_time min_sleep(sleep_time a, sleep_time b)
+inline period_ms min_sleep(period_ms a, period_ms b)
 {
     if (!a.count())
         return b;

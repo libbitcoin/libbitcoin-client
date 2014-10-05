@@ -17,27 +17,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BITCOIN_CLIENT_CONNECTION_HPP
-#define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include <memory>
-#include <czmq++/czmqpp.hpp>
-#include <bitcoin/client.hpp>
+#include <bitcoin/client/uniform_uint32_generator.hpp>
 
-/**
- * A dynamically-allocated structure holding the resources needed for a
- * connection to a bitcoin server.
- */
-class connection
+#include <bitcoin/bitcoin.hpp>
+
+namespace libbitcoin {
+namespace client {
+
+uniform_uint32_generator::uniform_uint32_generator()
+  : engine_(), distribution_(0, MAX_UINT32), source_(engine_, distribution_)
 {
-public:
-    connection(czmqpp::socket& socket);
+}
 
-    std::shared_ptr<bc::client::socket_stream> stream;
-    std::shared_ptr<bc::client::obelisk_codec> codec;
+uint32_t uniform_uint32_generator::operator()()
+{
+    return source_();
+}
 
-    // std::shared_ptr<bc::client::socket_stream> get_stream();
-    // std::shared_ptr<bc::client::obelisk_codec> get_codec();
-};
-
-#endif
+}
+}

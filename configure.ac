@@ -1,4 +1,4 @@
-AC_INIT([libbitcoin_client], [0.0.3], [genjix@riseup.net])
+AC_INIT([libbitcoin_client], [0.0.4], [genjix@riseup.net])
 AC_USE_SYSTEM_EXTENSIONS
 AC_LANG(C++)
 AC_CONFIG_AUX_DIR([build-aux])
@@ -15,6 +15,8 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 PKG_PROG_PKG_CONFIG
 
 PKG_CHECK_MODULES([bitcoin], [libbitcoin >= 2.0.1])
+PKG_CHECK_MODULES([protobuf], [protobuf >= 2.6.0])
+PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin_protocol >= 0.0.1])
 PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
 PKG_CHECK_MODULES([zmq], [libzmq >= 4.0.0])
 PKG_CHECK_MODULES([czmq], [libczmq >= 2.2.0])

@@ -29,14 +29,21 @@
 namespace libbitcoin {
 namespace client {
 
-typedef stealth_prefix address_prefix;
+typedef uint32_t stealth_bitfield;
+
+struct BCC_API stealth_prefix
+{
+    uint8_t number_bits;
+    stealth_bitfield bitfield;
+};
+
+typedef bc::stealth_prefix address_prefix;
 
 /**
  * Decodes and encodes messages in the obelisk protocol.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class BCC_API obelisk_codec
-  : public message_stream, public sleeper
+class BCC_API obelisk_codec : public message_stream, public sleeper
 {
 public:
     // Loose message handlers:
@@ -56,10 +63,14 @@ public:
      * @param timeout the call timeout, defaults to 2 seconds.
      * @param retries the number of retries to attempt, details to one.
      */
-    BCC_API obelisk_codec(message_stream& out,
+    BCC_API obelisk_codec(
+        std::shared_ptr<message_stream>& out,
         const update_handler& on_update=on_update_nop,
         const unknown_handler& on_unknown = on_unknown_nop,
-        sleep_time timeout=std::chrono::seconds(2), uint8_t retries=1);
+        period_ms timeout=std::chrono::seconds(2),
+        uint8_t retries=0);
+
+    BCC_API void set_message_stream(std::shared_ptr<message_stream>& out);
 
     BCC_API void set_on_update(const update_handler& on_update);
 
@@ -67,7 +78,7 @@ public:
 
     BCC_API void set_retries(uint8_t retries);
 
-    BCC_API void set_timeout(sleep_time timeout);
+    BCC_API void set_timeout(period_ms timeout);
 
     /**
      * Pass in a message for decoding.
@@ -76,7 +87,7 @@ public:
     BCC_API void write(const data_stack& data);
 
     // sleeper interface:
-    BCC_API sleep_time wakeup();
+    BCC_API period_ms wakeup(bool enable_sideeffects = true);
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
@@ -118,6 +129,9 @@ public:
     BCC_API void fetch_stealth(error_handler&& on_error,
         fetch_stealth_handler&& on_reply,
         const stealth_prefix& prefix, size_t from_height=0);
+    BCC_API void fetch_stealth(error_handler&& on_error,
+        fetch_stealth_handler&& on_reply,
+        const bc::stealth_prefix& prefix, size_t from_height=0);
     BCC_API void validate(error_handler&& on_error,
         validate_handler&& on_reply,
         const transaction_type& tx);
@@ -130,6 +144,9 @@ public:
     BCC_API void address_fetch_history(error_handler&& on_error,
         fetch_history_handler&& on_reply,
         const payment_address& address, size_t from_height=0);
+    BCC_API void subscribe(error_handler&& on_error,
+        empty_handler&& on_reply,
+        const bc::payment_address& address);
     BCC_API void subscribe(error_handler&& on_error,
         empty_handler&& on_reply,
         const address_prefix& prefix);
@@ -214,7 +231,7 @@ private:
     std::map<uint32_t, pending_request> pending_requests_;
 
     // Timeout parameters:
-    sleep_time timeout_;
+    period_ms timeout_;
     uint8_t retries_;
 
     // Loose-message event handlers:
@@ -222,7 +239,7 @@ private:
     update_handler on_update_;
 
     // Outgoing message stream:
-    message_stream& out_;
+    std::shared_ptr<message_stream> out_;
 };
 
 } // namespace client

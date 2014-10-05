@@ -17,27 +17,43 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BITCOIN_CLIENT_CONNECTION_HPP
-#define BITCOIN_CLIENT_CONNECTION_HPP
+
+#ifndef LIBBITCOIN_CLIENT_SOCKET_STREAM_HPP
+#define LIBBITCOIN_CLIENT_SOCKET_STREAM_HPP
 
 #include <memory>
-#include <czmq++/czmqpp.hpp>
-#include <bitcoin/client.hpp>
+#include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/response_stream.hpp>
+#include <bitcoin/client/request_stream.hpp>
 
-/**
- * A dynamically-allocated structure holding the resources needed for a
- * connection to a bitcoin server.
- */
-class connection
+namespace libbitcoin {
+namespace client {
+
+class BCC_API socket_stream : public message_stream, public request_stream
 {
 public:
-    connection(czmqpp::socket& socket);
 
-    std::shared_ptr<bc::client::socket_stream> stream;
-    std::shared_ptr<bc::client::obelisk_codec> codec;
+    socket_stream(czmqpp::socket& socket);
 
-    // std::shared_ptr<bc::client::socket_stream> get_stream();
-    // std::shared_ptr<bc::client::obelisk_codec> get_codec();
+    virtual ~socket_stream();
+
+    virtual void write(const data_stack& data);
+
+    virtual void write(const std::shared_ptr<bc::protocol::request>& request);
+
+    virtual bool signal_response(std::shared_ptr<message_stream> stream);
+
+    virtual bool signal_response(std::shared_ptr<response_stream> stream);
+
+    czmqpp::socket& get_socket();
+
+private:
+
+    czmqpp::socket socket_;
 };
+
+}
+}
 
 #endif
