@@ -26,13 +26,22 @@ using std::placeholders::_1;
 
 // The previous technique of callback referencing produces a cross-compile 
 // break, so this has been modified to accept simple references.
-BCC_API obelisk_codec::obelisk_codec(message_stream& out,
-    const update_handler& on_update, const unknown_handler& on_unknown,
-    sleep_time timeout, uint8_t retries)
+BCC_API obelisk_codec::obelisk_codec(
+    std::shared_ptr<message_stream>& out,
+    const update_handler& on_update,
+    const unknown_handler& on_unknown,
+    period_ms timeout,
+    uint8_t retries)
   : next_part_(command_part), last_request_id_(0), timeout_(timeout),
     retries_(retries), on_unknown_(on_unknown), on_update_(on_update),
     out_(out)
 {
+}
+
+BCC_API void obelisk_codec::set_message_stream(
+    std::shared_ptr<message_stream>& out)
+{
+    out_ = out;
 }
 
 BCC_API void obelisk_codec::set_on_update(const update_handler& on_update)
@@ -50,7 +59,7 @@ BCC_API void obelisk_codec::set_retries(uint8_t retries)
     retries_ = retries;
 }
 
-BCC_API void obelisk_codec::set_timeout(sleep_time timeout)
+BCC_API void obelisk_codec::set_timeout(period_ms timeout)
 {
     timeout_ = timeout;
 }
@@ -102,33 +111,36 @@ BCC_API void obelisk_codec::write(const data_stack& data)
     }
 }
 
-BCC_API sleep_time obelisk_codec::wakeup()
+BCC_API period_ms obelisk_codec::wakeup(bool enable_sideeffects)
 {
-    sleep_time next_wakeup(0);
+    period_ms next_wakeup(0);
     auto now = std::chrono::steady_clock::now();
 
     auto i = pending_requests_.begin();
     while (i != pending_requests_.end())
     {
         auto request = i++;
-        auto elapsed = std::chrono::duration_cast<sleep_time>(
+        auto elapsed = std::chrono::duration_cast<period_ms>(
             now - request->second.last_action);
         if (timeout_ <= elapsed)
         {
-            if (request->second.retries < retries_)
+            if (enable_sideeffects)
             {
-                // Resend:
-                ++request->second.retries;
-                request->second.last_action = now;
-                next_wakeup = min_sleep(next_wakeup, timeout_);
-                send(request->second.message);
-            }
-            else
-            {
-                // Cancel:
-                auto ec = std::make_error_code(std::errc::timed_out);
-                request->second.on_error(ec);
-                pending_requests_.erase(request);
+                if (request->second.retries < retries_)
+                {
+                    // Resend:
+                    ++request->second.retries;
+                    request->second.last_action = now;
+                    next_wakeup = min_sleep(next_wakeup, timeout_);
+                    send(request->second.message);
+                }
+                else
+                {
+                    // Cancel:
+                    auto ec = std::make_error_code(std::errc::timed_out);
+                    request->second.on_error(ec);
+                    pending_requests_.erase(request);
+                }
             }
         }
         else
@@ -217,6 +229,21 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     fetch_stealth_handler&& on_reply,
     const stealth_prefix& prefix, size_t from_height)
 {
+    data_chunk data(9);
+    auto serial = make_serializer(data.begin());
+    serial.write_byte(prefix.number_bits);
+    serial.write_4_bytes(prefix.bitfield);
+    serial.write_4_bytes(from_height);
+    BITCOIN_ASSERT(serial.iterator() == data.end());
+
+    send_request("blockchain.fetch_stealth", data, std::move(on_error),
+        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
+}
+
+BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
+    fetch_stealth_handler&& on_reply,
+    const bc::stealth_prefix& prefix, size_t from_height)
+{
     data_chunk data(1 + prefix.num_blocks() + 4);
     auto serial = make_serializer(data.begin());
     // number_bits
@@ -287,6 +314,20 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
 
     send_request("address.fetch_history", data, std::move(on_error),
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
+}
+
+BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
+    empty_handler&& on_reply,
+    const bc::payment_address& address)
+{
+    data_chunk data(1 + short_hash_size);
+    auto serial = make_serializer(data.begin());
+    serial.write_byte(address.version());
+    serial.write_short_hash(address.hash());
+    BITCOIN_ASSERT(serial.iterator() == data.end());
+
+    send_request("address.subscribe", data, std::move(on_error),
+        std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
 BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
@@ -416,11 +457,14 @@ void obelisk_codec::send_request(const std::string& command,
 
 void obelisk_codec::send(const obelisk_message& message)
 {
-    data_stack data;
-    data.push_back(to_data_chunk(message.command));
-    data.push_back(to_data_chunk(to_little_endian(message.id)));
-    data.push_back(message.payload);
-    out_.write(data);
+    if (out_)
+    {
+        data_stack data;
+        data.push_back(to_data_chunk(message.command));
+        data.push_back(to_data_chunk(to_little_endian(message.id)));
+        data.push_back(message.payload);
+        out_->write(data);
+    }
 }
 
 void obelisk_codec::receive(const obelisk_message& message)

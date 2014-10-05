@@ -17,44 +17,26 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
-#define LIBBITCOIN_CLIENT_SOCKET_MESSAGE_STREAM_HPP
 
-#include <czmq++/czmqpp.hpp>
-#include <bitcoin/client/define.hpp>
-#include <bitcoin/client/message_stream.hpp>
+#ifndef LIBBITCOIN_CLIENT_REQUEST_STREAM_HPP
+#define LIBBITCOIN_CLIENT_REQUEST_STREAM_HPP
+
+#include <memory>
+#include <bitcoin/protocol.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-class BCC_API socket_message_stream
-: public message_stream
+class request_stream
 {
 public:
 
-    socket_message_stream();
+    virtual ~request_stream() {};
 
-    socket_message_stream(czmqpp::socket& socket);
-
-    socket_message_stream(const socket_message_stream&) = delete;
-
-    ~socket_message_stream();
-
-    virtual void write(const data_stack& data);
-
-    virtual czmqpp::socket& get_socket();
-
-    bool forward(message_stream& stream);
-
-    bool forward(czmqpp::socket& socket);
-
-private:
-
-    czmqpp::socket socket_;
+    virtual void write(const std::shared_ptr<bc::protocol::request>& request) = 0;
 };
 
 }
 }
 
 #endif
-

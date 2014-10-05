@@ -15,7 +15,13 @@
     <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\socket_message_stream.cpp">
+    <ClCompile Include="..\..\..\..\src\server_codec_impl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\socket_stream.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\uniform_uint32_generator.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +41,28 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_codec.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\random_number_generator.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\response_stream.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\request_stream.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec_impl.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_message_stream.hpp">
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
   </ItemGroup>

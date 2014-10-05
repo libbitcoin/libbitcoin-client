@@ -44,6 +44,24 @@ static void on_update(const payment_address& address, size_t height,
 }
 
 connection::connection(czmqpp::socket& socket)
-    : stream(socket), codec(stream, on_update, on_unknown)
 {
+    stream = std::make_shared<bc::client::socket_stream>(socket);
+
+    std::shared_ptr<bc::client::message_stream> base_stream
+        = std::static_pointer_cast<bc::client::message_stream>(stream);
+
+    codec = std::make_shared<bc::client::obelisk_codec>(
+        base_stream, on_update, on_unknown);
 }
+
+/*
+std::shared_ptr<bc::client::socket_stream> connection::get_stream()
+{
+    return stream_;
+}
+
+std::shared_ptr<bc::client::obelisk_codec> connection::get_codec()
+{
+    return codec_;
+}
+*/
