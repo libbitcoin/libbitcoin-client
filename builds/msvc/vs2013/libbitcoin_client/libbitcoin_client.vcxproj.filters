@@ -62,8 +62,5 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp">
-      <Filter>include\client</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
