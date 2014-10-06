@@ -1,9 +1,14 @@
-AC_INIT([libbitcoin_client], [0.0.4], [genjix@riseup.net])
+AC_INIT([libbitcoin_client], [0.0.4], [mienkphi@gmail.com])
 AC_USE_SYSTEM_EXTENSIONS
 AC_LANG(C++)
 AC_CONFIG_AUX_DIR([build-aux])
+
+# The BOOST_ROOT environment variable is *not* prioritize by the m4 tests.
+# As a result there may be dependency conflicts between installed versions
+# and a version specified in BOOST_ROOT.
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror])
+
+AM_INIT_AUTOMAKE([subdir-objects -Wall -Werror])
 AM_PROG_AR
 LT_INIT
 AC_PROG_CXX
@@ -36,6 +41,5 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
-AC_CONFIG_FILES([Makefile include/bitcoin/Makefile src/Makefile test/Makefile examples/Makefile libbitcoin_client.pc])
+AC_CONFIG_FILES([Makefile libbitcoin_client.pc])
 AC_OUTPUT
-
