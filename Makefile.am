@@ -62,6 +62,7 @@ check_PROGRAMS = libbitcoin_client_test
 libbitcoin_client_test_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
+    ${bitcoin_protocol_CFLAGS} \
      -DBOOST_TEST_DYN_LINK
 
 libbitcoin_client_test_SOURCES = \
@@ -71,7 +72,8 @@ libbitcoin_client_test_SOURCES = \
 libbitcoin_client_test_LDADD = \
     libbitcoin_client.la \
     -lboost_unit_test_framework \
-    ${sodium_LIBS}
+    ${sodium_LIBS} \
+    ${bitcoin_protocol_LIBS}
 
 #
 # example(s)
@@ -80,7 +82,8 @@ EXTRA_PROGRAMS = client
 
 client_CPPFLAGS = \
     -I$(srcdir)/include \
-    ${sodium_CFLAGS}
+    ${sodium_CFLAGS} \
+    ${bitcoin_protocol_CFLAGS}
 
 client_SOURCES = \
     examples/cli.cpp \
@@ -90,4 +93,6 @@ client_SOURCES = \
 
 client_LDADD = \
     libbitcoin_client.la \
-    ${sodium_LIBS}
+    ${sodium_LIBS} \
+    ${bitcoin_protocol_LIBS}
+
