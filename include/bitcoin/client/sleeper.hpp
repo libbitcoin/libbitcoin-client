@@ -39,17 +39,19 @@ typedef std::chrono::milliseconds period_ms;
  * loop, calling the `wakeup` method will perform the pending work
  * (assuming enough time has elapsed).
  */
+#include <bitcoin/client/define.hpp>
+
 class sleeper
 {
 public:
-    virtual ~sleeper() {}
+    BCC_API virtual ~sleeper() {}
 
     /**
      * Performs any pending time-based work, and returns the number of
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    virtual period_ms wakeup(bool enable_sideeffects = true) = 0;
+    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true) = 0;
 };
 
 /**

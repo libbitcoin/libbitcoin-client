@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <bitcoin/protocol.hpp>
+#include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -31,9 +32,10 @@ class request_stream
 {
 public:
 
-    virtual ~request_stream() {};
+    BCC_API virtual ~request_stream() {};
 
-    virtual void write(const std::shared_ptr<bc::protocol::request>& request) = 0;
+    BCC_API virtual void write(
+        const std::shared_ptr<bc::protocol::request>& request) = 0;
 };
 
 }

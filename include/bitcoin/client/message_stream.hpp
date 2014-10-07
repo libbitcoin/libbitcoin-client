@@ -21,6 +21,7 @@
 #define LIBBITCOIN_CLIENT_MESSAGE_STREAM_HPP
 
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -35,12 +36,12 @@ namespace client {
 class message_stream
 {
 public:
-    virtual ~message_stream() {}
+    BCC_API virtual ~message_stream() {}
 
     /**
      * Sends one multi-part message.
      */
-    virtual void write(const data_stack& data) = 0;
+    BCC_API virtual void write(const data_stack& data) = 0;
 };
 
 } // namespace client

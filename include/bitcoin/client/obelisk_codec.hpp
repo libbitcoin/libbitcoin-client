@@ -43,7 +43,8 @@ typedef bc::stealth_prefix address_prefix;
  * Decodes and encodes messages in the obelisk protocol.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class BCC_API obelisk_codec : public message_stream, public sleeper
+class obelisk_codec 
+  : public message_stream, public sleeper
 {
 public:
     // Loose message handlers:

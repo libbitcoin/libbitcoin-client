@@ -23,19 +23,17 @@
 
 #include <functional>
 #include <memory>
-#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/protocol.hpp>
-#include <bitcoin/protocol/primitives.hpp>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-class BCC_API server_codec
+class server_codec
 {
 public:
 
-    virtual ~server_codec() {}
+    BCC_API virtual ~server_codec() {}
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)> error_handler;
@@ -67,24 +65,24 @@ public:
         const bc::protocol::block_id& top)> utxo_results_handler;
 
     // Message calls:
-    virtual void get_block_headers(
+    BCC_API virtual void get_block_headers(
         error_handler&& on_error,
         block_headers_handler&& on_reply,
         std::shared_ptr<bc::protocol::block_id> start
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32) = 0;
 
-    virtual void post_block(
+    BCC_API virtual void post_block(
         error_handler&& on_error,
         post_handler&& on_reply,
         const bc::protocol::block& block) = 0;
 
-    virtual void validate_block(
+    BCC_API virtual void validate_block(
         error_handler&& on_error,
         validate_handler&& on_reply,
         const bc::protocol::block& block) = 0;
 
-    virtual void get_transactions(
+    BCC_API virtual void get_transactions(
         error_handler&& on_error,
         transaction_results_handler&& on_reply,
         bc::protocol::filter_list query,
@@ -96,7 +94,7 @@ public:
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32) = 0;
 
-    virtual void get_transaction_hashes(
+    BCC_API virtual void get_transaction_hashes(
         error_handler&& on_error,
         transaction_hash_results_handler&& on_reply,
         bc::protocol::filter_list query,
@@ -108,7 +106,7 @@ public:
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32) = 0;
 
-    virtual void get_utxos(
+    BCC_API virtual void get_utxos(
         error_handler&& on_error,
         utxo_results_handler&& on_reply,
         bc::protocol::filter_list query,
@@ -120,12 +118,12 @@ public:
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32) = 0;
 
-    virtual void post_transaction(
+    BCC_API virtual void post_transaction(
         error_handler&& on_error,
         post_handler&& on_reply,
         const bc::protocol::tx& transaction) = 0;
 
-    virtual void validate_transaction(
+    BCC_API virtual void validate_transaction(
         error_handler&& on_error,
         validate_handler&& on_reply,
         const bc::protocol::tx& transaction) = 0;

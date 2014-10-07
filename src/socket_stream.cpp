@@ -17,15 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <bitcoin/client/socket_stream.hpp>
 
+#include <czmq++/czmqpp.hpp>
 #include <bitcoin/protocol.hpp>
+
+using namespace bc::protocol;
 
 namespace libbitcoin {
 namespace client {
 
-socket_stream::socket_stream(czmqpp::socket& socket)
+    socket_stream::socket_stream(czmqpp::socket& socket)
   : socket_(socket.self())
 {
 }
@@ -46,11 +48,11 @@ void socket_stream::write(const data_stack& data)
     message.send(socket_);
 }
 
-void socket_stream::write(const std::shared_ptr<bc::protocol::request>& request)
+void socket_stream::write(const std::shared_ptr<request>& request)
 {
     if (request)
     {
-        bc::protocol::request_message message;
+        request_message message;
 
         message.set_request(request);
 
@@ -82,11 +84,12 @@ bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
 
     if (stream)
     {
-        bc::protocol::response_message message;
+        response_message message;
 
         if (message.receive(socket_))
         {
-            std::shared_ptr<bc::protocol::response> response = message.get_response();
+            std::shared_ptr<bc::protocol::response> response = 
+                message.get_response();
 
             if (response)
             {

@@ -31,7 +31,6 @@
 
 // Convenience header that includes everything
 // Not to be used internally. For API users.
-#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/protocol.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
