@@ -40,12 +40,7 @@ lib_LTLIBRARIES = libbitcoin_client.la
 libbitcoin_client_la_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
-    ${bitcoin_CFLAGS} \
-    ${protobuf_CFLAGS} \
-    ${bitcoin_protocol_CFLAGS} \
-    ${zmq_CFLAGS} \
-    ${czmq_CFLAGS} \
-    ${czmqpp_CFLAGS}
+    ${bitcoin_protocol_CFLAGS}
 
 libbitcoin_client_la_SOURCES = \
     src/obelisk_codec.cpp \
@@ -55,12 +50,7 @@ libbitcoin_client_la_SOURCES = \
 
 libbitcoin_client_la_LIBADD = \
     ${sodium_LIBS} \
-    ${bitcoin_LIBS} \
-    ${protobuf_LIBS} \
-    ${bitcoin_protocol_LIBS} \
-    ${zmq_LIBS} \
-    ${czmq_LIBS} \
-    ${czmqpp_LIBS}
+    ${bitcoin_protocol_LIBS}
 
 #
 # test
@@ -71,11 +61,8 @@ check_PROGRAMS = libbitcoin_client_test
 
 libbitcoin_client_test_CPPFLAGS = \
     -I$(srcdir)/include \
-    ${bitcoin_CFLAGS} \
     ${sodium_CFLAGS} \
-    ${zmq_CFLAGS} \
-    ${czmq_CFLAGS} \
-    ${czmqpp_CFLAGS} \
+    ${bitcoin_protocol_CFLAGS} \
      -DBOOST_TEST_DYN_LINK
 
 libbitcoin_client_test_SOURCES = \
@@ -85,11 +72,8 @@ libbitcoin_client_test_SOURCES = \
 libbitcoin_client_test_LDADD = \
     libbitcoin_client.la \
     -lboost_unit_test_framework \
-    ${bitcoin_LIBS} \
     ${sodium_LIBS} \
-    ${zmq_LIBS} \
-    ${czmq_LIBS} \
-    ${czmqpp_LIBS}
+    ${bitcoin_protocol_LIBS}
 
 #
 # example(s)
@@ -98,13 +82,8 @@ EXTRA_PROGRAMS = client
 
 client_CPPFLAGS = \
     -I$(srcdir)/include \
-    ${bitcoin_CFLAGS} \
-    $(protobuf_CFLAGS) \
-    ${bitcoin_protocol_CFLAGS} \
     ${sodium_CFLAGS} \
-    ${zmq_CFLAGS} \
-    ${czmq_CFLAGS} \
-    ${czmqpp_CFLAGS}
+    ${bitcoin_protocol_CFLAGS}
 
 client_SOURCES = \
     examples/cli.cpp \
@@ -114,10 +93,6 @@ client_SOURCES = \
 
 client_LDADD = \
     libbitcoin_client.la \
-    ${bitcoin_LIBS} \
-    ${protobuf_LIBS} \
-    ${bitcoin_protocol_LIBS} \
     ${sodium_LIBS} \
-    ${zmq_LIBS} \
-    ${czmq_LIBS} \
-    ${czmqpp_LIBS}
+    ${bitcoin_protocol_LIBS}
+
