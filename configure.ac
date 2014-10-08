@@ -1,4 +1,4 @@
-AC_INIT([libbitcoin-client], [0.0.4], [mienkphi@gmail.com])
+AC_INIT([libbitcoin-client], [0.1.0], [mienkphi@gmail.com])
 AC_USE_SYSTEM_EXTENSIONS
 AC_LANG(C++)
 AC_CONFIG_AUX_DIR([build-aux])
@@ -19,7 +19,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 PKG_PROG_PKG_CONFIG
 
-PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 0.0.1])
+PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 0.1.0])
 PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
 
 # Do not add contextual build parameters in configuration.
