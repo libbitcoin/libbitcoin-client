@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/libbitcoin/libbitcoin_client.svg?branch=master)](https://travis-ci.org/libbitcoin/libbitcoin_client)
+[![Build Status](https://travis-ci.org/libbitcoin/libbitcoin-client.svg?branch=master)](https://travis-ci.org/libbitcoin/libbitcoin-client)
 
 # Libbitcoin Client
 
@@ -46,9 +46,9 @@ Next install [Boost](http://www.boost.org) (1.50.0 or newer) and [GMP](https://g
 ```sh
   $ sudo apt-get install libboost-all-dev libgmp-dev
 ```
-Finally, execute the [install script](https://raw.githubusercontent.com/evoskuil/libbitcoin_client/develop/install-libbitcoin_client.sh). This single file will download, build, install and test libbitcoin client.
+Finally, execute the [install script](https://raw.githubusercontent.com/evoskuil/libbitcoin-client/develop/install-libbitcoin-client.sh). This single file will download, build, install and test libbitcoin client.
 ```sh
-  $ ./install-libbitcoin_client.sh
+  $ ./install-libbitcoin-client.sh
 ```
 Libbitcoin is now installed in `/usr/local/`.
 
@@ -56,7 +56,7 @@ Libbitcoin is now installed in `/usr/local/`.
 
 If you intend to inspect and/or modify source code you should [git clone](http://git-scm.com/docs/git-clone) libbitcoin client and each unpackaged dependency and build them manually. The install script itself is commented so that the manual build steps for each dependency can be inferred by a developer.
 
-You can run the install script from any directory on your system. This will build libbitcoin client in a subdirectory named `libbitcoin_client_build` and install it to `/usr/local/`. When the build completes successfully the `libbitcoin_client_build` directory is deleted.
+You can run the install script from any directory on your system. This will build libbitcoin client in a subdirectory named `libbitcoin-client_build` and install it to `/usr/local/`. When the build completes successfully the `libbitcoin-client_build` directory is deleted.
 
 The install script should not normally be executed using sudo. Instead it will immediately prompt you for a super user password if required. This ensures that only the necessary installation steps are executed as a super user, as opposed to the entire build process.
 
@@ -64,7 +64,7 @@ The build script clones, builds and installs six unpackaged repositories, namely
 
 - [bitcoin/secp256k1](https://github.com/bitcoin/secp256k1)
 - [libbitcoin/libbitcoin](https://github.com/libbitcoin/libbitcoin)
-- [libbitcoin/libbitcoin_client](https://github.com/libbitcoin/libbitcoin_client)
+- [libbitcoin/libbitcoin-client](https://github.com/libbitcoin/libbitcoin-client)
 - [zeromq/libzmq](https://github.com/zeromq/libzmq)
 - [zeromq/czmq](https://github.com/zeromq/czmq)
 - [zeromq/czmqpp](https://github.com/zeromq/czmqpp)
@@ -76,14 +76,14 @@ Of these libraries, only libzmq is packaged. However we require a more recent ve
 Any set of `./configure` options can be passed via the install script, for example:
 
 ```sh
-  $ ./install-libbitcoin_client.sh CPPFLAGS=-DDEBUG CFLAGS="-Og -g"
+  $ ./install-libbitcoin-client.sh CPPFLAGS=-DDEBUG CFLAGS="-Og -g"
 ```
 
 #### Compiling for Testnet
 
 Currently libbitcoin cannot work with both [testnet](https://en.bitcoin.it/wiki/Testnet) and mainnet. This restriction will be lifted in a future version. In order to work with testnet in the interim the libbitcoin libraries must be recompiled with the testnet option:
 ```sh
-  $ ./install-libbitcoin_client.sh --enable-testnet
+  $ ./install-libbitcoin-client.sh --enable-testnet
 ```
 
 ### Macintosh
@@ -104,7 +104,7 @@ Next execute the following commands:
 ```
 Finally, invoke the install script:
 ```sh
-  $ ./install-libbitcoin_client.sh
+  $ ./install-libbitcoin-client.sh
 ```
 
 ### Windows

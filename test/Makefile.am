@@ -1,10 +1,10 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
-TESTS = libbitcoin_client_test
+TESTS = libbitcoin-client-test
 
-check_PROGRAMS = libbitcoin_client_test
+check_PROGRAMS = libbitcoin-client-test
 
-libbitcoin_client_test_CPPFLAGS = \
+libbitcoin-client-test_CPPFLAGS = \
     -I$(srcdir)/../include \
     ${bitcoin_CFLAGS} \
     ${sodium_CFLAGS} \
@@ -14,12 +14,12 @@ libbitcoin_client_test_CPPFLAGS = \
      -DBOOST_TEST_DYN_LINK
 
     
-libbitcoin_client_test_SOURCES = \
+libbitcoin-client-test_SOURCES = \
     client.cpp \
     main.cpp
 
-libbitcoin_client_test_LDADD = \
-    -L../src -lbitcoin_client \
+libbitcoin-client-test_LDADD = \
+    -L../src -lbitcoin-client \
     -lboost_unit_test_framework \
     ${bitcoin_LIBS} \
     ${sodium_LIBS} \
