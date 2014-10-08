@@ -2,36 +2,31 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <_PropertySheetDisplayName>Libbitcoin Client Test Common Settings</_PropertySheetDisplayName>
+    <_PropertySheetDisplayName>Libbitcoin Client Library Common Settings</_PropertySheetDisplayName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   
   <!-- Configuration -->
-
+  
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepoRoot)include\;$(RepoRoot)libbitcoin\include\;(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RepoRoot)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'DynamicLibrary'">BCC_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'StaticLibrary'">BCC_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(DebugOrRelease)' == 'Release'">BITCOIN_DISABLE_ASSERTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link Condition="$(Configuration.IndexOf('Debug')) != -1">
-      <AdditionalOptions>/OPT:NOLBR /IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-    <PostBuildEvent>
-      <Command>"$(TargetPath)" --run_test=* --random=1 --show_progress=yes --result_code=no --detect_memory_leak=0 --report_level=no --build_info=yes</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   
   <!-- Dependencies -->
   
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)libbitcoin.import.props" />
-    <Import Project="$(SolutionDir)libbitcoin_protocol.import.props" />
-    <Import Project="$(SolutionDir)libbitcoin_client.import.props" />
+    <Import Project="$(SolutionDir)libbitcoin-protocol.import.props" />
   </ImportGroup>
-
+  
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-secp256k1>static</Linkage-secp256k1>
     <Linkage-mpir>static</Linkage-mpir>
@@ -41,20 +36,18 @@
     <Linkage-libsodium>dynamic</Linkage-libsodium>
     <Linkage-protobuf>dynamic</Linkage-protobuf>
     <Linkage-libbitcoin>dynamic</Linkage-libbitcoin>
-    <Linkage-libbitcoin_protocol>dynamic</Linkage-libbitcoin_protocol>
-    <Linkage-libbitcoin_client>dynamic</Linkage-libbitcoin_client>
+    <Linkage-libbitcoin-protocol>dynamic</Linkage-libbitcoin-protocol>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'ltcg'">
     <Linkage-secp256k1>static</Linkage-secp256k1>
     <Linkage-mpir>static</Linkage-mpir>
-    <Linkage-czmqpp>static</Linkage-czmqpp>
+    <Linkage-czmqpp>ltcg</Linkage-czmqpp>
     <Linkage-czmq>ltcg</Linkage-czmq>
-    <Linkage-libzmq>static</Linkage-libzmq>
+    <Linkage-libzmq>ltcg</Linkage-libzmq>
     <Linkage-libsodium>ltcg</Linkage-libsodium>
     <Linkage-protobuf>ltcg</Linkage-protobuf>
     <Linkage-libbitcoin>ltcg</Linkage-libbitcoin>
-    <Linkage-libbitcoin_protocol>ltcg</Linkage-libbitcoin_protocol>
-    <Linkage-libbitcoin_client>ltcg</Linkage-libbitcoin_client>
+    <Linkage-libbitcoin-protocol>ltcg</Linkage-libbitcoin-protocol>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'static'">
     <Linkage-secp256k1>static</Linkage-secp256k1>
@@ -65,8 +58,7 @@
     <Linkage-libsodium>static</Linkage-libsodium>
     <Linkage-protobuf>static</Linkage-protobuf>
     <Linkage-libbitcoin>static</Linkage-libbitcoin>
-    <Linkage-libbitcoin_protocol>static</Linkage-libbitcoin_protocol>
-    <Linkage-libbitcoin_client>static</Linkage-libbitcoin_client>
+    <Linkage-libbitcoin-protocol>static</Linkage-libbitcoin-protocol>
   </PropertyGroup>
 
   <!-- Messages -->
@@ -80,9 +72,7 @@
     <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
     <Message Text="Linkage-protobuf  : $(Linkage-protobuf)" Importance="high"/>
     <Message Text="Linkage-libbitcoin: $(Linkage-libbitcoin)" Importance="high"/>
-    <Message Text="Linkage-_protocol : $(Linkage-libbitcoin_protocol)" Importance="high"/>
-    <Message Text="Linkage-_client   : $(Linkage-libbitcoin_client)" Importance="high"/>
+    <Message Text="Linkage-_protocol : $(Linkage-libbitcoin-protocol)" Importance="high"/>
   </Target>
 
 </Project>
-

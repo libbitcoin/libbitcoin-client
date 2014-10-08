@@ -3,9 +3,9 @@
   <PropertyGroup Label="Globals">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>CTP_Nov2013</PlatformToolset>
-    <ProjectGuid>{FBCC58AD-93A1-4247-B660-B32C61ACA680}</ProjectGuid>
-    <ProjectName>bitcoin_client</ProjectName>
-    <NuGetPackageImportStamp>6f268d53</NuGetPackageImportStamp>
+    <ProjectGuid>{A56A00C6-669B-4535-9DC2-772A931B04C2}</ProjectGuid>
+    <ProjectName>libbitcoin-client-test</ProjectName>
+    <NuGetPackageImportStamp>fdb4bea9</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDEXE|Win32">
@@ -65,15 +65,8 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\examples\cli.hpp" />
-    <ClInclude Include="..\..\..\..\examples\connection.hpp" />
-    <ClInclude Include="..\..\..\..\examples\read_line.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\cli.cpp" />
-    <ClCompile Include="..\..\..\..\examples\connection.cpp" />
-    <ClCompile Include="..\..\..\..\examples\main.cpp" />
-    <ClCompile Include="..\..\..\..\examples\read_line.cpp" />
+    <ClCompile Include="..\..\..\..\test\main.cpp" />
+    <ClCompile Include="..\..\..\..\test\client.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -86,6 +79,7 @@
     <Import Project="..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets')" />
@@ -102,6 +96,7 @@
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_unit_test_framework-vc120.1.56.0.0\build\native\boost_unit_test_framework-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libsodium_vc120.0.6.0.1\build\native\libsodium_vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets'))" />
@@ -110,7 +105,7 @@
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\protobuf_vc120.2.6.0.0\build\native\protobuf_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\protobuf_vc120.2.6.0.0\build\native\protobuf_vc120.targets'))" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\libbitcoin_client\libbitcoin_client.vcxproj">
+    <ProjectReference Include="..\libbitcoin-client\libbitcoin-client.vcxproj">
       <Project>{475E189D-F147-4122-B5FE-5BCF1153696E}</Project>
     </ProjectReference>
   </ItemGroup>
