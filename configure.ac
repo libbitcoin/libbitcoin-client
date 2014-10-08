@@ -19,7 +19,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 PKG_PROG_PKG_CONFIG
 
-PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin_protocol >= 0.0.1])
+PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 0.0.1])
 PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
 
 # Do not add contextual build parameters in configuration.
