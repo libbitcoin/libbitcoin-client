@@ -18,8 +18,8 @@ bitcoin_includedir = $(includedir)/bitcoin
 bitcoin_include_HEADERS = \
     include/bitcoin/client.hpp
 
-bitcoin-client_includedir = $(includedir)/bitcoin/client
-bitcoin-client_include_HEADERS = \
+bitcoin_client_includedir = $(includedir)/bitcoin/client
+bitcoin_client_include_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
     include/bitcoin/client/obelisk_codec.hpp \
@@ -37,18 +37,18 @@ bitcoin-client_include_HEADERS = \
 #
 lib_LTLIBRARIES = libbitcoin-client.la
 
-libbitcoin-client_la_CPPFLAGS = \
+libbitcoin_client_la_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
-libbitcoin-client_la_SOURCES = \
+libbitcoin_client_la_SOURCES = \
     src/obelisk_codec.cpp \
     src/server_codec_impl.cpp \
     src/socket_stream.cpp \
     src/uniform_uint32_generator.cpp
 
-libbitcoin-client_la_LIBADD = \
+libbitcoin_client_la_LIBADD = \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
 
@@ -59,17 +59,17 @@ TESTS = libbitcoin-client-test
 
 check_PROGRAMS = libbitcoin-client-test
 
-libbitcoin-client-test_CPPFLAGS = \
+libbitcoin_client_test_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS} \
      -DBOOST_TEST_DYN_LINK
 
-libbitcoin-client-test_SOURCES = \
+libbitcoin_client_test_SOURCES = \
     test/client.cpp \
     test/main.cpp
 
-libbitcoin-client-test_LDADD = \
+libbitcoin_client_test_LDADD = \
     libbitcoin-client.la \
     -lboost_unit_test_framework \
     ${sodium_LIBS} \
