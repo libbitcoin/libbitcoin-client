@@ -57,18 +57,18 @@ libbitcoin_client_la_LIBADD = \
 #
 EXTRA_PROGRAMS = libbitcoin_client
 
-client_CPPFLAGS = \
+libbitcoin_client_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
-client_SOURCES = \
+libbitcoin_client_SOURCES = \
     examples/cli.cpp \
     examples/connection.cpp \
     examples/read_line.cpp \
     examples/main.cpp
 
-client_LDADD = \
+libbitcoin_client_LDADD = \
     libbitcoin-client.la \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
