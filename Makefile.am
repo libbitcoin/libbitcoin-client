@@ -8,7 +8,7 @@ doc_DATA = README INSTALL COPYING
 #
 pkgconfig_DATA = libbitcoin-client.pc
 
-# ?
+# look for macros in the m4 subdirectory
 ACLOCAL_AMFLAGS = -I m4
 
 #
@@ -33,7 +33,7 @@ bitcoin_client_include_HEADERS = \
     include/bitcoin/client/uniform_uint32_generator.hpp
 
 #
-# binaries
+# libraries
 #
 lib_LTLIBRARIES = libbitcoin-client.la
 
@@ -53,11 +53,32 @@ libbitcoin_client_la_LIBADD = \
     ${bitcoin_protocol_LIBS}
 
 #
-# test
+# examples
 #
-TESTS = libbitcoin-client-test
+EXTRA_PROGRAMS = libbitcoin_client
 
-check_PROGRAMS = libbitcoin-client-test
+libbitcoin_client_CPPFLAGS = \
+    -I$(srcdir)/include \
+    ${sodium_CFLAGS} \
+    ${bitcoin_protocol_CFLAGS}
+
+libbitcoin_client_SOURCES = \
+    examples/cli.cpp \
+    examples/connection.cpp \
+    examples/read_line.cpp \
+    examples/main.cpp
+
+libbitcoin_client_LDADD = \
+    libbitcoin-client.la \
+    ${sodium_LIBS} \
+    ${bitcoin_protocol_LIBS}
+
+#
+# tests
+#
+TESTS = libbitcoin_client_test
+
+check_PROGRAMS = libbitcoin_client_test
 
 libbitcoin_client_test_CPPFLAGS = \
     -I$(srcdir)/include \
@@ -74,25 +95,3 @@ libbitcoin_client_test_LDADD = \
     -lboost_unit_test_framework \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
-
-#
-# example(s)
-#
-EXTRA_PROGRAMS = client
-
-client_CPPFLAGS = \
-    -I$(srcdir)/include \
-    ${sodium_CFLAGS} \
-    ${bitcoin_protocol_CFLAGS}
-
-client_SOURCES = \
-    examples/cli.cpp \
-    examples/connection.cpp \
-    examples/read_line.cpp \
-    examples/main.cpp
-
-client_LDADD = \
-    libbitcoin-client.la \
-    ${sodium_LIBS} \
-    ${bitcoin_protocol_LIBS}
-
