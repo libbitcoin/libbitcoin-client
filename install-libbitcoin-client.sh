@@ -25,6 +25,17 @@ BUILD_REPO="libbitcoin-client"
 BUILD_BRANCH="master"
 BUILD_SUBPATH="."
 
+# https://github.com/bitcoin/secp256k1
+SECP256K1_OPTIONS=\
+"--with-bignum=gmp "\
+"--with-field=gmp "\
+"--enable-benchmark=no "\
+"--enable-tests=no "\
+"--enable-endomorphism=no"
+
+ZMQ_OPTIONS=\
+"--with-libsodium=yes"
+
 # http://bit.ly/1pKbuFP
 BOOST_UNIT_TEST_PARAMETERS=\
 "--run_test=* "\
@@ -155,7 +166,7 @@ build_library()
 
     # Download, build and install all unpackaged dependencies.
     build_from_github jedisct1 libsodium master "$SEQUENTIAL" "$@"
-    build_from_github zeromq libzmq master "$SEQUENTIAL" "$@"
+    build_from_github zeromq libzmq master "$SEQUENTIAL" "$@" $ZMQ_OPTIONS
     build_from_github zeromq czmq master "$SEQUENTIAL" "$@"
     build_from_github evoskuil czmqpp master "$SEQUENTIAL" "$@"
     build_from_github bitcoin secp256k1 master "$SEQUENTIAL" "$@" $SECP256K1_OPTIONS
