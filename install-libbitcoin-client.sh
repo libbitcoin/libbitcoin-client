@@ -11,7 +11,7 @@
 #  3. Validate Deployment: this file is both deployment and verification build.
 #  3. Be Declarative: make behavior obvious by not using conditional statements.
 #  4. Be Explicit: not everyone speaks the same code or human languages.
-#  5. Use Least Privilege: don't require sudo for the entire script.
+#  5. Enable Least Privilege: don't require more privilege than necessary.
 #  6. Do Not Repeat Yourself: do not repeat yourself.
 
 # This script will build libbitcoin using this relative directory.
@@ -24,6 +24,17 @@ BUILD_ACCOUNT="libbitcoin"
 BUILD_REPO="libbitcoin-client"
 BUILD_BRANCH="master"
 BUILD_SUBPATH="."
+
+# https://github.com/bitcoin/secp256k1
+SECP256K1_OPTIONS=\
+"--with-bignum=gmp "\
+"--with-field=gmp "\
+"--enable-benchmark=no "\
+"--enable-tests=no "\
+"--enable-endomorphism=no"
+
+ZMQ_OPTIONS=\
+"--with-libsodium=yes"
 
 # http://bit.ly/1pKbuFP
 BOOST_UNIT_TEST_PARAMETERS=\
@@ -62,16 +73,18 @@ automake_current_directory()
     shift 1
 
     ./autogen.sh
-    ./configure "$@"
+    ./configure --enable-silent-rules "$@"
 
     if [[ "$JOBS" -gt "$SEQUENTIAL" ]]; then
-        make "-j$JOBS"
+        make --silent "-j$JOBS"
     else
-        make
+        make --silent
     fi
 
-    sudo make install
-    sudo ldconfig
+    make install
+    
+    # Enable this line to register dynamic libraries.
+    # sudo ldconfig
 }
 
 build_from_github()
@@ -138,8 +151,7 @@ create_build_directory()
     # Notify that this script will do something destructive.
     echo "This script will erase and build in: $BUILD_DIRECTORY"
 
-    # Cache credentials for subsequent sudo calls.
-    sudo rm --force --recursive $BUILD_DIRECTORY
+    rm --force --recursive $BUILD_DIRECTORY
     mkdir $BUILD_DIRECTORY
     cd $BUILD_DIRECTORY
 
@@ -155,7 +167,7 @@ build_library()
 
     # Download, build and install all unpackaged dependencies.
     build_from_github jedisct1 libsodium master "$SEQUENTIAL" "$@"
-    build_from_github zeromq libzmq master "$SEQUENTIAL" "$@"
+    build_from_github zeromq libzmq master "$SEQUENTIAL" "$@" $ZMQ_OPTIONS
     build_from_github zeromq czmq master "$SEQUENTIAL" "$@"
     build_from_github evoskuil czmqpp master "$SEQUENTIAL" "$@"
     build_from_github bitcoin secp256k1 master "$SEQUENTIAL" "$@" $SECP256K1_OPTIONS
@@ -176,7 +188,7 @@ delete_build_directory()
     # applied to dependencies as well. Typically each time a git pull occurs 
     # into a build directory the uninstall is potentially invalidated. This 
     # approach allows us to perform a complete uninstall across all versions.
-    sudo rm --force --recursive $BUILD_DIRECTORY
+    rm --force --recursive $BUILD_DIRECTORY
 }
 
 # Exit this script on the first error (any statement returns non-true value).
