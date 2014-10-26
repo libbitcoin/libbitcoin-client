@@ -35,63 +35,65 @@ bitcoin_client_include_HEADERS = \
 #
 # libraries
 #
-lib_LTLIBRARIES = libbitcoin-client.la
+lib_LTLIBRARIES = src/libbitcoin-client.la
 
-libbitcoin_client_la_CPPFLAGS = \
+src_libbitcoin_client_la_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
-libbitcoin_client_la_SOURCES = \
+src_libbitcoin_client_la_SOURCES = \
     src/obelisk_codec.cpp \
     src/server_codec_impl.cpp \
     src/socket_stream.cpp \
     src/uniform_uint32_generator.cpp
 
-libbitcoin_client_la_LIBADD = \
+src_libbitcoin_client_la_LIBADD = \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
 
 #
 # examples
 #
-EXTRA_PROGRAMS = libbitcoin_client
+EXTRA_PROGRAMS = examples/libbitcoin_client
 
-libbitcoin_client_CPPFLAGS = \
+examples_libbitcoin_client_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
-libbitcoin_client_SOURCES = \
+examples_libbitcoin_client_SOURCES = \
     examples/cli.cpp \
     examples/connection.cpp \
     examples/read_line.cpp \
     examples/main.cpp
 
-libbitcoin_client_LDADD = \
-    libbitcoin-client.la \
+examples_libbitcoin_client_LDADD = \
+    src/libbitcoin-client.la \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
+
+examples: examples/libbitcoin_client
 
 #
 # tests
 #
-TESTS = libbitcoin_client_test
+TESTS = test/libbitcoin_client_test
 
-check_PROGRAMS = libbitcoin_client_test
+check_PROGRAMS = test/libbitcoin_client_test
 
-libbitcoin_client_test_CPPFLAGS = \
+test_libbitcoin_client_test_CPPFLAGS = \
     -I$(srcdir)/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS} \
      -DBOOST_TEST_DYN_LINK
 
-libbitcoin_client_test_SOURCES = \
+test_libbitcoin_client_test_SOURCES = \
     test/client.cpp \
     test/main.cpp
 
-libbitcoin_client_test_LDADD = \
-    libbitcoin-client.la \
+test_libbitcoin_client_test_LDADD = \
+    src/libbitcoin-client.la \
     -lboost_unit_test_framework \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
