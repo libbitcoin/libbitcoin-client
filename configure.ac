@@ -17,10 +17,28 @@ AC_GNU_SOURCE
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+# Boost doesn't publish package configs but has m4 tests.
+# The current versions produce incorrect error message text.
+AX_BOOST_BASE([1.50],,
+    [AC_MSG_ERROR([Boost 1.50 or later is required but was not found.])])
+
 PKG_PROG_PKG_CONFIG
 
 PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 0.1.0])
 PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
+
+# build tests
+AC_ARG_WITH([tests], [AS_HELP_STRING([--with-tests],
+    [require build with tests. Requires pkg-config [default=no]])],
+    [enable_tests_ext=$withval],
+    [enable_tests_ext=no])
+
+# conditionally require test dependencies
+if test "x$enable_tests_ext" != "xno"; then
+    AX_BOOST_UNIT_TEST_FRAMEWORK
+fi
+
+AM_CONDITIONAL(ENABLE_TESTS, test "x$enable_tests_ext" != "xno")
 
 # Do not add contextual build parameters in configuration.
 # http://stackoverflow.com/a/4680578
