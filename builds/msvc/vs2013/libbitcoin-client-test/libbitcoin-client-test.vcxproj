@@ -5,7 +5,7 @@
     <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <ProjectGuid>{A56A00C6-669B-4535-9DC2-772A931B04C2}</ProjectGuid>
     <ProjectName>libbitcoin-client-test</ProjectName>
-    <NuGetPackageImportStamp>fdb4bea9</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>96cac97e</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDEXE|Win32">
@@ -84,8 +84,9 @@
     <Import Project="..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\protobuf_vc120.2.6.0.0\build\native\protobuf_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\protobuf_vc120.2.6.0.0\build\native\protobuf_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.3\build\native\secp256k1_gmp_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.3\build\native\secp256k1_gmp_vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -101,8 +102,9 @@
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\libzmq_vc120.4.1.0.7\build\native\libzmq_vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\czmq_vc120.2.2.0.8\build\native\czmq_vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\czmqpp_vc120.1.0.0.10\build\native\czmqpp_vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\protobuf_vc120.2.6.0.0\build\native\protobuf_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\protobuf_vc120.2.6.0.0\build\native\protobuf_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.3\build\native\secp256k1_gmp_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.3\build\native\secp256k1_gmp_vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\secp256k1_gmp_vc120.0.1.0.2\build\native\secp256k1_gmp_vc120.targets'))" />
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\libbitcoin-client\libbitcoin-client.vcxproj">
