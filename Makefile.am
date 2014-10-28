@@ -78,6 +78,7 @@ examples: examples/libbitcoin_client
 #
 # tests
 #
+if ENABLE_TESTS
 TESTS = test/libbitcoin_client_test
 
 check_PROGRAMS = test/libbitcoin_client_test
@@ -97,3 +98,4 @@ test_libbitcoin_client_test_LDADD = \
     -lboost_unit_test_framework \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
+endif
