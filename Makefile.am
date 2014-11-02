@@ -14,11 +14,11 @@ ACLOCAL_AMFLAGS = -I m4
 #
 # headers
 #
-bitcoin_includedir = $(includedir)/bitcoin
+bitcoin_includedir = ${includedir}/bitcoin
 bitcoin_include_HEADERS = \
     include/bitcoin/client.hpp
 
-bitcoin_client_includedir = $(includedir)/bitcoin/client
+bitcoin_client_includedir = ${includedir}/bitcoin/client
 bitcoin_client_include_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
@@ -38,7 +38,7 @@ bitcoin_client_include_HEADERS = \
 lib_LTLIBRARIES = src/libbitcoin-client.la
 
 src_libbitcoin_client_la_CPPFLAGS = \
-    -I$(srcdir)/include \
+    -I${srcdir}/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
@@ -58,7 +58,7 @@ src_libbitcoin_client_la_LIBADD = \
 EXTRA_PROGRAMS = examples/libbitcoin_client
 
 examples_libbitcoin_client_CPPFLAGS = \
-    -I$(srcdir)/include \
+    -I${srcdir}/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
@@ -79,12 +79,13 @@ examples: examples/libbitcoin_client
 # tests
 #
 if ENABLE_TESTS
+
 TESTS = test/libbitcoin_client_test
 
 check_PROGRAMS = test/libbitcoin_client_test
 
 test_libbitcoin_client_test_CPPFLAGS = \
-    -I$(srcdir)/include \
+    -I${srcdir}/include \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS} \
      -DBOOST_TEST_DYN_LINK
@@ -98,4 +99,5 @@ test_libbitcoin_client_test_LDADD = \
     -lboost_unit_test_framework \
     ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
+    
 endif
