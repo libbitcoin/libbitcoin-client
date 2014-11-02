@@ -78,7 +78,7 @@ examples: examples/libbitcoin_client
 #
 # tests
 #
-if ENABLE_TESTS
+if WITH_TESTS
 
 TESTS = test/libbitcoin_client_test
 
