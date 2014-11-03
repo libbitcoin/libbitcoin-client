@@ -38,6 +38,10 @@ BCC_API obelisk_codec::obelisk_codec(
 {
 }
 
+obelisk_codec::~obelisk_codec()
+{
+}
+
 BCC_API void obelisk_codec::set_message_stream(
     std::shared_ptr<message_stream>& out)
 {

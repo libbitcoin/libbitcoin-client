@@ -28,8 +28,8 @@ server_codec_impl::server_codec_impl(
     period_ms timeout,
     uint8_t retries,
     const response_handler& on_unknown_response)
-: stream_(outgoing), generator_(generator), timeout_(timeout),
-  retries_(retries), on_unknown_response_(on_unknown_response)
+    : stream_(outgoing), generator_(generator), timeout_(timeout),
+    retries_(retries), on_unknown_response_(on_unknown_response)
 {
 }
 

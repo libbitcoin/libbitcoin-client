@@ -44,7 +44,7 @@ typedef std::chrono::milliseconds period_ms;
 class sleeper
 {
 public:
-    BCC_API virtual ~sleeper() {}
+    BCC_API virtual ~sleeper() {};
 
     /**
      * Performs any pending time-based work, and returns the number of

@@ -42,11 +42,14 @@ public:
 
     BCC_API virtual void write(const data_stack& data);
 
-    BCC_API virtual void write(const std::shared_ptr<bc::protocol::request>& request);
+    BCC_API virtual void write(
+        const std::shared_ptr<bc::protocol::request>& request);
 
-    BCC_API virtual bool signal_response(std::shared_ptr<message_stream> stream);
+    BCC_API virtual bool signal_response(
+        std::shared_ptr<message_stream> stream);
 
-    BCC_API virtual bool signal_response(std::shared_ptr<response_stream> stream);
+    BCC_API virtual bool signal_response(
+        std::shared_ptr<response_stream> stream);
 
     BCC_API czmqpp::socket& get_socket();
 

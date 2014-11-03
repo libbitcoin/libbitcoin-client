@@ -32,9 +32,7 @@ namespace client {
 class server_codec
 {
 public:
-
-    BCC_API virtual ~server_codec() {}
-
+    
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)> error_handler;
 
@@ -63,6 +61,8 @@ public:
         const bc::protocol::utxo_result_list& utxos,
         const bc::protocol::block_id& next,
         const bc::protocol::block_id& top)> utxo_results_handler;
+
+    BCC_API virtual ~server_codec() = 0;
 
     // Message calls:
     BCC_API virtual void get_block_headers(

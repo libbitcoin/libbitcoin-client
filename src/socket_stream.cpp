@@ -27,7 +27,7 @@ using namespace bc::protocol;
 namespace libbitcoin {
 namespace client {
 
-    socket_stream::socket_stream(czmqpp::socket& socket)
+socket_stream::socket_stream(czmqpp::socket& socket)
   : socket_(socket.self())
 {
 }

@@ -36,7 +36,7 @@ namespace client {
 class message_stream
 {
 public:
-    BCC_API virtual ~message_stream() {}
+    BCC_API virtual ~message_stream() {};
 
     /**
      * Sends one multi-part message.
