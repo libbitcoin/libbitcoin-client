@@ -34,7 +34,8 @@ public:
 
     BCC_API virtual ~response_stream() {};
 
-    BCC_API virtual void write(const bc::protocol::response& response) = 0;
+    BCC_API virtual void write(
+        const std::shared_ptr<bc::protocol::response>& response) = 0;
 };
 
 }

@@ -61,8 +61,11 @@ public:
 
     BCC_API virtual uint64_t outstanding_call_count() const;
 
-    // response_stream interface
     BCC_API virtual void write(const bc::protocol::response& response);
+
+    // response_stream interface
+    BCC_API virtual void write(
+        const std::shared_ptr<bc::protocol::response>& response);
 
     // sleeper interface
     BCC_API virtual period_ms wakeup(bool enable_sideeffects = true);
