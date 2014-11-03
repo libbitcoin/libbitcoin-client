@@ -7,7 +7,6 @@
 BUILD_ACCOUNT="libbitcoin"
 BUILD_REPO="libbitcoin-client"
 BUILD_BRANCH="master"
-BUILD_SUBPATH="."
 
 # This script will build using this relative directory.
 # This is meant to be temporary, just to facilitate the install.
@@ -144,9 +143,6 @@ build_primary()
         build_tests
     else
         # Otherwise we pull the primary repo down for the single file install.
-        
-        # BUGBUG: need to figure out where to handle BUILD_SUBPATH
-        #build_from_github $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH $BUILD_SUBPATH $JOBS "$@"
         build_from_github $BUILD_ACCOUNT $BUILD_REPO $BUILD_BRANCH $JOBS "$@"
 
         # Build the tests and drop out of build directory.
