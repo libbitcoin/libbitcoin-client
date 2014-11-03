@@ -62,7 +62,7 @@ public:
         const bc::protocol::block_id& next,
         const bc::protocol::block_id& top)> utxo_results_handler;
 
-    BCC_API virtual ~server_codec() = 0;
+    BCC_API virtual ~server_codec() {};
 
     // Message calls:
     BCC_API virtual void get_block_headers(
