@@ -158,7 +158,10 @@ BCC_API void obelisk_codec::fetch_history(error_handler&& on_error,
     auto serial = make_serializer(data.begin());
     serial.write_byte(address.version());
     serial.write_short_hash(address.hash());
+
+    // BUGBUG: the API should be limited to uint32_t.
     serial.write_4_bytes(static_cast<uint32_t>(from_height));
+
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("blockchain.fetch_history", data, std::move(on_error),
@@ -191,6 +194,7 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
     fetch_block_header_handler&& on_reply,
     size_t height)
 {
+    // BUGBUG: the API should be limited to uint32_t.
     data_chunk data = to_data_chunk(
         to_little_endian(static_cast<uint32_t>(height)));
 
@@ -225,6 +229,7 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler&& on_error,
         std::bind(decode_fetch_transaction_index, _1, std::move(on_reply)));
 }
 
+// Note that prefix is a *client* stealth_prefix struct.
 BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     fetch_stealth_handler&& on_reply,
     const stealth_prefix& prefix, size_t from_height)
@@ -233,7 +238,10 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     auto serial = make_serializer(data.begin());
     serial.write_byte(prefix.number_bits);
     serial.write_4_bytes(prefix.bitfield);
-    serial.write_4_bytes(from_height);
+
+    // BUGBUG: the API should be limited to uint32_t.
+    serial.write_4_bytes(static_cast<uint32_t>(from_height));
+
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("blockchain.fetch_stealth", data, std::move(on_error),
@@ -244,15 +252,22 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
     fetch_stealth_handler&& on_reply,
     const bc::stealth_prefix& prefix, size_t from_height)
 {
+    // BUGBUG: assertion is not good enough here.
+    BITCOIN_ASSERT(prefix.size() <= 255);
+
     data_chunk data(1 + prefix.num_blocks() + 4);
     auto serial = make_serializer(data.begin());
     // number_bits
+
+    // BUGBUG: the API should be limited to uint8_t.
     serial.write_byte(static_cast<uint8_t>(prefix.size()));
+
     // Serialize bitfield to raw bytes and serialize
     data_chunk bitfield(prefix.num_blocks());
     boost::to_block_range(prefix, bitfield.begin());
     serial.write_data(bitfield);
-    // from_height
+
+    // BUGBUG: the API should be limited to uint32_t.
     serial.write_4_bytes(static_cast<uint32_t>(from_height));
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
@@ -309,6 +324,8 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
     auto serial = make_serializer(data.begin());
     serial.write_byte(address.version());
     serial.write_short_hash(address.hash());
+
+    // BUGBUG: the API should be limited to uint32_t.
     serial.write_4_bytes(static_cast<uint32_t>(from_height));
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
@@ -334,7 +351,9 @@ BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
     empty_handler&& on_reply,
     const address_prefix& prefix)
 {
+    // BUGBUG: assertion is not good enough here.
     BITCOIN_ASSERT(prefix.size() <= 255);
+
     data_chunk data(1 + prefix.num_blocks());
     data[0] = static_cast<uint8_t>(prefix.size());
     boost::to_block_range(prefix, data.begin() + 1);
