@@ -58,6 +58,15 @@ uint64_t server_codec_impl::outstanding_call_count() const
 }
 
 // response_stream interface
+void server_codec_impl::write(
+    const std::shared_ptr<bc::protocol::response>& response)
+{
+    if (response)
+    {
+        write(*response);
+    }
+}
+
 void server_codec_impl::write(const bc::protocol::response& response)
 {
     auto entry = pending_requests_.find(response.id());
