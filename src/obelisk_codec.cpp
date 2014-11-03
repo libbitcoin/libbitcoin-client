@@ -32,7 +32,7 @@ BCC_API obelisk_codec::obelisk_codec(
     const unknown_handler& on_unknown,
     period_ms timeout,
     uint8_t retries)
-  : next_part_(command_part), last_request_id_(0), timeout_(timeout),
+  : /* next_part_(command_part), */ last_request_id_(0), timeout_(timeout),
     retries_(retries), on_unknown_(on_unknown), on_update_(on_update),
     out_(out)
 {

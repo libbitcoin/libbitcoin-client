@@ -217,7 +217,9 @@ private:
         payload_part,
         error_part
     };
-    message_part next_part_;
+
+    // unused private field
+    //message_part next_part_;
 
     // Request management:
     uint32_t last_request_id_;
