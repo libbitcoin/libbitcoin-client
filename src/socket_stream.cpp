@@ -93,7 +93,7 @@ bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
 
             if (response)
             {
-                stream->write(response);
+                stream->write(*response);
                 signaled = true;
             }
         }
