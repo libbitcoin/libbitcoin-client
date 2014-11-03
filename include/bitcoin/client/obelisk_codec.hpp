@@ -81,14 +81,11 @@ public:
 
     BCC_API void set_timeout(period_ms timeout);
 
-    /**
-     * Pass in a message for decoding.
-     */
-    //BCC_API void message(const data_chunk& data, bool more);
-    BCC_API void write(const data_stack& data);
+    // Pass in a message for decoding:
+    BCC_API virtual void write(const data_stack& data);
 
-    // sleeper interface:
-    BCC_API period_ms wakeup(bool enable_sideeffects = true);
+    // Sleeper interface:
+    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true);
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
