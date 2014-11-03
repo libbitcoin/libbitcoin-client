@@ -34,7 +34,7 @@ public:
 
     BCC_API virtual ~response_stream() {};
 
-    BCC_API virtual void write(const bc::protocol::response& responsee) = 0;
+    BCC_API virtual void write(const bc::protocol::response& response) = 0;
 };
 
 }
