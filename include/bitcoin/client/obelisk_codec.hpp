@@ -57,6 +57,11 @@ public:
         size_t, const hash_digest&, const transaction_type&);
 
     /**
+     * Destructor.
+     */
+    BCC_API virtual ~obelisk_codec() {}
+
+    /**
      * Constructor.
      * @param out a stream to receive outgoing messages created by the codec.
      * @param on_update function to handle subscription update messages.
@@ -82,10 +87,10 @@ public:
     BCC_API void set_timeout(period_ms timeout);
 
     // Pass in a message for decoding:
-    BCC_API virtual void write(const data_stack& data);
+    BCC_API virtual void write(const data_stack& data) override;
 
     // Sleeper interface:
-    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true);
+    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true) override;
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
