@@ -85,7 +85,7 @@ public:
     BCC_API virtual void get_transactions(
         error_handler&& on_error,
         transaction_results_handler&& on_reply,
-        const bc::protocol::filter_list query,
+        const bc::protocol::filter_list& query,
         bc::protocol::transaction_results result_type
             = bc::protocol::transaction_results::TX_HASH,
         bc::protocol::locations location_type
@@ -97,7 +97,7 @@ public:
     BCC_API virtual void get_transaction_hashes(
         error_handler&& on_error,
         transaction_hash_results_handler&& on_reply,
-        const bc::protocol::filter_list query,
+        const bc::protocol::filter_list& query,
         bc::protocol::transaction_results result_type
             = bc::protocol::transaction_results::TX_HASH,
         bc::protocol::locations location_type
@@ -109,7 +109,7 @@ public:
     BCC_API virtual void get_utxos(
         error_handler&& on_error,
         utxo_results_handler&& on_reply,
-        const bc::protocol::filter_list query,
+        const bc::protocol::filter_list& query,
         bc::protocol::transaction_results result_type
             = bc::protocol::transaction_results::TX_HASH,
         bc::protocol::locations location_type
