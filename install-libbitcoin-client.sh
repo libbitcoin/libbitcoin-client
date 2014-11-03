@@ -85,9 +85,7 @@ echo "Package config path: $PKG_CONFIG_PATH"
 display_message()
 {
     MESSAGE=$1
-    echo
-    echo "********************** $MESSAGE **********************"
-    echo
+    echo "\n********************** $MESSAGE **********************\n"
 }
 
 automake_current_directory()
