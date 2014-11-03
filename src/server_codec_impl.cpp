@@ -22,10 +22,6 @@
 namespace libbitcoin {
 namespace client {
 
-void server_codec_impl::on_unknown_nop(const bc::protocol::response&)
-{
-}
-
 server_codec_impl::server_codec_impl(
     std::shared_ptr<request_stream> outgoing,
     std::shared_ptr<random_number_generator<uint32_t>> generator,
@@ -350,7 +346,8 @@ void server_codec_impl::send(
     const std::shared_ptr<bc::protocol::request>& request)
 {
     // set unique message identifier
-    uint32_t id = (generator_) ? (*generator_.get())() : pending_requests_.size();
+    uint32_t id = (generator_) ? (*generator_.get())() : 
+        static_cast<uint32_t>(pending_requests_.size());
 
     // create pending request entry
 
