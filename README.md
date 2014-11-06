@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/libbitcoin/libbitcoin-client.svg?branch=master)](https://travis-ci.org/libbitcoin/libbitcoin-client)
+[![Build Status](https://travis-ci.org/libbitcoin/libbitcoin-client.svg?branch=version2)](https://travis-ci.org/libbitcoin/libbitcoin-client)
 
 # Libbitcoin Client
 

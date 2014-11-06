@@ -2,7 +2,7 @@
 AC_PREREQ([2.65])
 
 # Process command-line arguments and perform initialization and verification.
-AC_INIT([libbitcoin-client], [0.1.0], [mienkphi@gmail.com])
+AC_INIT([libbitcoin-client], [2.0.0], [mienkphi@gmail.com])
 
 # Do compilation tests.
 AC_LANG(C++)
@@ -93,8 +93,8 @@ AX_BOOST_BASE([1.49],,
 
 # Require bitcoin_protocol and sodium package min versions.
 #------------------------------------------------------------------------------
-PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 0.1.0])
-PKG_CHECK_MODULES([sodium], [libsodium >= 0.6.0])
+PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
+PKG_CHECK_MODULES([sodium], [libsodium >= 1.0.0])
 
 # Require test dependencies if $with_tests is set.
 #------------------------------------------------------------------------------
