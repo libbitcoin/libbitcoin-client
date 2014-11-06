@@ -376,10 +376,10 @@ void obelisk_codec::decode_empty(data_deserial& payload,
 void obelisk_codec::decode_fetch_history(data_deserial& payload,
     fetch_history_handler& handler)
 {
-    blockchain::history_list history;
+    history_list history;
     while (payload.iterator() != payload.end())
     {
-        blockchain::history_row row;
+        history_row row;
         row.output.hash = payload.read_hash();
         row.output.index = payload.read_4_bytes();
         row.output_height = payload.read_4_bytes();
@@ -432,10 +432,10 @@ void obelisk_codec::decode_fetch_transaction_index(data_deserial& payload,
 void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
     fetch_stealth_handler& handler)
 {
-    blockchain::stealth_list results;
+    stealth_list results;
     while (payload.iterator() != payload.end())
     {
-        blockchain::stealth_row row;
+        stealth_row row;
         row.ephemkey = payload.read_data(33);
         uint8_t address_version = payload.read_byte();
         const short_hash address_hash = payload.read_short_hash();

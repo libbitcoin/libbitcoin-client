@@ -17,32 +17,45 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_CLIENT_HPP
+#ifndef LIBBITCOIN_CLIENT_OBELISK_V1_TYPES_HPP
+#define LIBBITCOIN_CLIENT_OBELISK_V1_TYPES_HPP
 
-/**
- * @mainpage libbitcoin-client API dox
- *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to a libbitcoin-server.
- */
-
-// Convenience header that includes everything
-// Not to be used internally. For API users.
-#include <bitcoin/protocol.hpp>
 #include <bitcoin/client/define.hpp>
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/obelisk_codec.hpp>
-#include <bitcoin/client/obelisk_v1_types.hpp>
-#include <bitcoin/client/random_number_generator.hpp>
-#include <bitcoin/client/request_stream.hpp>
-#include <bitcoin/client/response_stream.hpp>
-#include <bitcoin/client/server_codec.hpp>
-#include <bitcoin/client/server_codec_impl.hpp>
-#include <bitcoin/client/sleeper.hpp>
-#include <bitcoin/client/socket_stream.hpp>
-#include <bitcoin/client/uniform_uint32_generator.hpp>
+
+namespace libbitcoin {
+namespace client {
+
+typedef uint32_t stealth_bitfield;
+
+struct BCC_API stealth_prefix
+{
+    uint8_t number_bits;
+    stealth_bitfield bitfield;
+};
+
+typedef bc::stealth_prefix address_prefix;
+
+struct BCC_API history_row
+{
+    output_point output;
+    size_t output_height;
+    uint64_t value;
+    input_point spend;
+    size_t spend_height;
+};
+
+typedef std::vector<history_row> history_list;
+
+struct BCC_API stealth_row
+{
+    data_chunk ephemkey;
+    payment_address address;
+    hash_digest transaction_hash;
+};
+
+typedef std::vector<stealth_row> stealth_list;
+
+}
+}
 
 #endif
