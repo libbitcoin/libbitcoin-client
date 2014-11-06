@@ -24,20 +24,11 @@
 #include <map>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/obelisk_v1_types.hpp>
 #include <bitcoin/client/sleeper.hpp>
 
 namespace libbitcoin {
 namespace client {
-
-typedef uint32_t stealth_bitfield;
-
-struct BCC_API stealth_prefix
-{
-    uint8_t number_bits;
-    stealth_bitfield bitfield;
-};
-
-typedef bc::stealth_prefix address_prefix;
 
 /**
  * Decodes and encodes messages in the obelisk protocol.
@@ -92,7 +83,7 @@ public:
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
         error_handler;
-    typedef std::function<void (const blockchain::history_list&)>
+    typedef std::function<void (const history_list&)>
         fetch_history_handler;
     typedef std::function<void (const transaction_type&)>
         fetch_transaction_handler;
@@ -102,7 +93,7 @@ public:
         fetch_block_header_handler;
     typedef std::function<void (size_t block_height, size_t index)>
         fetch_transaction_index_handler;
-    typedef std::function<void (const blockchain::stealth_list&)>
+    typedef std::function<void (const stealth_list&)>
         fetch_stealth_handler;
     typedef std::function<void (const index_list& unconfirmed)>
         validate_handler;
