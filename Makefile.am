@@ -88,8 +88,12 @@ check_PROGRAMS = test/libbitcoin_client_test
 test_libbitcoin_client_test_CPPFLAGS = \
     -I${srcdir}/include \
     ${sodium_CFLAGS} \
-    ${bitcoin_protocol_CFLAGS} \
-     -DBOOST_TEST_DYN_LINK
+    ${bitcoin_protocol_CFLAGS}
+    
+if SET_BOOST_TEST_DYN_LINK
+test_libbitcoin_client_test_CPPFLAGS += \
+    -DBOOST_TEST_DYN_LINK
+endif
 
 test_libbitcoin_client_test_SOURCES = \
     test/client.cpp \
