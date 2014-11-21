@@ -33,7 +33,7 @@ struct BCC_API stealth_prefix
     stealth_bitfield bitfield;
 };
 
-typedef bc::stealth_prefix address_prefix;
+//typedef bc::stealth_prefix address_prefix;
 
 struct BCC_API history_row
 {
