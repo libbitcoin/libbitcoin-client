@@ -92,9 +92,10 @@ BCC_API void obelisk_codec::write(const data_stack& data)
         if (success)
         {
             // read id
-            if ((*it).size() == 4)
+            if ((*it).size() == sizeof(uint32_t))
             {
-                message.id = from_little_endian<uint32_t>((*it).begin());
+                message.id = from_little_endian_unsafe<uint32_t>(
+                    (*it).begin());
             }
             else
             {

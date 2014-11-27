@@ -90,7 +90,8 @@ void read_line::run(czmqpp::context* context)
         {
             czmqpp::data_stack stack = request.parts();
 
-            uint32_t signal = bc::from_little_endian<uint32_t>((*(stack.begin())).begin());
+            auto bytes = *(stack.begin());
+            auto signal = bc::from_little_endian<uint32_t>(bytes.begin(), bytes.end());
 
             if (signal == signal_halt)
             {
