@@ -23,7 +23,7 @@ The libbitcoin toolkit is a set of cross platform C++ libraries for building bit
 
 ### Debian/Ubuntu
 
-Libbitcoin requires a C++11 compiler, which means [GCC 4.7.0](https://gcc.gnu.org/projects/cxx0x.html) minimum.
+Libbitcoin requires [GCC 4.8.0](https://gcc.gnu.org/projects/cxx0x.html) minimum.
 
 > For this reason Ubuntu is not supported prior to version 12.04.
 
@@ -46,9 +46,9 @@ Next install [Boost](http://www.boost.org) (1.50.0 or newer) and [GMP](https://g
 ```sh
   $ sudo apt-get install libboost-all-dev libgmp-dev
 ```
-Finally, execute the [install script](https://raw.githubusercontent.com/evoskuil/libbitcoin-client/develop/install-libbitcoin-client.sh). This single file will download, build, install and test libbitcoin client.
+Finally, execute the [install script](https://raw.githubusercontent.com/evoskuil/libbitcoin-client/develop/install.sh). This single file will download, build, install and test libbitcoin client.
 ```sh
-  $ ./install-libbitcoin-client.sh
+  $ ./install.sh
 ```
 Libbitcoin is now installed in `/usr/local/`.
 
@@ -76,14 +76,14 @@ Of these libraries, only libzmq is packaged. However we require a more recent ve
 Any set of `./configure` options can be passed via the install script, for example:
 
 ```sh
-  $ ./install-libbitcoin-client.sh CPPFLAGS=-DDEBUG CFLAGS="-Og -g"
+  $ ./install.sh CPPFLAGS=-DDEBUG CFLAGS="-Og -g"
 ```
 
 #### Compiling for Testnet
 
 Currently libbitcoin cannot work with both [testnet](https://en.bitcoin.it/wiki/Testnet) and mainnet. This restriction will be lifted in a future version. In order to work with testnet in the interim the libbitcoin libraries must be recompiled with the testnet option:
 ```sh
-  $ ./install-libbitcoin-client.sh --enable-testnet
+  $ ./install.sh --enable-testnet
 ```
 
 ### Macintosh
@@ -104,7 +104,7 @@ Next execute the following commands:
 ```
 Finally, invoke the install script:
 ```sh
-  $ ./install-libbitcoin-client.sh
+  $ ./install.sh
 ```
 
 ### Windows
