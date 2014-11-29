@@ -121,9 +121,9 @@ BITCOIN_PROTOCOL_OPTIONS=\
 "--enable-silent-rules "\
 "--without-tests "
 
-# Define bitcoin-node options.
+# Define bitcoin-client options.
 #------------------------------------------------------------------------------
-BITCOIN_NODE_OPTIONS=\
+BITCOIN_CLIENT_OPTIONS=\
 "--enable-silent-rules "
 
 
@@ -472,7 +472,7 @@ build_all()
     build_from_github zeromq czmqpp master $PARALLEL "$@" $CZMQPP_OPTIONS
     build_from_github libbitcoin libbitcoin version2 $PARALLEL "$@" $BITCOIN_OPTIONS
     build_from_github libbitcoin libbitcoin-protocol version2 $PARALLEL "$@" $BITCOIN_PROTOCOL_OPTIONS
-    build_from_travis libbitcoin libbitcoin-node version2 $PARALLEL "$@" $BITCOIN_NODE_OPTIONS
+    build_from_travis libbitcoin libbitcoin-client version2 $PARALLEL "$@" $BITCOIN_CLIENT_OPTIONS
 }
 
 
