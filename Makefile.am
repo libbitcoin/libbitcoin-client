@@ -90,7 +90,7 @@ test_libbitcoin_client_test_CPPFLAGS = \
     ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
     
-if SET_BOOST_TEST_DYN_LINK
+if ENABLE_SHARED
 test_libbitcoin_client_test_CPPFLAGS += \
     -DBOOST_TEST_DYN_LINK
 endif
