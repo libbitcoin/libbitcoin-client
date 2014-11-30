@@ -84,11 +84,6 @@ check_PROGRAMS = test/libbitcoin_client_test
 test_libbitcoin_client_test_CPPFLAGS = \
     -I${srcdir}/include \
     ${bitcoin_protocol_CFLAGS}
-    
-if ENABLE_SHARED
-test_libbitcoin_client_test_CPPFLAGS += \
-    -DBOOST_TEST_DYN_LINK
-endif
 
 test_libbitcoin_client_test_SOURCES = \
     test/client.cpp \
