@@ -131,11 +131,6 @@ AS_CASE([${host_os}], [*darwin*],
 
 AS_IF([test x$with_tests != xno], [AX_BOOST_UNIT_TEST_FRAMEWORK])
 
-# Require sodium of at least version 1.0.0 and output ${sodium}.
-#------------------------------------------------------------------------------
-# The chained zmq dependency doesn't set a minimum version for sodium.
-PKG_CHECK_MODULES([sodium], [libsodium >= 1.0.0])
-
 # Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin-protocol}.
 #------------------------------------------------------------------------------
 PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
