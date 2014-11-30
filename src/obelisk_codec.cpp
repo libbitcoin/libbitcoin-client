@@ -255,7 +255,7 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
 
 //BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
 //    fetch_stealth_handler&& on_reply,
-//    const bc::stealth_prefix& prefix, size_t from_height)
+//    const bc::binary_type& prefix, size_t from_height)
 //{
 //    // BUGBUG: assertion is not good enough here.
 //    BITCOIN_ASSERT(prefix.size() <= 255);

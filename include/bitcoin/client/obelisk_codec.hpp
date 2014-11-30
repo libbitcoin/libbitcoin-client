@@ -122,7 +122,7 @@ public:
         const stealth_prefix& prefix, size_t from_height=0);
 //    BCC_API void fetch_stealth(error_handler&& on_error,
 //        fetch_stealth_handler&& on_reply,
-//        const bc::stealth_prefix& prefix, size_t from_height=0);
+//        const bc::binary_type& prefix, size_t from_height=0);
     BCC_API void validate(error_handler&& on_error,
         validate_handler&& on_reply,
         const transaction_type& tx);
