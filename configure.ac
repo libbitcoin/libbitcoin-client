@@ -131,11 +131,6 @@ AS_CASE([${host_os}], [*darwin*],
 
 AS_IF([test x$with_tests != xno], [AX_BOOST_UNIT_TEST_FRAMEWORK])
 
-# Require sodium of at least version 1.0.0 and output ${sodium}.
-#------------------------------------------------------------------------------
-# The chained zmq dependency doesn't set a minimum version for sodium.
-PKG_CHECK_MODULES([sodium], [libsodium >= 1.0.0])
-
 # Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin-protocol}.
 #------------------------------------------------------------------------------
 PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
@@ -165,20 +160,10 @@ AX_CHECK_COMPILE_FLAG([-Wpedantic],
 AX_CHECK_COMPILE_FLAG([-Wno-missing-braces],
     [CXXFLAGS="$CXXFLAGS -Wno-missing-braces"])
 
-# Clean up Boost 1.54 headers (clang).
-#------------------------------------------------------------------------------
-AX_CHECK_COMPILE_FLAG([-Wno-deprecated-register],
-    [CXXFLAGS="$CXXFLAGS -Wno-deprecated-register"])
-
 # Clean up Boost 1.49 headers (gcc).
 #------------------------------------------------------------------------------
 AX_CHECK_COMPILE_FLAG([-Wno-unused-local-typedefs],
     [CXXFLAGS="$CXXFLAGS -Wno-unused-local-typedefs"])
-
-# Clean up on OSX (clang).
-#------------------------------------------------------------------------------
-AX_CHECK_COMPILE_FLAG([-Wno-unknown-warning-option],
-    [CXXFLAGS="$CXXFLAGS -Wno-unknown-warning-option"])
 
 # Protect stack.
 #------------------------------------------------------------------------------

@@ -40,7 +40,6 @@ lib_LTLIBRARIES = src/libbitcoin-client.la
 
 src_libbitcoin_client_la_CPPFLAGS = \
     -I${srcdir}/include \
-    ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
 src_libbitcoin_client_la_SOURCES = \
@@ -50,7 +49,6 @@ src_libbitcoin_client_la_SOURCES = \
     src/uniform_uint32_generator.cpp
 
 src_libbitcoin_client_la_LIBADD = \
-    ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
 
 #
@@ -60,7 +58,6 @@ EXTRA_PROGRAMS = examples/libbitcoin_client
 
 examples_libbitcoin_client_CPPFLAGS = \
     -I${srcdir}/include \
-    ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
 
 examples_libbitcoin_client_SOURCES = \
@@ -71,7 +68,6 @@ examples_libbitcoin_client_SOURCES = \
 
 examples_libbitcoin_client_LDADD = \
     src/libbitcoin-client.la \
-    ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
 
 examples: examples/libbitcoin_client
@@ -87,7 +83,6 @@ check_PROGRAMS = test/libbitcoin_client_test
 
 test_libbitcoin_client_test_CPPFLAGS = \
     -I${srcdir}/include \
-    ${sodium_CFLAGS} \
     ${bitcoin_protocol_CFLAGS}
     
 if ENABLE_SHARED
@@ -102,7 +97,6 @@ test_libbitcoin_client_test_SOURCES = \
 test_libbitcoin_client_test_LDADD = \
     src/libbitcoin-client.la \
     -lboost_unit_test_framework \
-    ${sodium_LIBS} \
     ${bitcoin_protocol_LIBS}
     
 endif
