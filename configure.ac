@@ -165,6 +165,11 @@ AX_CHECK_COMPILE_FLAG([-Wno-missing-braces],
 AX_CHECK_COMPILE_FLAG([-Wno-unused-local-typedefs],
     [CXXFLAGS="$CXXFLAGS -Wno-unused-local-typedefs"])
 
+# Clean up protobuf headers.
+#------------------------------------------------------------------------------
+AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter],
+    [CXXFLAGS="$CXXFLAGS -Wno-unused-parameter"])
+
 # Protect stack.
 #------------------------------------------------------------------------------
 AX_CHECK_COMPILE_FLAG([-fstack-protector],
