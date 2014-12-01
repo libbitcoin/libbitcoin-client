@@ -131,7 +131,7 @@ AS_CASE([${host_os}], [*darwin*],
 
 AS_IF([test x$with_tests = xyes], [AX_BOOST_UNIT_TEST_FRAMEWORK])
 
-# Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin-protocol}.
+# Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin_protocol_CFLAGS} and ${bitcoin_protocol_LIBS}.
 #------------------------------------------------------------------------------
 PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
 
