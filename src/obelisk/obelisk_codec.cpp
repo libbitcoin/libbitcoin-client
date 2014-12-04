@@ -44,17 +44,14 @@ obelisk_codec::~obelisk_codec()
 
 BCC_API void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
-    const payment_address& address, size_t from_height)
+    const payment_address& address, uint32_t from_height)
 {
     data_chunk data;
     data.resize(1 + short_hash_size + 4);
     auto serial = make_serializer(data.begin());
     serial.write_byte(address.version());
     serial.write_short_hash(address.hash());
-
-    // BUGBUG: the API should be limited to uint32_t.
-    serial.write_4_bytes(static_cast<uint32_t>(from_height));
-
+    serial.write_4_bytes(from_height);
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("blockchain.fetch_history", data, std::move(on_error),
@@ -85,11 +82,10 @@ BCC_API void obelisk_codec::fetch_last_height(error_handler on_error,
 
 BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
     fetch_block_header_handler on_reply,
-    size_t height)
+    uint32_t height)
 {
-    // BUGBUG: the API should be limited to uint32_t.
     data_chunk data = to_data_chunk(
-        to_little_endian(static_cast<uint32_t>(height)));
+        to_little_endian(height));
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
@@ -125,16 +121,13 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
 // Note that prefix is a *client* stealth_prefix struct.
 BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
     fetch_stealth_handler on_reply,
-    const stealth_prefix& prefix, size_t from_height)
+    const stealth_prefix& prefix, uint32_t from_height)
 {
     data_chunk data(9);
     auto serial = make_serializer(data.begin());
     serial.write_byte(prefix.number_bits);
     serial.write_4_bytes(prefix.bitfield);
-
-    // BUGBUG: the API should be limited to uint32_t.
-    serial.write_4_bytes(static_cast<uint32_t>(from_height));
-
+    serial.write_4_bytes(from_height);
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("blockchain.fetch_stealth", data, std::move(on_error),
@@ -143,7 +136,7 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
 
 //BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
 //    fetch_stealth_handler on_reply,
-//    const bc::binary_type& prefix, size_t from_height)
+//    const bc::binary_type& prefix, uint32_t from_height)
 //{
 //    // BUGBUG: assertion is not good enough here.
 //    BITCOIN_ASSERT(prefix.size() <= 255);
@@ -160,8 +153,7 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
 //    boost::to_block_range(prefix, bitfield.begin());
 //    serial.write_data(bitfield);
 //
-//    // BUGBUG: the API should be limited to uint32_t.
-//    serial.write_4_bytes(static_cast<uint32_t>(from_height));
+//    serial.write_4_bytes(from_height);
 //    BITCOIN_ASSERT(serial.iterator() == data.end());
 //
 //    send_request("blockchain.fetch_stealth", data, std::move(on_error),
@@ -210,16 +202,14 @@ BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
 
 BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
-    const payment_address& address, size_t from_height)
+    const payment_address& address, uint32_t from_height)
 {
     data_chunk data;
     data.resize(1 + short_hash_size + 4);
     auto serial = make_serializer(data.begin());
     serial.write_byte(address.version());
     serial.write_short_hash(address.hash());
-
-    // BUGBUG: the API should be limited to uint32_t.
-    serial.write_4_bytes(static_cast<uint32_t>(from_height));
+    serial.write_4_bytes(from_height);
     BITCOIN_ASSERT(serial.iterator() == data.end());
 
     send_request("address.fetch_history", data, std::move(on_error),
@@ -294,7 +284,7 @@ void obelisk_codec::decode_fetch_transaction(data_deserial& payload,
 void obelisk_codec::decode_fetch_last_height(data_deserial& payload,
     fetch_last_height_handler& handler)
 {
-    size_t last_height = payload.read_4_bytes();
+    uint32_t last_height = payload.read_4_bytes();
     check_end(payload);
     handler(last_height);
 }
@@ -341,7 +331,7 @@ void obelisk_codec::decode_validate(data_deserial& payload,
     index_list unconfirmed;
     while (payload.iterator() != payload.end())
     {
-        size_t unconfirm_index = payload.read_4_bytes();
+        uint32_t unconfirm_index = payload.read_4_bytes();
         unconfirmed.push_back(unconfirm_index);
     }
     handler(unconfirmed);

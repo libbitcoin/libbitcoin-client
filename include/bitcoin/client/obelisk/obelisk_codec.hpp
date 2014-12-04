@@ -73,7 +73,7 @@ public:
     // Outgoing messages:
     BCC_API void fetch_history(error_handler on_error,
         fetch_history_handler on_reply,
-        const payment_address& address, size_t from_height=0);
+        const payment_address& address, uint32_t from_height=0);
     BCC_API void fetch_transaction(error_handler on_error,
         fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
@@ -81,7 +81,7 @@ public:
         fetch_last_height_handler on_reply);
     BCC_API void fetch_block_header(error_handler on_error,
         fetch_block_header_handler on_reply,
-        size_t height);
+        uint32_t height);
     BCC_API void fetch_block_header(error_handler on_error,
         fetch_block_header_handler on_reply,
         const hash_digest& blk_hash);
@@ -90,10 +90,10 @@ public:
         const hash_digest& tx_hash);
     BCC_API void fetch_stealth(error_handler on_error,
         fetch_stealth_handler on_reply,
-        const stealth_prefix& prefix, size_t from_height=0);
+        const stealth_prefix& prefix, uint32_t from_height=0);
 //    BCC_API void fetch_stealth(error_handler on_error,
 //        fetch_stealth_handler on_reply,
-//        const bc::binary_type& prefix, size_t from_height=0);
+//        const bc::binary_type& prefix, uint32_t from_height=0);
     BCC_API void validate(error_handler on_error,
         validate_handler on_reply,
         const transaction_type& tx);
@@ -105,7 +105,7 @@ public:
         const transaction_type& tx);
     BCC_API void address_fetch_history(error_handler on_error,
         fetch_history_handler on_reply,
-        const payment_address& address, size_t from_height=0);
+        const payment_address& address, uint32_t from_height=0);
     BCC_API void subscribe(error_handler on_error,
         empty_handler on_reply,
         const bc::payment_address& address);
