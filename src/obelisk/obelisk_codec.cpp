@@ -42,12 +42,6 @@ obelisk_codec::~obelisk_codec()
 {
 }
 
-BCC_API void obelisk_codec::set_message_stream(
-    std::shared_ptr<message_stream>& out)
-{
-    out_ = out;
-}
-
 BCC_API void obelisk_codec::set_on_update(const update_handler& on_update)
 {
     on_update_ = on_update;

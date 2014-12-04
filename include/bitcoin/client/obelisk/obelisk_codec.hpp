@@ -64,8 +64,6 @@ public:
 
     BCC_API virtual ~obelisk_codec();
 
-    BCC_API virtual void set_message_stream(std::shared_ptr<message_stream>& out);
-
     BCC_API virtual void set_on_update(const update_handler& on_update);
 
     BCC_API virtual void set_on_unknown(const unknown_handler& on_unknown);
