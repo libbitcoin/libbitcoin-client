@@ -4,16 +4,22 @@
     <Filter Include="src">
       <UniqueIdentifier>{9aa75a48-3a93-45a0-bb15-92f0f3c99147}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\obelisk">
+      <UniqueIdentifier>{e7c9c757-5ac3-4817-97e5-5a1118a5cb68}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{938a1eac-336c-4f05-8f1e-d11a2c32abac}</UniqueIdentifier>
     </Filter>
     <Filter Include="include\client">
       <UniqueIdentifier>{a9affd7a-0980-4b26-bf58-7312df4898a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\client\obelisk">
+      <UniqueIdentifier>{289d6920-819e-47f6-b0e4-8f80d3ca0e19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_codec.cpp">
+      <Filter>src\obelisk</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\server_codec_impl.cpp">
       <Filter>src</Filter>
@@ -38,8 +44,11 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\message_stream.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_codec.hpp">
-      <Filter>include\client</Filter>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_codec.hpp">
+      <Filter>include\client\obelisk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_types.hpp">
+      <Filter>include\client\obelisk</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\random_number_generator.hpp">
       <Filter>include\client</Filter>

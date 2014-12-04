@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/obelisk_codec.hpp>
+#include <bitcoin/client/obelisk/obelisk_codec.hpp>
 
 namespace libbitcoin {
 namespace client {
 
 using std::placeholders::_1;
 
-// The previous technique of callback referencing produces a cross-compile 
+// The previous technique of callback referencing produces a cross-compile
 // break, so this has been modified to accept simple references.
 BCC_API obelisk_codec::obelisk_codec(
     std::shared_ptr<message_stream>& out,

@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_OBELISK_CODEC_HPP
-#define LIBBITCOIN_CLIENT_OBELISK_CODEC_HPP
+#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_CODEC_HPP
+#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_CODEC_HPP
 
 #include <functional>
 #include <map>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/obelisk_v1_types.hpp>
 #include <bitcoin/client/sleeper.hpp>
+#include <bitcoin/client/obelisk/obelisk_types.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -34,7 +34,7 @@ namespace client {
  * Decodes and encodes messages in the obelisk protocol.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class obelisk_codec 
+class obelisk_codec
   : public message_stream, public sleeper
 {
 public:

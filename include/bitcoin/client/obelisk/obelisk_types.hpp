@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_OBELISK_V1_TYPES_HPP
-#define LIBBITCOIN_CLIENT_OBELISK_V1_TYPES_HPP
+#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_TYPES_HPP
+#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_TYPES_HPP
 
 #include <bitcoin/client/define.hpp>
 
