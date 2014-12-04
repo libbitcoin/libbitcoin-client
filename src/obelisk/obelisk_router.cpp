@@ -104,7 +104,7 @@ BCC_API void obelisk_router::write(const data_stack& data)
     }
 }
 
-BCC_API period_ms obelisk_router::wakeup(bool enable_sideeffects)
+BCC_API period_ms obelisk_router::wakeup()
 {
     period_ms next_wakeup(0);
     auto now = std::chrono::steady_clock::now();
@@ -117,23 +117,20 @@ BCC_API period_ms obelisk_router::wakeup(bool enable_sideeffects)
             now - request->second.last_action);
         if (timeout_ <= elapsed)
         {
-            if (enable_sideeffects)
+            if (request->second.retries < retries_)
             {
-                if (request->second.retries < retries_)
-                {
-                    // Resend:
-                    ++request->second.retries;
-                    request->second.last_action = now;
-                    next_wakeup = min_sleep(next_wakeup, timeout_);
-                    send(request->second.message);
-                }
-                else
-                {
-                    // Cancel:
-                    auto ec = std::make_error_code(std::errc::timed_out);
-                    request->second.on_error(ec);
-                    pending_requests_.erase(request);
-                }
+                // Resend:
+                ++request->second.retries;
+                request->second.last_action = now;
+                next_wakeup = min_sleep(next_wakeup, timeout_);
+                send(request->second.message);
+            }
+            else
+            {
+                // Cancel:
+                auto ec = std::make_error_code(std::errc::timed_out);
+                request->second.on_error(ec);
+                pending_requests_.erase(request);
             }
         }
         else

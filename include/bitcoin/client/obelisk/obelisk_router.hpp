@@ -67,7 +67,7 @@ public:
     BCC_API virtual void write(const data_stack& data) override;
 
     // sleeper interface:
-    BCC_API virtual period_ms wakeup(bool enable_sideeffects=true) override;
+    BCC_API virtual period_ms wakeup() override;
 
 protected:
     typedef deserializer<data_chunk::const_iterator, true> data_deserial;

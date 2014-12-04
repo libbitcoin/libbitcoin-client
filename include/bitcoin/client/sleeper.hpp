@@ -51,7 +51,7 @@ public:
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true) = 0;
+    BCC_API virtual period_ms wakeup() = 0;
 };
 
 /**
