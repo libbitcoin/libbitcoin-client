@@ -25,7 +25,7 @@ namespace client {
 using std::placeholders::_1;
 
 BCC_API obelisk_codec::obelisk_codec(
-    std::shared_ptr<message_stream>& out,
+    std::shared_ptr<message_stream> out,
     update_handler on_update,
     unknown_handler on_unknown,
     period_ms timeout,
