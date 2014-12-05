@@ -68,7 +68,8 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\src\obelisk_codec.cpp" />
+    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_codec.cpp" />
+    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_router.cpp" />
     <ClCompile Include="..\..\..\..\src\server_codec_impl.cpp" />
     <ClCompile Include="..\..\..\..\src\socket_stream.cpp" />
     <ClCompile Include="..\..\..\..\src\uniform_uint32_generator.cpp" />
@@ -82,7 +83,9 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\define.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\message_stream.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_codec.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_codec.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_router.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_types.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\random_number_generator.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\response_stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\request_stream.hpp" />

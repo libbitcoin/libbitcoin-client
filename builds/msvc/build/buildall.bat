@@ -1,7 +1,7 @@
 @ECHO OFF
 ECHO.
-ECHO Downloading libitcoin-client dependencies from NuGet
-CALL nuget.exe install ..\vs2013\bitcoin-client\packages.config
+ECHO Downloading libbitcoin-client dependencies from NuGet
+CALL nuget.exe install ..\vs2013\example-client\packages.config
 CALL nuget.exe install ..\vs2013\libbitcoin-client\packages.config
 CALL nuget.exe install ..\vs2013\libbitcoin-client-test\packages.config
 ECHO.

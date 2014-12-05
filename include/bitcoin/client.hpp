@@ -34,8 +34,8 @@
 #include <bitcoin/protocol.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/obelisk_codec.hpp>
-#include <bitcoin/client/obelisk_v1_types.hpp>
+#include <bitcoin/client/obelisk/obelisk_codec.hpp>
+#include <bitcoin/client/obelisk/obelisk_types.hpp>
 #include <bitcoin/client/random_number_generator.hpp>
 #include <bitcoin/client/request_stream.hpp>
 #include <bitcoin/client/response_stream.hpp>

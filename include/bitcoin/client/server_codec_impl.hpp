@@ -68,7 +68,7 @@ public:
         const std::shared_ptr<bc::protocol::response>& response);
 
     // sleeper interface
-    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true);
+    BCC_API virtual period_ms wakeup() override;
 
     // server_codec interface
     BCC_API virtual void get_block_headers(

@@ -22,8 +22,6 @@ bitcoin_client_includedir = ${includedir}/bitcoin/client
 bitcoin_client_include_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
-    include/bitcoin/client/obelisk_codec.hpp \
-    include/bitcoin/client/obelisk_v1_types.hpp \
     include/bitcoin/client/random_number_generator.hpp \
     include/bitcoin/client/response_stream.hpp \
     include/bitcoin/client/request_stream.hpp \
@@ -32,6 +30,12 @@ bitcoin_client_include_HEADERS = \
     include/bitcoin/client/sleeper.hpp \
     include/bitcoin/client/socket_stream.hpp \
     include/bitcoin/client/uniform_uint32_generator.hpp
+
+bitcoin_client_obelisk_includedir = ${includedir}/bitcoin/client/obelisk
+bitcoin_client_obelisk_include_HEADERS = \
+    include/bitcoin/client/obelisk/obelisk_codec.hpp \
+    include/bitcoin/client/obelisk/obelisk_router.hpp \
+    include/bitcoin/client/obelisk/obelisk_types.hpp
 
 #
 # libraries
@@ -43,7 +47,8 @@ src_libbitcoin_client_la_CPPFLAGS = \
     ${bitcoin_protocol_CFLAGS}
 
 src_libbitcoin_client_la_SOURCES = \
-    src/obelisk_codec.cpp \
+    src/obelisk/obelisk_codec.cpp \
+    src/obelisk/obelisk_router.cpp \
     src/server_codec_impl.cpp \
     src/socket_stream.cpp \
     src/uniform_uint32_generator.cpp
@@ -86,12 +91,12 @@ test_libbitcoin_client_test_CPPFLAGS = \
     ${bitcoin_protocol_CFLAGS}
 
 test_libbitcoin_client_test_SOURCES = \
-    test/client.cpp \
+    test/obelisk_codec.cpp \
     test/main.cpp
 
 test_libbitcoin_client_test_LDADD = \
     src/libbitcoin-client.la \
     -lboost_unit_test_framework \
     ${bitcoin_protocol_LIBS}
-    
+
 endif

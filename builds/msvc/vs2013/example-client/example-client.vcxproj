@@ -4,7 +4,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <ProjectGuid>{FBCC58AD-93A1-4247-B660-B32C61ACA680}</ProjectGuid>
-    <ProjectName>bitcoin-client</ProjectName>
+    <ProjectName>example-client</ProjectName>
     <NuGetPackageImportStamp>13d81e42</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">

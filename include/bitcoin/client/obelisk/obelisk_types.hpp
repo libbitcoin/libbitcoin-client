@@ -17,16 +17,45 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test_suite.hpp>
-#include <bitcoin/client.hpp>
+#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_TYPES_HPP
+#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_TYPES_HPP
 
-using namespace bc::client;
+#include <bitcoin/client/define.hpp>
 
-BOOST_AUTO_TEST_SUITE(client_tests)
+namespace libbitcoin {
+namespace client {
 
-BOOST_AUTO_TEST_CASE(client_test)
+typedef uint32_t stealth_bitfield;
+
+struct BCC_API stealth_prefix
 {
+    uint8_t number_bits;
+    stealth_bitfield bitfield;
+};
+
+//typedef bc::stealth_prefix address_prefix;
+
+struct BCC_API history_row
+{
+    output_point output;
+    size_t output_height;
+    uint64_t value;
+    input_point spend;
+    size_t spend_height;
+};
+
+typedef std::vector<history_row> history_list;
+
+struct BCC_API stealth_row
+{
+    data_chunk ephemkey;
+    payment_address address;
+    hash_digest transaction_hash;
+};
+
+typedef std::vector<stealth_row> stealth_list;
+
+}
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+#endif

@@ -83,7 +83,7 @@ void server_codec_impl::write(const bc::protocol::response& response)
 }
 
 // sleeper interface
-period_ms server_codec_impl::wakeup(bool enable_sideeffects)
+period_ms server_codec_impl::wakeup()
 {
     period_ms next_wakeup(0);
     auto now = std::chrono::steady_clock::now();
@@ -97,23 +97,20 @@ period_ms server_codec_impl::wakeup(bool enable_sideeffects)
 
         if (timeout_ <= elapsed)
         {
-            if (enable_sideeffects)
+            if (request->second.retries < retries_)
             {
-                if (request->second.retries < retries_)
-                {
-                    // Resend:
-                    ++request->second.retries;
-                    request->second.last_action = now;
-                    next_wakeup = min_sleep(next_wakeup, timeout_);
-                    broadcast_request(request->second.request);
-                }
-                else
-                {
-                    // Cancel:
-                    auto ec = std::make_error_code(std::errc::timed_out);
-                    request->second.on_error(ec);
-                    pending_requests_.erase(request);
-                }
+                // Resend:
+                ++request->second.retries;
+                request->second.last_action = now;
+                next_wakeup = min_sleep(next_wakeup, timeout_);
+                broadcast_request(request->second.request);
+            }
+            else
+            {
+                // Cancel:
+                auto ec = std::make_error_code(std::errc::timed_out);
+                request->second.on_error(ec);
+                pending_requests_.erase(request);
             }
         }
         else
@@ -355,7 +352,7 @@ void server_codec_impl::send(
     const std::shared_ptr<bc::protocol::request>& request)
 {
     // set unique message identifier
-    uint32_t id = (generator_) ? (*generator_.get())() : 
+    uint32_t id = (generator_) ? (*generator_.get())() :
         static_cast<uint32_t>(pending_requests_.size());
 
     // create pending request entry

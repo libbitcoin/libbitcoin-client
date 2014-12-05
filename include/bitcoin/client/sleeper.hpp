@@ -22,10 +22,19 @@
 
 #include <chrono>
 #include <algorithm>
+#include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
 
+/**
+ * Sentinel value interpreted in sleep timer as infinity.
+ */
+constexpr int period_forever = 0;
+
+/**
+ * A sleep timer period in milliseconds.
+ */
 typedef std::chrono::milliseconds period_ms;
 
 /**
@@ -39,8 +48,6 @@ typedef std::chrono::milliseconds period_ms;
  * loop, calling the `wakeup` method will perform the pending work
  * (assuming enough time has elapsed).
  */
-#include <bitcoin/client/define.hpp>
-
 class sleeper
 {
 public:
@@ -51,7 +58,7 @@ public:
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true) = 0;
+    BCC_API virtual period_ms wakeup() = 0;
 };
 
 /**
@@ -59,15 +66,14 @@ public:
  */
 inline period_ms min_sleep(period_ms a, period_ms b)
 {
-    if (!a.count())
+    if (a.count() == period_forever)
         return b;
-    if (!b.count())
+    if (b.count() == period_forever)
         return a;
-    return min(a, b);
+    return std::min(a, b);
 }
 
 } // namespace client
 } // namespace libbitcoin
 
 #endif
-
