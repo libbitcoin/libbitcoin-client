@@ -52,31 +52,30 @@ public:
      * @param out a stream to receive outgoing messages created by the codec.
      * @param on_update function to handle subscription update messages.
      * @param on_unknown function to handle malformed incoming messages.
-     * @param timeout the call timeout, defaults to 2 seconds.
-     * @param retries the number of retries to attempt, details to one.
+     * @param timeout the call timeout. Defaults to 2 seconds.
+     * @param retries the number of retries to attempt.
      */
     BCC_API obelisk_codec(
         std::shared_ptr<message_stream>& out,
-        const update_handler& on_update=on_update_nop,
-        const unknown_handler& on_unknown = on_unknown_nop,
+        update_handler on_update=on_update_nop,
+        unknown_handler on_unknown=on_unknown_nop,
         period_ms timeout=std::chrono::seconds(2),
-        uint8_t retries = 0);
+        uint8_t retries=0);
 
     BCC_API virtual ~obelisk_codec();
 
-    BCC_API virtual void set_on_update(const update_handler& on_update);
-
-    BCC_API virtual void set_on_unknown(const unknown_handler& on_unknown);
-
+    BCC_API virtual void set_on_update(update_handler on_update);
+    BCC_API virtual void set_on_unknown(unknown_handler on_unknown);
     BCC_API virtual void set_retries(uint8_t retries);
-
     BCC_API virtual void set_timeout(period_ms timeout);
 
-    // Pass in a message for decoding:
+    BCC_API uint64_t outstanding_call_count() const;
+
+    // message-stream interface:
     BCC_API virtual void write(const data_stack& data) override;
 
-    // Sleeper interface:
-    BCC_API virtual period_ms wakeup(bool enable_sideeffects = true) override;
+    // sleeper interface:
+    BCC_API virtual period_ms wakeup(bool enable_sideeffects=true) override;
 
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)>
@@ -98,49 +97,47 @@ public:
     typedef std::function<void ()> empty_handler;
 
     // Outgoing messages:
-    BCC_API void fetch_history(error_handler&& on_error,
-        fetch_history_handler&& on_reply,
+    BCC_API void fetch_history(error_handler on_error,
+        fetch_history_handler on_reply,
         const payment_address& address, size_t from_height=0);
-    BCC_API void fetch_transaction(error_handler&& on_error,
-        fetch_transaction_handler&& on_reply,
+    BCC_API void fetch_transaction(error_handler on_error,
+        fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
-    BCC_API void fetch_last_height(error_handler&& on_error,
-        fetch_last_height_handler&& on_reply);
-    BCC_API void fetch_block_header(error_handler&& on_error,
-        fetch_block_header_handler&& on_reply,
+    BCC_API void fetch_last_height(error_handler on_error,
+        fetch_last_height_handler on_reply);
+    BCC_API void fetch_block_header(error_handler on_error,
+        fetch_block_header_handler on_reply,
         size_t height);
-    BCC_API void fetch_block_header(error_handler&& on_error,
-        fetch_block_header_handler&& on_reply,
+    BCC_API void fetch_block_header(error_handler on_error,
+        fetch_block_header_handler on_reply,
         const hash_digest& blk_hash);
-    BCC_API void fetch_transaction_index(error_handler&& on_error,
-        fetch_transaction_index_handler&& on_reply,
+    BCC_API void fetch_transaction_index(error_handler on_error,
+        fetch_transaction_index_handler on_reply,
         const hash_digest& tx_hash);
-    BCC_API void fetch_stealth(error_handler&& on_error,
-        fetch_stealth_handler&& on_reply,
+    BCC_API void fetch_stealth(error_handler on_error,
+        fetch_stealth_handler on_reply,
         const stealth_prefix& prefix, size_t from_height=0);
-//    BCC_API void fetch_stealth(error_handler&& on_error,
-//        fetch_stealth_handler&& on_reply,
+//    BCC_API void fetch_stealth(error_handler on_error,
+//        fetch_stealth_handler on_reply,
 //        const bc::binary_type& prefix, size_t from_height=0);
-    BCC_API void validate(error_handler&& on_error,
-        validate_handler&& on_reply,
+    BCC_API void validate(error_handler on_error,
+        validate_handler on_reply,
         const transaction_type& tx);
-    BCC_API void fetch_unconfirmed_transaction(error_handler&& on_error,
-        fetch_transaction_handler&& on_reply,
+    BCC_API void fetch_unconfirmed_transaction(error_handler on_error,
+        fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
-    BCC_API void broadcast_transaction(error_handler&& on_error,
-        empty_handler&& on_reply,
+    BCC_API void broadcast_transaction(error_handler on_error,
+        empty_handler on_reply,
         const transaction_type& tx);
-    BCC_API void address_fetch_history(error_handler&& on_error,
-        fetch_history_handler&& on_reply,
+    BCC_API void address_fetch_history(error_handler on_error,
+        fetch_history_handler on_reply,
         const payment_address& address, size_t from_height=0);
-    BCC_API void subscribe(error_handler&& on_error,
-        empty_handler&& on_reply,
+    BCC_API void subscribe(error_handler on_error,
+        empty_handler on_reply,
         const bc::payment_address& address);
-//    BCC_API void subscribe(error_handler&& on_error,
-//        empty_handler&& on_reply,
+//    BCC_API void subscribe(error_handler on_error,
+//        empty_handler on_reply,
 //        const address_prefix& prefix);
-
-    BCC_API uint64_t outstanding_call_count() const;
 
 private:
     typedef deserializer<data_chunk::const_iterator, true> data_deserial;
@@ -182,7 +179,7 @@ private:
      */
     void send_request(const std::string& command,
         const data_chunk& payload,
-        error_handler&& on_error, decoder&& on_reply);
+        error_handler on_error, decoder on_reply);
 
     struct obelisk_message
     {
@@ -205,9 +202,6 @@ private:
         payload_part,
         error_part
     };
-
-    // unused private field
-    //message_part next_part_;
 
     // Request management:
     uint32_t last_request_id_;

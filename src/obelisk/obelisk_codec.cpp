@@ -24,16 +24,15 @@ namespace client {
 
 using std::placeholders::_1;
 
-// The previous technique of callback referencing produces a cross-compile
-// break, so this has been modified to accept simple references.
 BCC_API obelisk_codec::obelisk_codec(
     std::shared_ptr<message_stream>& out,
-    const update_handler& on_update,
-    const unknown_handler& on_unknown,
+    update_handler on_update,
+    unknown_handler on_unknown,
     period_ms timeout,
     uint8_t retries)
-  : /* next_part_(command_part), */ last_request_id_(0), timeout_(timeout),
-    retries_(retries), on_unknown_(on_unknown), on_update_(on_update),
+  : last_request_id_(0),
+    timeout_(timeout), retries_(retries),
+    on_unknown_(std::move(on_unknown)), on_update_(std::move(on_update)),
     out_(out)
 {
 }
@@ -42,14 +41,14 @@ obelisk_codec::~obelisk_codec()
 {
 }
 
-BCC_API void obelisk_codec::set_on_update(const update_handler& on_update)
+BCC_API void obelisk_codec::set_on_update(update_handler on_update)
 {
-    on_update_ = on_update;
+    on_update_ = std::move(on_update);
 }
 
-BCC_API void obelisk_codec::set_on_unknown(const unknown_handler& on_unknown)
+BCC_API void obelisk_codec::set_on_unknown(unknown_handler on_unknown)
 {
-    on_unknown_ = on_unknown;
+    on_unknown_ = std::move(on_unknown);
 }
 
 BCC_API void obelisk_codec::set_retries(uint8_t retries)
@@ -148,8 +147,8 @@ BCC_API period_ms obelisk_codec::wakeup(bool enable_sideeffects)
     return next_wakeup;
 }
 
-BCC_API void obelisk_codec::fetch_history(error_handler&& on_error,
-    fetch_history_handler&& on_reply,
+BCC_API void obelisk_codec::fetch_history(error_handler on_error,
+    fetch_history_handler on_reply,
     const payment_address& address, size_t from_height)
 {
     data_chunk data;
@@ -167,8 +166,8 @@ BCC_API void obelisk_codec::fetch_history(error_handler&& on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_transaction(error_handler&& on_error,
-    fetch_transaction_handler&& on_reply,
+BCC_API void obelisk_codec::fetch_transaction(error_handler on_error,
+    fetch_transaction_handler on_reply,
     const hash_digest& tx_hash)
 {
     data_chunk data;
@@ -181,16 +180,16 @@ BCC_API void obelisk_codec::fetch_transaction(error_handler&& on_error,
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_last_height(error_handler&& on_error,
-    fetch_last_height_handler&& on_reply)
+BCC_API void obelisk_codec::fetch_last_height(error_handler on_error,
+    fetch_last_height_handler on_reply)
 {
     send_request("blockchain.fetch_last_height", data_chunk(),
         std::move(on_error),
         std::bind(decode_fetch_last_height, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
-    fetch_block_header_handler&& on_reply,
+BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
+    fetch_block_header_handler on_reply,
     size_t height)
 {
     // BUGBUG: the API should be limited to uint32_t.
@@ -201,8 +200,8 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
-    fetch_block_header_handler&& on_reply,
+BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
+    fetch_block_header_handler on_reply,
     const hash_digest& blk_hash)
 {
     data_chunk data(hash_size);
@@ -214,8 +213,8 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler&& on_error,
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_transaction_index(error_handler&& on_error,
-    fetch_transaction_index_handler&& on_reply,
+BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
+    fetch_transaction_index_handler on_reply,
     const hash_digest& tx_hash)
 {
     data_chunk data(hash_size);
@@ -229,8 +228,8 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler&& on_error,
 }
 
 // Note that prefix is a *client* stealth_prefix struct.
-BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
-    fetch_stealth_handler&& on_reply,
+BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
+    fetch_stealth_handler on_reply,
     const stealth_prefix& prefix, size_t from_height)
 {
     data_chunk data(9);
@@ -247,8 +246,8 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
         std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
 }
 
-//BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
-//    fetch_stealth_handler&& on_reply,
+//BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
+//    fetch_stealth_handler on_reply,
 //    const bc::binary_type& prefix, size_t from_height)
 //{
 //    // BUGBUG: assertion is not good enough here.
@@ -274,8 +273,8 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler&& on_error,
 //        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
 //}
 
-BCC_API void obelisk_codec::validate(error_handler&& on_error,
-    validate_handler&& on_reply,
+BCC_API void obelisk_codec::validate(error_handler on_error,
+    validate_handler on_reply,
     const transaction_type& tx)
 {
     data_chunk data(satoshi_raw_size(tx));
@@ -287,8 +286,8 @@ BCC_API void obelisk_codec::validate(error_handler&& on_error,
 }
 
 BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
-    error_handler&& on_error,
-    fetch_transaction_handler&& on_reply,
+    error_handler on_error,
+    fetch_transaction_handler on_reply,
     const hash_digest& tx_hash)
 {
     data_chunk data;
@@ -302,8 +301,8 @@ BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::broadcast_transaction(error_handler&& on_error,
-    empty_handler&& on_reply,
+BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
+    empty_handler on_reply,
     const transaction_type& tx)
 {
     data_chunk data(satoshi_raw_size(tx));
@@ -314,8 +313,8 @@ BCC_API void obelisk_codec::broadcast_transaction(error_handler&& on_error,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
-    fetch_history_handler&& on_reply,
+BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
+    fetch_history_handler on_reply,
     const payment_address& address, size_t from_height)
 {
     data_chunk data;
@@ -332,8 +331,8 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler&& on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
-    empty_handler&& on_reply,
+BCC_API void obelisk_codec::subscribe(error_handler on_error,
+    empty_handler on_reply,
     const bc::payment_address& address)
 {
     data_chunk data(1 + short_hash_size);
@@ -346,8 +345,8 @@ BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
-//BCC_API void obelisk_codec::subscribe(error_handler&& on_error,
-//    empty_handler&& on_reply,
+//BCC_API void obelisk_codec::subscribe(error_handler on_error,
+//    empty_handler on_reply,
 //    const address_prefix& prefix)
 //{
 //    // BUGBUG: assertion is not good enough here.
@@ -461,7 +460,7 @@ void obelisk_codec::check_end(data_deserial& payload)
 
 void obelisk_codec::send_request(const std::string& command,
     const data_chunk& payload,
-    error_handler&& on_error, decoder&& on_reply)
+    error_handler on_error, decoder on_reply)
 {
     uint32_t id = ++last_request_id_;
     pending_request& request = pending_requests_[id];
