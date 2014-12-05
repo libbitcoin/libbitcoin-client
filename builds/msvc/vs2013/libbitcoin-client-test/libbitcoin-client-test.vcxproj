@@ -66,7 +66,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\test\main.cpp" />
-    <ClCompile Include="..\..\..\..\test\client.cpp" />
+    <ClCompile Include="..\..\..\..\test\obelisk_codec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

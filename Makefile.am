@@ -91,7 +91,7 @@ test_libbitcoin_client_test_CPPFLAGS = \
     ${bitcoin_protocol_CFLAGS}
 
 test_libbitcoin_client_test_SOURCES = \
-    test/client.cpp \
+    test/obelisk_codec.cpp \
     test/main.cpp
 
 test_libbitcoin_client_test_LDADD = \
