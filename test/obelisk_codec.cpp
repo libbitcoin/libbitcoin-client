@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_history_test)
     codec.fetch_history(on_error, on_reply,
         payment_address(addressSatoshi), 0x12345678);
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_history");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_transaction_test)
     codec.fetch_transaction(on_error, on_reply,
         hash_literal(hashSatoshi));
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_transaction");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_last_height_test)
     auto on_reply = [](size_t) {};
     codec.fetch_last_height(on_error, on_reply);
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_last_height");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_block_header_height_test)
     codec.fetch_block_header(on_error, on_reply,
         0x12345678);
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_block_header");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_block_header_hash_test)
     codec.fetch_block_header(on_error, on_reply,
         hash_literal(hashSatoshi));
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_block_header");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_transaction_index_test)
     codec.fetch_transaction_index(on_error, on_reply,
         hash_literal(hashSatoshi));
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_transaction_index");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_stealth_test)
     codec.fetch_stealth(on_error, on_reply, prefix,
         0x12345678);
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_stealth");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_unconfirmed_transaction_test)
     codec.fetch_unconfirmed_transaction(on_error, on_reply,
         hash_literal(hashSatoshi));
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "transaction_pool.fetch_transaction");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_address_fetch_history_test)
     codec.address_fetch_history(on_error, on_reply,
         payment_address(addressSatoshi), 0x12345678);
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "address.fetch_history");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_subscribe_test)
     codec.subscribe(on_error, on_reply,
         payment_address(addressSatoshi));
 
-    BOOST_REQUIRE_EQUAL(capture->out.size(), 3);
+    BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "address.subscribe");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
