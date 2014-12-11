@@ -128,9 +128,18 @@ AS_CASE([${CC}], [*clang*],
 
 AS_IF([test x$with_tests = xyes], [AX_BOOST_UNIT_TEST_FRAMEWORK])
 
-# Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin_protocol_CFLAGS} and ${bitcoin_protocol_LIBS}.
+# Require sodium of at least version 1.0.0 and output ${sodium_CFLAGS} and ${sodium_LIBS}.
 #------------------------------------------------------------------------------
-PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
+# The chained zmq dependency doesn't set a minimum version for sodium.
+PKG_CHECK_MODULES([sodium], [libsodium >= 1.0.0])
+
+# Require czmq++ of at least version 0.4.1 and output ${czmq___CFLAGS} and ${czmq___LIBS}.
+#------------------------------------------------------------------------------
+PKG_CHECK_MODULES([czmq__], [libczmq++ >= 0.4.1])
+
+# Require bitcoin of at least version 2.7.0 and output ${bitcoin_CFLAGS} and ${bitcoin_LIBS}.
+#------------------------------------------------------------------------------
+PKG_CHECK_MODULES([bitcoin], [libbitcoin >= 2.7.0])
 
 
 # Set flags.
