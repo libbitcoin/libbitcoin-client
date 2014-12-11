@@ -31,18 +31,19 @@
 
 // Convenience header that includes everything
 // Not to be used internally. For API users.
-#include <bitcoin/protocol.hpp>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
+#include <bitcoin/client/obelisk/obelisk_router.hpp>
 #include <bitcoin/client/obelisk/obelisk_types.hpp>
-#include <bitcoin/client/random_number_generator.hpp>
-#include <bitcoin/client/request_stream.hpp>
-#include <bitcoin/client/response_stream.hpp>
-#include <bitcoin/client/server_codec.hpp>
-#include <bitcoin/client/server_codec_impl.hpp>
+//#include <bitcoin/client/random_number_generator.hpp>
+//#include <bitcoin/client/request_stream.hpp>
+//#include <bitcoin/client/response_stream.hpp>
+//#include <bitcoin/client/server_codec.hpp>
+//#include <bitcoin/client/server_codec_impl.hpp>
 #include <bitcoin/client/sleeper.hpp>
-#include <bitcoin/client/socket_stream.hpp>
-#include <bitcoin/client/uniform_uint32_generator.hpp>
+//#include <bitcoin/client/socket_stream.hpp>
+//#include <bitcoin/client/uniform_uint32_generator.hpp>
 
 #endif

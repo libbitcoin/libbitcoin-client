@@ -22,7 +22,7 @@
 #define LIBBITCOIN_CLIENT_REQUEST_STREAM_HPP
 
 #include <memory>
-#include <bitcoin/protocol.hpp>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {

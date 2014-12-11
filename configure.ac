@@ -85,16 +85,16 @@ AC_ARG_WITH([tests],
 AC_MSG_RESULT([$with_tests])
 AM_CONDITIONAL([WITH_TESTS], [test x$with_tests != xno])
 
-# Implement --enable-debug option and define DEBUG.
+# Implement --enable-ndebug option and define NDEBUG.
 #------------------------------------------------------------------------------
-AC_MSG_CHECKING(--enable-debug option)
-AC_ARG_ENABLE([debug],
-    AS_HELP_STRING([--enable-debug],
-        [Compile with debug assertions. @<:@default=no@:>@]),
-    [enable_debug=$enableval],
-    [enable_debug=no])
-AC_MSG_RESULT([$enable_debug])
-AS_IF([test x$enable_debug != xno], AC_DEFINE([DEBUG]))
+AC_MSG_CHECKING(--enable-ndebug option)
+AC_ARG_ENABLE([ndebug],
+    AS_HELP_STRING([--enable-ndebug],
+        [Compile without debug assertions. @<:@default=yes@:>@]),
+    [enable_ndebug=$enableval],
+    [enable_ndebug=yes])
+AC_MSG_RESULT([$enable_ndebug])
+AS_IF([test x$enable_ndebug != xno], AC_DEFINE([NDEBUG]))
 
 # Implement --enable-testnet option and define ENABLE_TESTNET.
 #------------------------------------------------------------------------------
@@ -127,10 +127,6 @@ AS_CASE([${CC}], [*clang*],
         [Boost 1.54.0 or later is required but was not found.])])])
 
 AS_IF([test x$with_tests = xyes], [AX_BOOST_UNIT_TEST_FRAMEWORK])
-
-# Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin_protocol_CFLAGS} and ${bitcoin_protocol_LIBS}.
-#------------------------------------------------------------------------------
-PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
 
 
 # Set flags.

@@ -20,7 +20,7 @@
 #include <bitcoin/client/socket_stream.hpp>
 
 #include <czmq++/czmqpp.hpp>
-#include <bitcoin/protocol.hpp>
+#include <bitcoin/bitcoin.hpp>
 
 using namespace bc::protocol;
 

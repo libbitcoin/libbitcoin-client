@@ -22,14 +22,14 @@ bitcoin_client_includedir = ${includedir}/bitcoin/client
 bitcoin_client_include_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
-    include/bitcoin/client/random_number_generator.hpp \
-    include/bitcoin/client/response_stream.hpp \
-    include/bitcoin/client/request_stream.hpp \
-    include/bitcoin/client/server_codec.hpp \
-    include/bitcoin/client/server_codec_impl.hpp \
-    include/bitcoin/client/sleeper.hpp \
-    include/bitcoin/client/socket_stream.hpp \
-    include/bitcoin/client/uniform_uint32_generator.hpp
+    include/bitcoin/client/sleeper.hpp
+    #include/bitcoin/client/random_number_generator.hpp
+    #include/bitcoin/client/request_stream.hpp
+    #include/bitcoin/client/response_stream.hpp
+    #include/bitcoin/client/server_codec.hpp
+    #include/bitcoin/client/server_codec_impl.hpp
+    #include/bitcoin/client/socket_stream.hpp
+    #include/bitcoin/client/uniform_uint32_generator.hpp
 
 bitcoin_client_obelisk_includedir = ${includedir}/bitcoin/client/obelisk
 bitcoin_client_obelisk_include_HEADERS = \
@@ -48,10 +48,10 @@ src_libbitcoin_client_la_CPPFLAGS = \
 
 src_libbitcoin_client_la_SOURCES = \
     src/obelisk/obelisk_codec.cpp \
-    src/obelisk/obelisk_router.cpp \
-    src/server_codec_impl.cpp \
-    src/socket_stream.cpp \
-    src/uniform_uint32_generator.cpp
+    src/obelisk/obelisk_router.cpp
+    #src/server_codec_impl.cpp
+    #src/socket_stream.cpp
+    #src/uniform_uint32_generator.cpp
 
 src_libbitcoin_client_la_LIBADD = \
     ${bitcoin_protocol_LIBS}
@@ -59,23 +59,23 @@ src_libbitcoin_client_la_LIBADD = \
 #
 # examples
 #
-EXTRA_PROGRAMS = examples/libbitcoin_client
-
-examples_libbitcoin_client_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_protocol_CFLAGS}
-
-examples_libbitcoin_client_SOURCES = \
-    examples/cli.cpp \
-    examples/connection.cpp \
-    examples/read_line.cpp \
-    examples/main.cpp
-
-examples_libbitcoin_client_LDADD = \
-    src/libbitcoin-client.la \
-    ${bitcoin_protocol_LIBS}
-
-examples: examples/libbitcoin_client
+#EXTRA_PROGRAMS = examples/libbitcoin_client
+#
+#examples_libbitcoin_client_CPPFLAGS = \
+#    -I${srcdir}/include \
+#    ${bitcoin_protocol_CFLAGS}
+#
+#examples_libbitcoin_client_SOURCES = \
+#    examples/cli.cpp \
+#    examples/connection.cpp \
+#    examples/read_line.cpp \
+#    examples/main.cpp
+#
+#examples_libbitcoin_client_LDADD = \
+#    src/libbitcoin-client.la \
+#    ${bitcoin_protocol_LIBS}
+#
+#examples: examples/libbitcoin_client
 
 #
 # tests
