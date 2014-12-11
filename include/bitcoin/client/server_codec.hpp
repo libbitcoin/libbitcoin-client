@@ -32,7 +32,7 @@ namespace client {
 class server_codec
 {
 public:
-    
+
     // Message reply handlers:
     typedef std::function<void (const std::error_code&)> error_handler;
 
