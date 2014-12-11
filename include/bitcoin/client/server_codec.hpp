@@ -23,7 +23,7 @@
 
 #include <functional>
 #include <memory>
-#include <bitcoin/protocol.hpp>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {

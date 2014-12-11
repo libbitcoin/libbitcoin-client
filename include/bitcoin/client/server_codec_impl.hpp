@@ -22,7 +22,7 @@
 #define LIBBITCOIN_CLIENT_SERVER_CODEC_IMPL_HPP
 
 #include <bitcoin/bitcoin.hpp>
-#include <bitcoin/protocol.hpp>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/random_number_generator.hpp>
 #include <bitcoin/client/response_stream.hpp>
