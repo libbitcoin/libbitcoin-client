@@ -59,23 +59,23 @@ src_libbitcoin_client_la_LIBADD = \
 #
 # examples
 #
-EXTRA_PROGRAMS = examples/libbitcoin_client
-
-examples_libbitcoin_client_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_protocol_CFLAGS}
-
-examples_libbitcoin_client_SOURCES = \
-    examples/cli.cpp \
-    examples/connection.cpp \
-    examples/read_line.cpp \
-    examples/main.cpp
-
-examples_libbitcoin_client_LDADD = \
-    src/libbitcoin-client.la \
-    ${bitcoin_protocol_LIBS}
-
-examples: examples/libbitcoin_client
+#EXTRA_PROGRAMS = examples/libbitcoin_client
+#
+#examples_libbitcoin_client_CPPFLAGS = \
+#    -I${srcdir}/include \
+#    ${bitcoin_protocol_CFLAGS}
+#
+#examples_libbitcoin_client_SOURCES = \
+#    examples/cli.cpp \
+#    examples/connection.cpp \
+#    examples/read_line.cpp \
+#    examples/main.cpp
+#
+#examples_libbitcoin_client_LDADD = \
+#    src/libbitcoin-client.la \
+#    ${bitcoin_protocol_LIBS}
+#
+#examples: examples/libbitcoin_client
 
 #
 # tests
