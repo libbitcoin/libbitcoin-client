@@ -248,14 +248,6 @@ BITCOIN_OPTIONS=\
 "${with_boost} "\
 "${with_pkgconfigdir} "
 
-# Define bitcoin-protocol options.
-#------------------------------------------------------------------------------
-BITCOIN_PROTOCOL_OPTIONS=\
-"--without-tests "\
-"${gmp_flags} "\
-"${with_boost} "\
-"${with_pkgconfigdir} "
-
 # Define bitcoin-client options.
 #------------------------------------------------------------------------------
 BITCOIN_CLIENT_OPTIONS=\
@@ -509,7 +501,6 @@ build_all()
     build_from_github zeromq czmq master $PARALLEL "$@" $CZMQ_OPTIONS
     build_from_github zeromq czmqpp master $PARALLEL "$@" $CZMQPP_OPTIONS
     build_from_github libbitcoin libbitcoin version2 $PARALLEL "$@" $BITCOIN_OPTIONS
-    build_from_github libbitcoin libbitcoin-protocol version2 $PARALLEL "$@" $BITCOIN_PROTOCOL_OPTIONS
     build_from_travis libbitcoin libbitcoin-client version2 $PARALLEL "$@" $BITCOIN_CLIENT_OPTIONS
 }
 
