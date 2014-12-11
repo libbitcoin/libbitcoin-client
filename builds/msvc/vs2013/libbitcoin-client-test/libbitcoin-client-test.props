@@ -77,7 +77,6 @@
     <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
     <Message Text="Linkage-protobuf  : $(Linkage-protobuf)" Importance="high"/>
     <Message Text="Linkage-libbitcoin: $(Linkage-libbitcoin)" Importance="high"/>
-    <Message Text="Linkage-_protocol : $(Linkage-libbitcoin-protocol)" Importance="high"/>
     <Message Text="Linkage-_client   : $(Linkage-libbitcoin-client)" Importance="high"/>
   </Target>
 
