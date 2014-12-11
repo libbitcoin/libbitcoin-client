@@ -165,7 +165,7 @@ BCC_API void obelisk_codec::validate(error_handler on_error,
     const transaction_type& tx)
 {
     data_chunk data(satoshi_raw_size(tx));
-    auto it = satoshi_save(tx, data.begin());
+    DEBUG_ONLY(auto it =) satoshi_save(tx, data.begin());
     BITCOIN_ASSERT(it == data.end());
 
     send_request("transaction_pool.validate", data, std::move(on_error),
@@ -193,7 +193,7 @@ BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
     const transaction_type& tx)
 {
     data_chunk data(satoshi_raw_size(tx));
-    auto it = satoshi_save(tx, data.begin());
+    DEBUG_ONLY(auto it =) satoshi_save(tx, data.begin());
     BITCOIN_ASSERT(it == data.end());
 
     send_request("protocol.broadcast_transaction", data, std::move(on_error),
