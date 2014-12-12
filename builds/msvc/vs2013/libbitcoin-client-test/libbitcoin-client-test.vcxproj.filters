@@ -9,7 +9,7 @@
     <ClCompile Include="..\..\..\..\test\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\test\obelisk_client.cpp">
+    <ClCompile Include="..\..\..\..\test\obelisk_codec.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

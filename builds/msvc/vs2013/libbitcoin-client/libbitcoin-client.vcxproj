@@ -93,6 +93,7 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec_impl.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionSettings">
