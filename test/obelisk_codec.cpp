@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_history_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const history_list&) {};
     codec.fetch_history(on_error, on_reply,
         payment_address(addressSatoshi), 0x12345678);
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_transaction_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const transaction_type&) {};
     codec.fetch_transaction(on_error, on_reply,
         hash_literal(hashSatoshi));
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_last_height_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](size_t) {};
     codec.fetch_last_height(on_error, on_reply);
 
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_block_header_height_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const block_header_type&) {};
     codec.fetch_block_header(on_error, on_reply,
         0x12345678);
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_block_header_hash_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const block_header_type&) {};
     codec.fetch_block_header(on_error, on_reply,
         hash_literal(hashSatoshi));
@@ -149,8 +149,8 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_transaction_index_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
-    auto on_reply = [](size_t block_height, size_t index) {};
+    auto on_error = [](const std::error_code&) {};
+    auto on_reply = [](size_t, size_t) {};
     codec.fetch_transaction_index(on_error, on_reply,
         hash_literal(hashSatoshi));
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_stealth_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const stealth_list&) {};
     stealth_prefix prefix{16, 0x0000ffff};
     codec.fetch_stealth(on_error, on_reply, prefix,
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_unconfirmed_transaction_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const transaction_type&) {};
     codec.fetch_unconfirmed_transaction(on_error, on_reply,
         hash_literal(hashSatoshi));
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_address_fetch_history_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const history_list&) {};
     codec.address_fetch_history(on_error, on_reply,
         payment_address(addressSatoshi), 0x12345678);
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_subscribe_test)
     std::shared_ptr<message_capture> capture(new message_capture());
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
-    auto on_error = [](const std::error_code& code) {};
+    auto on_error = [](const std::error_code&) {};
     auto on_reply = []() {};
     codec.subscribe(on_error, on_reply,
         payment_address(addressSatoshi));

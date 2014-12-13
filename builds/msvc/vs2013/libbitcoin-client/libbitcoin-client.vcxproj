@@ -70,9 +70,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\obelisk\obelisk_codec.cpp" />
     <ClCompile Include="..\..\..\..\src\obelisk\obelisk_router.cpp" />
-    <ClCompile Include="..\..\..\..\src\server_codec_impl.cpp" />
+    <ClCompile Include="..\..\..\..\src\server_codec_impl.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\src\socket_stream.cpp" />
-    <ClCompile Include="..\..\..\..\src\uniform_uint32_generator.cpp" />
+    <ClCompile Include="..\..\..\..\src\uniform_uint32_generator.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -86,14 +90,26 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_codec.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_router.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_types.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\random_number_generator.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\response_stream.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\request_stream.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec_impl.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\random_number_generator.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\response_stream.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\request_stream.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\server_codec_impl.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionSettings">

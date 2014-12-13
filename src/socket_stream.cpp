@@ -20,9 +20,9 @@
 #include <bitcoin/client/socket_stream.hpp>
 
 #include <czmq++/czmqpp.hpp>
-#include <bitcoin/protocol.hpp>
+//#include <bitcoin/protocol.hpp>
 
-using namespace bc::protocol;
+//using namespace bc::protocol;
 
 namespace libbitcoin {
 namespace client {
@@ -48,6 +48,7 @@ void socket_stream::write(const data_stack& data)
     message.send(socket_);
 }
 
+/*
 void socket_stream::write(const std::shared_ptr<request>& request)
 {
     if (request)
@@ -59,6 +60,7 @@ void socket_stream::write(const std::shared_ptr<request>& request)
         message.send(socket_);
     }
 }
+*/
 
 bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
 {
@@ -78,6 +80,7 @@ bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
     return success;
 }
 
+/*
 bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
 {
     bool signaled = false;
@@ -88,7 +91,7 @@ bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
 
         if (message.receive(socket_))
         {
-            std::shared_ptr<bc::protocol::response> response = 
+            std::shared_ptr<bc::protocol::response> response =
                 message.get_response();
 
             if (response)
@@ -101,6 +104,7 @@ bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
 
     return signaled;
 }
+*/
 
 czmqpp::socket& socket_stream::get_socket()
 {
