@@ -24,6 +24,19 @@ namespace client {
 
 using std::placeholders::_1;
 
+/**
+ * Reverses data.
+ * Due to an unfortunate historical accident,
+ * the obelisk wire format puts address hashes in reverse order.
+ */
+template <typename T>
+T reverse(const T& in)
+{
+    T out;
+    std::reverse_copy(in.begin(), in.end(), out.begin());
+    return out;
+}
+
 BCC_API obelisk_codec::obelisk_codec(
     std::shared_ptr<message_stream> out,
     update_handler on_update,
@@ -46,13 +59,11 @@ BCC_API void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const payment_address& address, uint32_t from_height)
 {
-    data_chunk data;
-    data.resize(1 + short_hash_size + 4);
-    auto serial = make_serializer(data.begin());
-    serial.write_byte(address.version());
-    serial.write_short_hash(address.hash());
-    serial.write_4_bytes(from_height);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        to_byte(address.version()),
+        reverse(address.hash()),
+        to_little_endian<uint32_t>(from_height)
+    });
 
     send_request("blockchain.fetch_history", data, std::move(on_error),
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
@@ -62,11 +73,9 @@ BCC_API void obelisk_codec::fetch_transaction(error_handler on_error,
     fetch_transaction_handler on_reply,
     const hash_digest& tx_hash)
 {
-    data_chunk data;
-    data.resize(hash_size);
-    auto serial = make_serializer(data.begin());
-    serial.write_hash(tx_hash);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        tx_hash
+    });
 
     send_request("blockchain.fetch_transaction", data, std::move(on_error),
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
@@ -75,7 +84,9 @@ BCC_API void obelisk_codec::fetch_transaction(error_handler on_error,
 BCC_API void obelisk_codec::fetch_last_height(error_handler on_error,
     fetch_last_height_handler on_reply)
 {
-    send_request("blockchain.fetch_last_height", data_chunk(),
+    auto data = data_chunk();
+
+    send_request("blockchain.fetch_last_height", data,
         std::move(on_error),
         std::bind(decode_fetch_last_height, _1, std::move(on_reply)));
 }
@@ -84,8 +95,9 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
     fetch_block_header_handler on_reply,
     uint32_t height)
 {
-    data_chunk data = to_data_chunk(
-        to_little_endian(height));
+    auto data = build_data({
+        to_little_endian<uint32_t>(height)
+    });
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
@@ -95,10 +107,9 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
     fetch_block_header_handler on_reply,
     const hash_digest& blk_hash)
 {
-    data_chunk data(hash_size);
-    auto serial = make_serializer(data.begin());
-    serial.write_hash(blk_hash);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        blk_hash
+    });
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
@@ -108,10 +119,9 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
     fetch_transaction_index_handler on_reply,
     const hash_digest& tx_hash)
 {
-    data_chunk data(hash_size);
-    auto serial = make_serializer(data.begin());
-    serial.write_hash(tx_hash);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        tx_hash
+    });
 
     send_request("blockchain.fetch_transaction_index", data,
         std::move(on_error),
@@ -123,12 +133,11 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
     fetch_stealth_handler on_reply,
     const stealth_prefix& prefix, uint32_t from_height)
 {
-    data_chunk data(9);
-    auto serial = make_serializer(data.begin());
-    serial.write_byte(prefix.number_bits);
-    serial.write_4_bytes(prefix.bitfield);
-    serial.write_4_bytes(from_height);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        to_byte(prefix.number_bits),
+        to_little_endian<uint32_t>(prefix.bitfield),
+        to_little_endian<uint32_t>(from_height)
+    });
 
     send_request("blockchain.fetch_stealth", data, std::move(on_error),
         std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
@@ -177,11 +186,9 @@ BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
     fetch_transaction_handler on_reply,
     const hash_digest& tx_hash)
 {
-    data_chunk data;
-    data.resize(hash_size);
-    auto serial = make_serializer(data.begin());
-    serial.write_hash(tx_hash);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        tx_hash
+    });
 
     send_request("transaction_pool.fetch_transaction", data,
         std::move(on_error),
@@ -204,13 +211,11 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const payment_address& address, uint32_t from_height)
 {
-    data_chunk data;
-    data.resize(1 + short_hash_size + 4);
-    auto serial = make_serializer(data.begin());
-    serial.write_byte(address.version());
-    serial.write_short_hash(address.hash());
-    serial.write_4_bytes(from_height);
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        to_byte(address.version()),
+        reverse(address.hash()),
+        to_little_endian<uint32_t>(from_height)
+    });
 
     send_request("address.fetch_history", data, std::move(on_error),
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
@@ -220,11 +225,10 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
     const bc::payment_address& address)
 {
-    data_chunk data(1 + short_hash_size);
-    auto serial = make_serializer(data.begin());
-    serial.write_byte(address.version());
-    serial.write_short_hash(address.hash());
-    BITCOIN_ASSERT(serial.iterator() == data.end());
+    auto data = build_data({
+        to_byte(address.version()),
+        reverse(address.hash())
+    });
 
     send_request("address.subscribe", data, std::move(on_error),
         std::bind(decode_empty, _1, std::move(on_reply)));
