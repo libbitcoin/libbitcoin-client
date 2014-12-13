@@ -322,7 +322,7 @@ void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
         row.ephemkey = payload.read_data(33);
         uint8_t address_version = payload.read_byte();
         const short_hash address_hash = payload.read_short_hash();
-        row.address.set(address_version, address_hash);
+        row.address.set(address_version, reverse(address_hash));
         row.transaction_hash = payload.read_hash();
         results.push_back(row);
     }
