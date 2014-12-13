@@ -182,24 +182,6 @@ AS_CASE([${CC}], [*gcc*],
     [AX_CHECK_COMPILE_FLAG([-Wno-unused-local-typedefs],
         [CXXFLAGS="$CXXFLAGS -Wno-unused-local-typedefs"])])
 
-# Clean up protobuf headers.
-#------------------------------------------------------------------------------
-AS_CASE([${CC}], [*],
-    [AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter],
-        [CXXFLAGS="$CXXFLAGS -Wno-unused-parameter"])])
-
-# Clean up protobuf headers, static. Enabled in clang only.
-#------------------------------------------------------------------------------
-AS_CASE([${CC}], [*clang*],
-    [AX_CHECK_COMPILE_FLAG([-Wno-sign-compare],
-        [CXXFLAGS="$CXXFLAGS -Wno-sign-compare"])])
-
-# Clean up protobuf headers, static. Enabled in clang only.
-#------------------------------------------------------------------------------
-AS_CASE([${CC}], [*clang*],
-    [AX_CHECK_COMPILE_FLAG([-Wno-nested-anon-types],
-        [CXXFLAGS="$CXXFLAGS -Wno-nested-anon-types"])])
-
 # Protect stack.
 #------------------------------------------------------------------------------
 AS_CASE([${CC}], [*],
@@ -214,15 +196,15 @@ AS_CASE([${CC}], [*],
         [AX_CHECK_LINK_FLAG([-fstack-protector-all],
             [CXXFLAGS="$CXXFLAGS -fstack-protector-all"])])])
 
-# Hide internal functions from external libs.
+# Hide internal functions from external libs. Enabled in gcc only.
 #------------------------------------------------------------------------------
-AS_CASE([${CC}], [*],
+AS_CASE([${CC}], [*gcc*],
     [AX_CHECK_COMPILE_FLAG([-fvisibility-hidden],
         [CXXFLAGS="$CXXFLAGS -fvisibility-hidden"])])
 
-# Hide inlines from external libs.
+# Hide inlines from external libs. Enabled in gcc only.
 #------------------------------------------------------------------------------
-AS_CASE([${CC}], [*],
+AS_CASE([${CC}], [*gcc*],
     [AX_CHECK_COMPILE_FLAG([-fvisibility-inlines-hidden],
         [CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"])])
 
