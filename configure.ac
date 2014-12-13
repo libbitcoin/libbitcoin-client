@@ -128,9 +128,18 @@ AS_CASE([${CC}], [*clang*],
 
 AS_IF([test x$with_tests = xyes], [AX_BOOST_UNIT_TEST_FRAMEWORK])
 
-# Require bitcoin-protocol of at least version 2.0.0 and output ${bitcoin_protocol_CFLAGS} and ${bitcoin_protocol_LIBS}.
+# Require sodium of at least version 1.0.0 and output ${sodium_CFLAGS} and ${sodium_LIBS}.
 #------------------------------------------------------------------------------
-PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 2.0.0])
+# The chained zmq dependency doesn't set a minimum version for sodium.
+PKG_CHECK_MODULES([sodium], [libsodium >= 1.0.0])
+
+# Require czmq++ of at least version 0.4.1 and output ${czmq___CFLAGS} and ${czmq___LIBS}.
+#------------------------------------------------------------------------------
+PKG_CHECK_MODULES([czmq__], [libczmq++ >= 0.4.1])
+
+# Require bitcoin of at least version 2.7.0 and output ${bitcoin_CFLAGS} and ${bitcoin_LIBS}.
+#------------------------------------------------------------------------------
+PKG_CHECK_MODULES([bitcoin], [libbitcoin >= 2.7.0])
 
 
 # Set flags.
@@ -172,24 +181,6 @@ AS_CASE([${CC}], [*clang*],
 AS_CASE([${CC}], [*gcc*],
     [AX_CHECK_COMPILE_FLAG([-Wno-unused-local-typedefs],
         [CXXFLAGS="$CXXFLAGS -Wno-unused-local-typedefs"])])
-
-# Clean up protobuf headers.
-#------------------------------------------------------------------------------
-AS_CASE([${CC}], [*],
-    [AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter],
-        [CXXFLAGS="$CXXFLAGS -Wno-unused-parameter"])])
-
-# Clean up protobuf headers, static. Enabled in clang only.
-#------------------------------------------------------------------------------
-AS_CASE([${CC}], [*clang*],
-    [AX_CHECK_COMPILE_FLAG([-Wno-sign-compare],
-        [CXXFLAGS="$CXXFLAGS -Wno-sign-compare"])])
-
-# Clean up protobuf headers, static. Enabled in clang only.
-#------------------------------------------------------------------------------
-AS_CASE([${CC}], [*clang*],
-    [AX_CHECK_COMPILE_FLAG([-Wno-nested-anon-types],
-        [CXXFLAGS="$CXXFLAGS -Wno-nested-anon-types"])])
 
 # Protect stack.
 #------------------------------------------------------------------------------
