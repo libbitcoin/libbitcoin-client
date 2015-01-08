@@ -107,8 +107,8 @@ test_libbitcoin_client_test_SOURCES = \
 test_libbitcoin_client_test_LDADD = \
     src/libbitcoin-client.la \
     -lboost_unit_test_framework \
-    ${bitcoin_CFLAGS} \
-    ${sodium_CFLAGS} \
-    ${czmq___CFLAGS}
+    ${bitcoin_LIBS} \
+    ${sodium_LIBS} \
+    ${czmq___LIBS}
 
 endif
