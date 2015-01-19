@@ -267,6 +267,8 @@ subscribe_manager::post_stealth_updates().
 
 The address result is:
 
+    Response command = "address.update"
+
     [ version:1 ]
     [ hash:20 ]
     [ height:4 ]
@@ -280,6 +282,8 @@ The address result is:
     };
 
 When the subscription type is stealth, then the result is:
+
+    Response command = "address.stealth_update"
 
     [ 32 bit prefix:4 ]
     [ height:4 ]
@@ -296,6 +300,10 @@ When the subscription type is stealth, then the result is:
         hash_digest block_hash;
     };
 
+Subscriptions expire after 10 minutes. Therefore messages with the command
+"address.renew" should be sent periodically to the server. The format
+is the same as for "address.subscribe, and the server will respond
+with a 4 byte error code.
 */
 
 void obelisk_codec::decode_empty(data_deserial& payload,
