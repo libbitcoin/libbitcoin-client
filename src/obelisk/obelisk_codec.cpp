@@ -225,9 +225,15 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
     const bc::payment_address& address)
 {
+    bc::binary_type prefix(address.encoded());
+
+    // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
+    // [ prefix_bitsize:1 ]
+    // [ prefix_blocks:...  ]
     auto data = build_data({
-        to_byte(address.version()),
-        reverse(address.hash())
+        to_byte(static_cast<uint8_t>(subscribe_type::address)),
+        to_byte(prefix.size()),
+        prefix.blocks()
     });
 
     send_request("address.subscribe", data, std::move(on_error),
