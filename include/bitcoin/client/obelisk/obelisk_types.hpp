@@ -25,14 +25,6 @@
 namespace libbitcoin {
 namespace client {
 
-typedef uint32_t stealth_bitfield;
-
-struct BCC_API stealth_prefix
-{
-    uint8_t number_bits;
-    stealth_bitfield bitfield;
-};
-
 //typedef bc::stealth_prefix address_prefix;
 
 struct BCC_API history_row
@@ -48,8 +40,10 @@ typedef std::vector<history_row> history_list;
 
 struct BCC_API stealth_row
 {
-    data_chunk ephemkey;
-    payment_address address;
+    // No sign byte in public key.
+    hash_digest ephemkey;
+    // No version byte in address.
+    short_hash address;
     hash_digest transaction_hash;
 };
 
