@@ -41,6 +41,8 @@ static void on_update(const payment_address& address, size_t height,
     const hash_digest& blk_hash, const transaction_type&)
 {
     std::cout << "update:" << address.encoded() << std::endl;
+    (void)height;
+    (void)blk_hash;
 }
 
 connection::connection(czmqpp::socket& socket)
