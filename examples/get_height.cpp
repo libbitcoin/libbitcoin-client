@@ -28,7 +28,7 @@
 
 using namespace bc;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     if (argc != 2)
     {
@@ -66,10 +66,9 @@ int main(int argc, char *argv[])
         poller.add(socket);
 
         // Figure out how much timeout we have left:
-        long delay = -1;
-        auto next_wakeup = codec->wakeup();
-        if (next_wakeup.count())
-            delay = static_cast<long>(next_wakeup.count());
+        auto delay = codec->wakeup().count();
+        if (!delay)
+            break;
 
         // Sleep:
         poller.wait(delay);
