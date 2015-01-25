@@ -63,7 +63,7 @@ src_libbitcoin_client_la_LIBADD = \
 #
 # examples
 #
-EXTRA_PROGRAMS = examples/libbitcoin_client
+EXTRA_PROGRAMS = examples/libbitcoin_client examples/get_height
 
 examples_libbitcoin_client_CPPFLAGS = \
     -I${srcdir}/include \
@@ -83,7 +83,22 @@ examples_libbitcoin_client_LDADD = \
     ${sodium_LIBS} \
     ${czmq___LIBS}
 
-examples: examples/libbitcoin_client
+examples_get_height_SOURCES = \
+    examples/get_height.cpp
+
+examples_get_height_CPPFLAGS = \
+    -I${srcdir}/include \
+    ${bitcoin_CFLAGS} \
+    ${sodium_CFLAGS} \
+    ${czmq___CFLAGS}
+
+examples_get_height_LDADD = \
+    src/libbitcoin-client.la \
+    ${bitcoin_LIBS} \
+    ${sodium_LIBS} \
+    ${czmq___LIBS}
+
+examples: examples/libbitcoin_client examples/get_height
 
 #
 # tests
