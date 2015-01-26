@@ -42,9 +42,9 @@ Next install the [build system](http://en.wikipedia.org/wiki/GNU_build_system):
 ```sh
   $ sudo apt-get install build-essential autoconf automake libtool pkg-config
 ```
-Next install [Boost](http://www.boost.org) (1.50.0 or newer) and [GMP](https://gmplib.org/)  (5.0.0 or newer).
+Next install [Boost](http://www.boost.org) (1.50.0 or newer).
 ```sh
-  $ sudo apt-get install libboost-all-dev libgmp-dev
+  $ sudo apt-get install libboost-all-dev
 ```
 Finally, execute the [install script](https://raw.githubusercontent.com/evoskuil/libbitcoin-client/develop/install.sh). This single file will download, build, install and test libbitcoin client.
 ```sh
@@ -56,11 +56,11 @@ Libbitcoin is now installed in `/usr/local/`.
 
 If you intend to inspect and/or modify source code you should [git clone](http://git-scm.com/docs/git-clone) libbitcoin client and each unpackaged dependency and build them manually. The install script itself is commented so that the manual build steps for each dependency can be inferred by a developer.
 
-You can run the install script from any directory on your system. This will build libbitcoin client in a subdirectory named `libbitcoin-client_build` and install it to `/usr/local/`. When the build completes successfully the `libbitcoin-client_build` directory is deleted.
+You can run the install script from any directory on your system. This will build libbitcoin client in a subdirectory named `build-libbitcoin-client` and install it to `/usr/local/`.
 
-The install script should not normally be executed using sudo. Instead it will immediately prompt you for a super user password if required. This ensures that only the necessary installation steps are executed as a super user, as opposed to the entire build process.
+The install script does not require sudo when using a prefix directory.
 
-The build script clones, builds and installs six unpackaged repositories, namely:
+The install script clones, builds and installs six unpackaged repositories, namely:
 
 - [bitcoin/secp256k1](https://github.com/bitcoin/secp256k1)
 - [libbitcoin/libbitcoin](https://github.com/libbitcoin/libbitcoin)
@@ -97,7 +97,6 @@ To upgrade GCC first set the following environment variables:
 ```
 Next execute the following commands:
 ```sh
-  $ brew install boost gmp
   $ brew tap homebrew/versions
   $ brew install gcc48
   $ sudo ln -sf /usr/local/bin/g++-4.8 /usr/bin/g++
@@ -137,13 +136,10 @@ The required set of NuGet packages can be viewed using the [NuGet package manage
  * [boost\_system-vc120](http://www.nuget.org/packages/boost_system-vc120)
  * [boost\_unit\_test\_framework-vc120](http://www.nuget.org/packages/boost_unit_test_framework-vc120)
 * Packages maintained by [evoskuil](http://www.nuget.org/profiles/evoskuil)
- * [libgmp\_vc120](http://www.nuget.org/packages/libgmp_vc120)
- * [secp256k1\_gmp\_vc120](http://www.nuget.org/packages/secp256k1_gmp_vc120)
  * [libzmq\_vc120](https://www.nuget.org/packages/libzmq_vc120)
  * [czmq\_vc120](https://www.nuget.org/packages/czmq_vc120)
  * [czmqpp\_vc120](https://www.nuget.org/packages/czmqpp_vc120)
-
-> The GMP for Windows project is called [MPIR](http://www.mpir.org) and has binary compatibility with GMP.
+ * [secp256k1\_vc120](http://www.nuget.org/packages/secp256k1_vc120)
 
 #### Build Libbitcoin Projects
 
@@ -157,8 +153,13 @@ After cloning the the repository the libbitcoin build can be performed manually 
 
 The non-boost packages above are all sourced from GitHub repositories maintained using the same [Visual Studio template](https://github.com/evoskuil/visual-studio-template) as the libbitcoin libraries. If so desired each of these can be built locally, in the same manner as the libbitcoin libraries above. This allows you to avoid using the pre-built NuGet packages. The repositories for each dependency are as follows:
 
-* [evoskuil/mpir](https://github.com/evoskuil/mpir)
-* [evoskuil/secp256k1](https://github.com/evoskuil/secp256k1)
+* Cryptography
+   * [jedisct1/libsodium](https://github.com/jedisct1/libsodium)
+   * [libbitcoin/secp256k1](https://github.com/libbitcoin/secp256k1)
+* Zero Message Queue
+   * [zeromq/libzmq](https://github.com/zeromq/libzmq)
+   * [zeromq/czmq](https://github.com/zeromq/czmq)
+   * [zeromq/czmqpp](https://github.com/zeromq/czmqpp)
 
 This change is properly accomplished by disabling the "NuGet Dependencies" in the Visual Studio properties user interface and then importing the `.import.props` file(s) for the corresponding dependencies.
 
