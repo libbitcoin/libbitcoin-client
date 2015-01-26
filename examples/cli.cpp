@@ -80,6 +80,7 @@ void cli::cmd_disconnect(std::stringstream& args)
 {
     if (!check_connection())
         return;
+    (void)args;
     connection_.reset();
 }
 
@@ -87,6 +88,7 @@ void cli::cmd_height(std::stringstream& args)
 {
     if (!check_connection())
         return;
+    (void)args;
 
     auto handler = [this](size_t height)
     {
