@@ -143,31 +143,26 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
         std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
 }
 
-//BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
-//    fetch_stealth_handler on_reply,
-//    const bc::binary_type& prefix, uint32_t from_height)
-//{
-//    // BUGBUG: assertion is not good enough here.
-//    BITCOIN_ASSERT(prefix.size() <= 255);
-//
-//    data_chunk data(1 + prefix.num_blocks() + 4);
-//    auto serial = make_serializer(data.begin());
-//    // number_bits
-//
-//    // BUGBUG: the API should be limited to uint8_t.
-//    serial.write_byte(static_cast<uint8_t>(prefix.size()));
-//
-//    // Serialize bitfield to raw bytes and serialize
-//    data_chunk bitfield(prefix.num_blocks());
-//    boost::to_block_range(prefix, bitfield.begin());
-//    serial.write_data(bitfield);
-//
-//    serial.write_4_bytes(from_height);
-//    BITCOIN_ASSERT(serial.iterator() == data.end());
-//
-//    send_request("blockchain.fetch_stealth", data, std::move(on_error),
-//        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
-//}
+BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
+    fetch_stealth_handler on_reply,
+    const bc::binary_type& prefix, uint32_t from_height)
+{
+    // should this be a throw or should there be a return type instead?
+    if (prefix.size() > max_uint8)
+    {
+        on_error(std::make_error_code(std::errc::bad_address));
+        return;
+    }
+
+    auto data = build_data({
+        to_byte(prefix.size()),
+        prefix.blocks(),
+        to_little_endian<uint32_t>(from_height)
+    });
+
+    send_request("blockchain.fetch_stealth", data, std::move(on_error),
+        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
+}
 
 BCC_API void obelisk_codec::validate(error_handler on_error,
     validate_handler on_reply,
@@ -256,6 +251,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     auto data = build_data({
         to_byte(static_cast<uint8_t>(discriminator)),
         to_byte(prefix.size()),
+        prefix.blocks()
     });
 
     send_request("address.subscribe", data, std::move(on_error),
@@ -404,13 +400,21 @@ void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
     while (payload.iterator() != payload.end())
     {
         stealth_row row;
-        row.ephemkey = payload.read_data(33);
-        uint8_t address_version = payload.read_byte();
+
+        // presume first byte based on convention
+        row.ephemkey = payload.read_data(32);
+        row.ephemkey.insert(row.ephemkey.begin(), 0x02);
+
+        // presume address_version
+        uint8_t address_version = payment_address::pubkey_version;
         const short_hash address_hash = payload.read_short_hash();
         row.address.set(address_version, reverse(address_hash));
+
         row.transaction_hash = payload.read_hash();
+
         results.push_back(row);
     }
+
     handler(results);
 }
 
