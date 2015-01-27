@@ -284,5 +284,10 @@ BCC_API void obelisk_router::on_update_nop(const payment_address&,
 {
 }
 
+BCC_API void obelisk_router::on_stealth_update_nop(const binary_type&,
+    size_t, const hash_digest&, const transaction_type&)
+{
+}
+
 } // namespace client
 } // namespace libbitcoin
