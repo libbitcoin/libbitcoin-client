@@ -51,12 +51,17 @@ public:
     typedef std::function<void (const std::string& command)> unknown_handler;
     typedef std::function<void (const payment_address& address, size_t height,
         const hash_digest& blk_hash, const transaction_type&)> update_handler;
+    typedef std::function<void (const binary_type& prefix, size_t height,
+        const hash_digest& blk_hash, const transaction_type& tx)> stealth_update_handler;
 
     BCC_API static void on_unknown_nop(const std::string&);
     BCC_API static void on_update_nop(const payment_address&,
         size_t, const hash_digest&, const transaction_type&);
+    BCC_API static void on_stealth_update_nop(const binary_type&, size_t,
+            const hash_digest&, const transaction_type&);
 
     BCC_API virtual void set_on_update(update_handler on_update);
+    BCC_API virtual void set_on_stealth_update(stealth_update_handler on_update);
     BCC_API virtual void set_on_unknown(unknown_handler on_unknown);
     BCC_API virtual void set_retries(uint8_t retries);
     BCC_API virtual void set_timeout(period_ms timeout);
@@ -98,6 +103,7 @@ protected:
     void send(const obelisk_message& message);
     void receive(const obelisk_message& message);
     void decode_update(const obelisk_message& message);
+    void decode_stealth_update(const obelisk_message& message);
     void decode_reply(const obelisk_message& message,
         error_handler& on_error, decoder& on_reply);
 
@@ -126,6 +132,7 @@ protected:
     // Loose-message event handlers:
     unknown_handler on_unknown_;
     update_handler on_update_;
+    stealth_update_handler on_stealth_update_;
 
     // Outgoing message stream:
     std::shared_ptr<message_stream> out_;

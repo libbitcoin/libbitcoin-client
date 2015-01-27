@@ -109,9 +109,10 @@ public:
     BCC_API void subscribe(error_handler on_error,
         empty_handler on_reply,
         const bc::payment_address& address);
-//    BCC_API void subscribe(error_handler on_error,
-//        empty_handler on_reply,
-//        const address_prefix& prefix);
+    BCC_API void subscribe(error_handler on_error,
+        empty_handler on_reply,
+        subscribe_type discriminator,
+        const bc::binary_type& prefix);
 
 private:
     static void decode_empty(data_deserial& payload,

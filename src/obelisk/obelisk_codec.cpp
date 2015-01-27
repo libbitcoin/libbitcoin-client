@@ -241,6 +241,20 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
+BCC_API void obelisk_codec::subscribe(error_handler on_error,
+    empty_handler on_reply,
+    subscribe_type discriminator,
+    const bc::binary_type& prefix)
+{
+    auto data = build_data({
+        to_byte(static_cast<uint8_t>(discriminator)),
+        to_byte(prefix.size()),
+    });
+
+    send_request("address.subscribe", data, std::move(on_error),
+        std::bind(decode_empty, _1, std::move(on_reply)));
+}
+
 // See below for description of updates data format.
 //enum class subscribe_type : uint8_t
 //{
