@@ -28,7 +28,7 @@ BCC_API obelisk_router::obelisk_router(std::shared_ptr<message_stream> out)
   : last_request_id_(0),
     timeout_(std::chrono::seconds(2)), retries_(0),
     on_unknown_(on_unknown_nop), on_update_(on_update_nop),
-    out_(out)
+    on_stealth_update_(on_stealth_update_nop), out_(out)
 {
 }
 
@@ -39,6 +39,12 @@ obelisk_router::~obelisk_router()
 BCC_API void obelisk_router::set_on_update(update_handler on_update)
 {
     on_update_ = std::move(on_update);
+}
+
+BCC_API void obelisk_router::set_on_stealth_update(
+    stealth_update_handler on_update)
+{
+    on_stealth_update_ = std::move(on_update);
 }
 
 BCC_API void obelisk_router::set_on_unknown(unknown_handler on_unknown)
@@ -173,6 +179,12 @@ void obelisk_router::receive(const obelisk_message& message)
         return;
     }
 
+    if ("address.stealth_update" == message.command)
+    {
+        decode_stealth_update(message);
+        return;
+    }
+
     auto i = pending_requests_.find(message.id);
     if (i == pending_requests_.end())
     {
@@ -200,6 +212,34 @@ void obelisk_router::decode_update(const obelisk_message& message)
         deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
         check_end(deserial);
         on_update_(address, height, blk_hash, tx);
+    }
+    catch (end_of_stream)
+    {
+        on_unknown_(message.command);
+    }
+}
+
+void obelisk_router::decode_stealth_update(const obelisk_message& message)
+{
+    data_deserial deserial = make_deserializer(
+        message.payload.begin(), message.payload.end());
+    try
+    {
+        // This message does not have an error_code at the beginning.
+        data_chunk raw_prefix;
+        raw_prefix.push_back(deserial.read_byte());
+        raw_prefix.push_back(deserial.read_byte());
+        raw_prefix.push_back(deserial.read_byte());
+        raw_prefix.push_back(deserial.read_byte());
+        binary_type prefix(32, raw_prefix);
+
+        uint32_t height = deserial.read_4_bytes();
+        hash_digest blk_hash = deserial.read_hash();
+        transaction_type tx;
+        satoshi_load(deserial.iterator(), deserial.end(), tx);
+        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
+        check_end(deserial);
+        on_stealth_update_(prefix, height, blk_hash, tx);
     }
     catch (end_of_stream)
     {
@@ -240,6 +280,11 @@ BCC_API void obelisk_router::on_unknown_nop(const std::string&)
 }
 
 BCC_API void obelisk_router::on_update_nop(const payment_address&,
+    size_t, const hash_digest&, const transaction_type&)
+{
+}
+
+BCC_API void obelisk_router::on_stealth_update_nop(const binary_type&,
     size_t, const hash_digest&, const transaction_type&)
 {
 }

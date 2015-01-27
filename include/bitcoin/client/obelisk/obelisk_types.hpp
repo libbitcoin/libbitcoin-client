@@ -55,6 +55,13 @@ struct BCC_API stealth_row
 
 typedef std::vector<stealth_row> stealth_list;
 
+// See below for description of updates data format.
+enum class subscribe_type : uint8_t
+{
+    address = 0,
+    stealth = 1
+};
+
 }
 }
 
