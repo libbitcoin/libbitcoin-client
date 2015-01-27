@@ -128,21 +128,6 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
         std::bind(decode_fetch_transaction_index, _1, std::move(on_reply)));
 }
 
-// Note that prefix is a *client* stealth_prefix struct.
-BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
-    fetch_stealth_handler on_reply,
-    const stealth_prefix& prefix, uint32_t from_height)
-{
-    auto data = build_data({
-        to_byte(prefix.number_bits),
-        to_little_endian<uint32_t>(prefix.bitfield),
-        to_little_endian<uint32_t>(from_height)
-    });
-
-    send_request("blockchain.fetch_stealth", data, std::move(on_error),
-        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
-}
-
 BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
     fetch_stealth_handler on_reply,
     const bc::binary_type& prefix, uint32_t from_height)
