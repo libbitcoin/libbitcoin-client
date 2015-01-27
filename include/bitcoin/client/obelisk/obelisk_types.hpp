@@ -25,16 +25,6 @@
 namespace libbitcoin {
 namespace client {
 
-typedef uint32_t stealth_bitfield;
-
-struct BCC_API stealth_prefix
-{
-    uint8_t number_bits;
-    stealth_bitfield bitfield;
-};
-
-//typedef bc::stealth_prefix address_prefix;
-
 struct BCC_API history_row
 {
     output_point output;

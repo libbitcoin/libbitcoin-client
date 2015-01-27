@@ -168,7 +168,9 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_stealth_test)
 
     auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const stealth_list&) {};
-    stealth_prefix prefix{16, 0x0000ffff};
+
+    std::vector<uint8_t> raw_prefix = {0xff, 0xff, 0x00, 0x00};
+    binary_type prefix(16, raw_prefix);
     codec.fetch_stealth(on_error, on_reply, prefix,
         0x12345678);
 
@@ -176,7 +178,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_stealth_test)
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "blockchain.fetch_stealth");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
-        "10ffff000078563412");
+        "10ffff78563412");
 }
 
 BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_unconfirmed_transaction_test)
