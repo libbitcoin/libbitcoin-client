@@ -91,9 +91,9 @@ public:
     BCC_API void fetch_stealth(error_handler on_error,
         fetch_stealth_handler on_reply,
         const stealth_prefix& prefix, uint32_t from_height=0);
-//    BCC_API void fetch_stealth(error_handler on_error,
-//        fetch_stealth_handler on_reply,
-//        const bc::binary_type& prefix, uint32_t from_height=0);
+    BCC_API void fetch_stealth(error_handler on_error,
+        fetch_stealth_handler on_reply,
+        const bc::binary_type& prefix, uint32_t from_height=0);
     BCC_API void validate(error_handler on_error,
         validate_handler on_reply,
         const transaction_type& tx);
