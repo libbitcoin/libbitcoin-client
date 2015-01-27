@@ -246,6 +246,13 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     subscribe_type discriminator,
     const bc::binary_type& prefix)
 {
+    // should this be a throw or should there be a return type instead?
+    if (prefix.size() > max_uint8)
+    {
+        on_error(std::make_error_code(std::errc::bad_address));
+        return;
+    }
+
     auto data = build_data({
         to_byte(static_cast<uint8_t>(discriminator)),
         to_byte(prefix.size()),
