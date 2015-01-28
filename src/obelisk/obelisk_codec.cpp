@@ -130,7 +130,7 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
 
 BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
     fetch_stealth_handler on_reply,
-    const bc::binary_type& prefix, uint32_t from_height)
+    const binary_type& prefix, uint32_t from_height)
 {
     // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
@@ -140,7 +140,7 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
     }
 
     auto data = build_data({
-        to_byte(prefix.size()),
+        to_byte(static_cast<uint8_t>(prefix.size())),
         prefix.blocks(),
         to_little_endian<uint32_t>(from_height)
     });
@@ -203,9 +203,9 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
 
 BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
-    const bc::payment_address& address)
+    const payment_address& address)
 {
-    bc::binary_type prefix((short_hash_size * byte_bits),
+    binary_type prefix((short_hash_size * byte_bits),
         reverse(address.hash()));
 
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
@@ -213,7 +213,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     // [ prefix_blocks:...  ]
     auto data = build_data({
         to_byte(static_cast<uint8_t>(subscribe_type::address)),
-        to_byte(prefix.size()),
+        to_byte(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
     });
 
@@ -224,7 +224,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
     subscribe_type discriminator,
-    const bc::binary_type& prefix)
+    const binary_type& prefix)
 {
     // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
@@ -235,7 +235,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 
     auto data = build_data({
         to_byte(static_cast<uint8_t>(discriminator)),
-        to_byte(prefix.size()),
+        to_byte(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
     });
 
