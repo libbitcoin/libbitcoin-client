@@ -80,5 +80,8 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\version.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

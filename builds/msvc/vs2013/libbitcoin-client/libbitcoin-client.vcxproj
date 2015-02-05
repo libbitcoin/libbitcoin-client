@@ -110,6 +110,7 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\uniform_uint32_generator.hpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\version.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionSettings">

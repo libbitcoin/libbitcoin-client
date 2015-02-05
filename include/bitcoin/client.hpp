@@ -45,5 +45,6 @@
 #include <bitcoin/client/sleeper.hpp>
 #include <bitcoin/client/socket_stream.hpp>
 //#include <bitcoin/client/uniform_uint32_generator.hpp>
+#include <bitcoin/client/version.hpp>
 
 #endif

@@ -23,7 +23,8 @@ bitcoin_client_include_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
     include/bitcoin/client/sleeper.hpp \
-    include/bitcoin/client/socket_stream.hpp
+    include/bitcoin/client/socket_stream.hpp \
+    include/bitcoin/client/version.hpp
     #include/bitcoin/client/random_number_generator.hpp
     #include/bitcoin/client/request_stream.hpp
     #include/bitcoin/client/response_stream.hpp
