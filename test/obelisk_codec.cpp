@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_subscribe_test)
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
         "address.subscribe");
     BOOST_REQUIRE_EQUAL(encode_hex(capture->out[2]),
-        "00a035a131e99f240a2314bb0ddb3d81d05663eb5bf8");
+        "00a0f85beb6356d0813ddb0dbb14230a249fe931a135");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
