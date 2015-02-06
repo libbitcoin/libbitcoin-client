@@ -205,8 +205,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
     const payment_address& address)
 {
-    binary_type prefix((short_hash_size * byte_bits),
-        reverse(address.hash()));
+    binary_type prefix((short_hash_size * byte_bits), address.hash());
 
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
     // [ prefix_bitsize:1 ]
