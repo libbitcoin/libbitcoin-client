@@ -12,8 +12,22 @@ pkgconfig_DATA = libbitcoin-client.pc
 ACLOCAL_AMFLAGS = -I m4
 
 #
-# headers
+# libraries
 #
+lib_LTLIBRARIES = \
+    src/libbitcoin-client.la
+
+src_libbitcoin_client_la_CPPFLAGS = \
+    -I${srcdir}/include \
+    ${bitcoin_CFLAGS} \
+    ${sodium_CFLAGS} \
+    ${czmq___CFLAGS}
+
+src_libbitcoin_client_la_LIBADD = \
+    ${bitcoin_LIBS} \
+    ${sodium_LIBS} \
+    ${czmq___LIBS}
+    
 bitcoin_includedir = ${includedir}/bitcoin
 bitcoin_include_HEADERS = \
     include/bitcoin/client.hpp
@@ -38,17 +52,6 @@ bitcoin_client_obelisk_include_HEADERS = \
     include/bitcoin/client/obelisk/obelisk_router.hpp \
     include/bitcoin/client/obelisk/obelisk_types.hpp
 
-#
-# libraries
-#
-lib_LTLIBRARIES = src/libbitcoin-client.la
-
-src_libbitcoin_client_la_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_CFLAGS} \
-    ${sodium_CFLAGS} \
-    ${czmq___CFLAGS}
-
 src_libbitcoin_client_la_SOURCES = \
     src/obelisk/obelisk_codec.cpp \
     src/obelisk/obelisk_router.cpp \
@@ -56,27 +59,27 @@ src_libbitcoin_client_la_SOURCES = \
     #src/server_codec_impl.cpp
     #src/uniform_uint32_generator.cpp
 
-src_libbitcoin_client_la_LIBADD = \
-    ${bitcoin_LIBS} \
-    ${sodium_LIBS} \
-    ${czmq___LIBS}
-
 #
 # examples
 #
-EXTRA_PROGRAMS = examples/libbitcoin_client examples/get_height
+if WITH_EXAMPLES
 
+examples_list =  \
+    examples/libbitcoin_client \
+    examples/get_height
+    
+# Declare a make target.
+examples: ${examples_list}
+
+noinst_PROGRAMS = \
+    ${examples_list}
+    
+# libbitcoin_client
 examples_libbitcoin_client_CPPFLAGS = \
     -I${srcdir}/include \
     ${bitcoin_CFLAGS} \
     ${sodium_CFLAGS} \
     ${czmq___CFLAGS}
-
-examples_libbitcoin_client_SOURCES = \
-    examples/cli.cpp \
-    examples/connection.cpp \
-    examples/read_line.cpp \
-    examples/main.cpp
 
 examples_libbitcoin_client_LDADD = \
     src/libbitcoin-client.la \
@@ -84,9 +87,13 @@ examples_libbitcoin_client_LDADD = \
     ${sodium_LIBS} \
     ${czmq___LIBS}
 
-examples_get_height_SOURCES = \
-    examples/get_height.cpp
-
+examples_libbitcoin_client_SOURCES = \
+    examples/cli.cpp \
+    examples/connection.cpp \
+    examples/read_line.cpp \
+    examples/main.cpp
+    
+# libbitcoin_client
 examples_get_height_CPPFLAGS = \
     -I${srcdir}/include \
     ${bitcoin_CFLAGS} \
@@ -98,17 +105,22 @@ examples_get_height_LDADD = \
     ${bitcoin_LIBS} \
     ${sodium_LIBS} \
     ${czmq___LIBS}
+    
+examples_get_height_SOURCES = \
+    examples/get_height.cpp
 
-examples: examples/libbitcoin_client examples/get_height
+endif
 
 #
 # tests
 #
 if WITH_TESTS
 
-TESTS = test/libbitcoin_client_test
+TESTS = \
+    test/libbitcoin_client_test
 
-check_PROGRAMS = test/libbitcoin_client_test
+check_PROGRAMS = \
+    test/libbitcoin_client_test
 
 test_libbitcoin_client_test_CPPFLAGS = \
     -I${srcdir}/include \
@@ -116,15 +128,15 @@ test_libbitcoin_client_test_CPPFLAGS = \
     ${sodium_CFLAGS} \
     ${czmq___CFLAGS}
 
-test_libbitcoin_client_test_SOURCES = \
-    test/obelisk_codec.cpp \
-    test/main.cpp
-
 test_libbitcoin_client_test_LDADD = \
     src/libbitcoin-client.la \
     -lboost_unit_test_framework \
     ${bitcoin_LIBS} \
     ${sodium_LIBS} \
     ${czmq___LIBS}
+
+test_libbitcoin_client_test_SOURCES = \
+    test/obelisk_codec.cpp \
+    test/main.cpp
 
 endif
