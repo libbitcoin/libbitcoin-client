@@ -34,9 +34,7 @@ lib_LTLIBRARIES = src/libbitcoin-client.la
 src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
 src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 src_libbitcoin_client_la_SOURCES = \
-    src/server_codec_impl.cpp \
     src/socket_stream.cpp \
-    src/uniform_uint32_generator.cpp \
     src/obelisk/obelisk_codec.cpp \
     src/obelisk/obelisk_router.cpp
 
