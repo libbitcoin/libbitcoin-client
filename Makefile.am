@@ -1,142 +1,78 @@
+###############################################################################
+#  Copyright (c) 2014-2015 libbitcoin-client developers (see COPYING).
 #
-# documentation
+#         GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 #
-doc_DATA = README INSTALL COPYING
+###############################################################################
 
-#
-# pkg-config
-#
-pkgconfig_DATA = libbitcoin-client.pc
-
+# Standard declarations.
+#==============================================================================
 # look for macros in the m4 subdirectory
 ACLOCAL_AMFLAGS = -I m4
 
-#
-# libraries
-#
-lib_LTLIBRARIES = \
-    src/libbitcoin-client.la
 
-src_libbitcoin_client_la_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_CFLAGS} \
-    ${sodium_CFLAGS} \
-    ${czmq___CFLAGS}
+# Automake products.
+#==============================================================================
+# files => ${pkgconfigdir}
+#------------------------------------------------------------------------------
+pkgconfig_DATA = \
+    libbitcoin-client.pc
 
-src_libbitcoin_client_la_LIBADD = \
-    ${bitcoin_LIBS} \
-    ${sodium_LIBS} \
-    ${czmq___LIBS}
-    
-bitcoin_includedir = ${includedir}/bitcoin
-bitcoin_include_HEADERS = \
+# files => ${docdir}
+#------------------------------------------------------------------------------
+doc_DATA = \
+    AUTHORS \
+    COPYING \
+    ChangeLog \
+    INSTALL \
+    NEWS \
+    README
+
+# src/libbitcoin-client.la => ${libdir}
+#------------------------------------------------------------------------------
+lib_LTLIBRARIES = src/libbitcoin-client.la
+src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+src_libbitcoin_client_la_SOURCES = \
+    src/server_codec_impl.cpp \
+    src/socket_stream.cpp \
+    src/uniform_uint32_generator.cpp \
+    src/obelisk/obelisk_codec.cpp \
+    src/obelisk/obelisk_router.cpp
+
+# local: test/libbitcoin_client_test
+#------------------------------------------------------------------------------
+if WITH_TESTS
+
+# Execute 'test/libbitcoin_client_test' as a test.
+TESTS = test/libbitcoin_client_test
+
+check_PROGRAMS = test/libbitcoin_client_test
+test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS}
+test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${boost_unit_test_framework_LIBS}
+test_libbitcoin_client_test_SOURCES = \
+    test/main.cpp \
+    test/obelisk_codec.cpp
+
+endif WITH_TESTS
+
+# files => ${includedir}/bitcoin
+#------------------------------------------------------------------------------
+include_bitcoindir = ${includedir}/bitcoin
+include_bitcoin_HEADERS = \
     include/bitcoin/client.hpp
 
-bitcoin_client_includedir = ${includedir}/bitcoin/client
-bitcoin_client_include_HEADERS = \
+include_bitcoin_clientdir = ${includedir}/bitcoin/client
+include_bitcoin_client_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
     include/bitcoin/client/sleeper.hpp \
     include/bitcoin/client/socket_stream.hpp \
     include/bitcoin/client/version.hpp
-    #include/bitcoin/client/random_number_generator.hpp
-    #include/bitcoin/client/request_stream.hpp
-    #include/bitcoin/client/response_stream.hpp
-    #include/bitcoin/client/server_codec.hpp
-    #include/bitcoin/client/server_codec_impl.hpp
-    #include/bitcoin/client/uniform_uint32_generator.hpp
 
-bitcoin_client_obelisk_includedir = ${includedir}/bitcoin/client/obelisk
-bitcoin_client_obelisk_include_HEADERS = \
+include_bitcoin_client_obeliskdir = ${includedir}/bitcoin/client/obelisk
+include_bitcoin_client_obelisk_HEADERS = \
     include/bitcoin/client/obelisk/obelisk_codec.hpp \
     include/bitcoin/client/obelisk/obelisk_router.hpp \
     include/bitcoin/client/obelisk/obelisk_types.hpp
 
-src_libbitcoin_client_la_SOURCES = \
-    src/obelisk/obelisk_codec.cpp \
-    src/obelisk/obelisk_router.cpp \
-    src/socket_stream.cpp
-    #src/server_codec_impl.cpp
-    #src/uniform_uint32_generator.cpp
-
-#
-# examples
-#
-if WITH_EXAMPLES
-
-examples_list =  \
-    examples/libbitcoin_client \
-    examples/get_height
-    
-# Declare a make target.
-examples: ${examples_list}
-
-noinst_PROGRAMS = \
-    ${examples_list}
-    
-# libbitcoin_client
-examples_libbitcoin_client_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_CFLAGS} \
-    ${sodium_CFLAGS} \
-    ${czmq___CFLAGS}
-
-examples_libbitcoin_client_LDADD = \
-    src/libbitcoin-client.la \
-    ${bitcoin_LIBS} \
-    ${sodium_LIBS} \
-    ${czmq___LIBS}
-
-examples_libbitcoin_client_SOURCES = \
-    examples/cli.cpp \
-    examples/connection.cpp \
-    examples/read_line.cpp \
-    examples/main.cpp
-    
-# libbitcoin_client
-examples_get_height_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_CFLAGS} \
-    ${sodium_CFLAGS} \
-    ${czmq___CFLAGS}
-
-examples_get_height_LDADD = \
-    src/libbitcoin-client.la \
-    ${bitcoin_LIBS} \
-    ${sodium_LIBS} \
-    ${czmq___LIBS}
-    
-examples_get_height_SOURCES = \
-    examples/get_height.cpp
-
-endif
-
-#
-# tests
-#
-if WITH_TESTS
-
-TESTS = \
-    test/libbitcoin_client_test
-
-check_PROGRAMS = \
-    test/libbitcoin_client_test
-
-test_libbitcoin_client_test_CPPFLAGS = \
-    -I${srcdir}/include \
-    ${bitcoin_CFLAGS} \
-    ${sodium_CFLAGS} \
-    ${czmq___CFLAGS}
-
-test_libbitcoin_client_test_LDADD = \
-    src/libbitcoin-client.la \
-    -lboost_unit_test_framework \
-    ${bitcoin_LIBS} \
-    ${sodium_LIBS} \
-    ${czmq___LIBS}
-
-test_libbitcoin_client_test_SOURCES = \
-    test/obelisk_codec.cpp \
-    test/main.cpp
-
-endif
