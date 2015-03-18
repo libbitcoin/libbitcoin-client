@@ -56,6 +56,36 @@ test_libbitcoin_client_test_SOURCES = \
 
 endif WITH_TESTS
 
+# local: examples/console/libbitcoin_client
+#------------------------------------------------------------------------------
+if WITH_EXAMPLES
+
+noinst_PROGRAMS = examples/console/libbitcoin_client
+examples_console_libbitcoin_client_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+examples_console_libbitcoin_client_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+examples_console_libbitcoin_client_SOURCES = \
+    examples/console/cli.cpp \
+    examples/console/cli.hpp \
+    examples/console/connection.cpp \
+    examples/console/connection.hpp \
+    examples/console/main.cpp \
+    examples/console/read_line.cpp \
+    examples/console/read_line.hpp
+
+endif WITH_EXAMPLES
+
+# local: examples/get_height/get_height
+#------------------------------------------------------------------------------
+if WITH_EXAMPLES
+
+noinst_PROGRAMS += examples/get_height/get_height
+examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+examples_get_height_get_height_SOURCES = \
+    examples/get_height/get_height.cpp
+
+endif WITH_EXAMPLES
+
 # files => ${includedir}/bitcoin
 #------------------------------------------------------------------------------
 include_bitcoindir = ${includedir}/bitcoin
