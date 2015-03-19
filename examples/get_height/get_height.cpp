@@ -44,16 +44,17 @@ int main(int argc, char* argv[])
         std::cerr << "Cannot connect to " << argv[1] << std::endl;
         return 1;
     }
+
     auto stream = std::make_shared<bc::client::socket_stream>(socket);
     auto codec = std::make_shared<bc::client::obelisk_codec>(
         std::static_pointer_cast<bc::client::message_stream>(stream));
 
     // Make the request:
-    auto error_handler = [](const std::error_code& code)
+    const auto error_handler = [](const std::error_code& code)
     {
         std::cout << "error: " << code.message() << std::endl;
     };
-    auto handler = [](size_t height)
+    const auto handler = [](size_t height)
     {
         std::cout << "height: " << height << std::endl;
     };
@@ -66,7 +67,7 @@ int main(int argc, char* argv[])
         poller.add(socket);
 
         // Figure out how much timeout we have left:
-        auto delay = codec->wakeup().count();
+        const auto delay = static_cast<int>(codec->wakeup().count());
         if (!delay)
             break;
 
@@ -74,6 +75,7 @@ int main(int argc, char* argv[])
         poller.wait(delay);
         if (poller.terminated())
             break;
+
         if (!poller.expired())
             stream->signal_response(codec);
     }

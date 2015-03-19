@@ -65,17 +65,6 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\examples\cli.hpp" />
-    <ClInclude Include="..\..\..\..\examples\connection.hpp" />
-    <ClInclude Include="..\..\..\..\examples\read_line.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\cli.cpp" />
-    <ClCompile Include="..\..\..\..\examples\connection.cpp" />
-    <ClCompile Include="..\..\..\..\examples\main.cpp" />
-    <ClCompile Include="..\..\..\..\examples\read_line.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -111,5 +100,16 @@
     <ProjectReference Include="..\libbitcoin-client\libbitcoin-client.vcxproj">
       <Project>{475E189D-F147-4122-B5FE-5BCF1153696E}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\examples\console\cli.hpp" />
+    <ClInclude Include="..\..\..\..\examples\console\connection.hpp" />
+    <ClInclude Include="..\..\..\..\examples\console\read_line.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\examples\console\cli.cpp" />
+    <ClCompile Include="..\..\..\..\examples\console\connection.cpp" />
+    <ClCompile Include="..\..\..\..\examples\console\main.cpp" />
+    <ClCompile Include="..\..\..\..\examples\console\read_line.cpp" />
   </ItemGroup>
 </Project>
