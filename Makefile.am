@@ -46,8 +46,8 @@ if WITH_TESTS
 TESTS = test/libbitcoin_client_test
 
 check_PROGRAMS = test/libbitcoin_client_test
-test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS}
-test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${boost_unit_test_framework_LIBS}
+test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 test_libbitcoin_client_test_SOURCES = \
     test/main.cpp \
     test/obelisk_codec.cpp
