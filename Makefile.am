@@ -42,8 +42,7 @@ src_libbitcoin_client_la_SOURCES = \
 #------------------------------------------------------------------------------
 if WITH_TESTS
 
-# Execute 'test/libbitcoin_client_test' as a test.
-TESTS = test/libbitcoin_client_test
+TESTS = libbitcoin_client_test_runner.sh
 
 check_PROGRAMS = test/libbitcoin_client_test
 test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
