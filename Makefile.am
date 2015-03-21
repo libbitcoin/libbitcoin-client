@@ -5,13 +5,14 @@
 #
 ###############################################################################
 
-# Standard declarations.
+# Automake settings.
 #==============================================================================
-# look for macros in the m4 subdirectory
+# Look for macros in the m4 subdirectory.
+#------------------------------------------------------------------------------
 ACLOCAL_AMFLAGS = -I m4
 
 
-# Automake products.
+# Distribution, build and install products.
 #==============================================================================
 # files => ${pkgconfigdir}
 #------------------------------------------------------------------------------
@@ -102,4 +103,15 @@ include_bitcoin_client_obelisk_HEADERS = \
     include/bitcoin/client/obelisk/obelisk_codec.hpp \
     include/bitcoin/client/obelisk/obelisk_router.hpp \
     include/bitcoin/client/obelisk/obelisk_types.hpp
+
+
+# Custom make targets.
+#==============================================================================
+# make target: examples
+#------------------------------------------------------------------------------
+target_examples = \
+    examples/console/libbitcoin_client \
+    examples/get_height/get_height
+
+examples: ${target_examples}
 
