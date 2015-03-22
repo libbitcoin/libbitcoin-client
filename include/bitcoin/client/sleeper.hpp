@@ -30,7 +30,7 @@ namespace client {
 /**
  * Sentinel value interpreted in sleep timer as infinity.
  */
-constexpr int period_forever = 0;
+BC_CONSTEXPR int period_forever = 0;
 
 /**
  * A sleep timer period in milliseconds.
