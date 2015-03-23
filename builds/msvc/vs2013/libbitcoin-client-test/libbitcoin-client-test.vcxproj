@@ -2,10 +2,10 @@
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <NuGetPackageImportStamp>2cf17d43</NuGetPackageImportStamp>
+    <PlatformToolset>v120</PlatformToolset>
     <ProjectGuid>{A56A00C6-669B-4535-9DC2-772A931B04C2}</ProjectGuid>
     <ProjectName>libbitcoin-client-test</ProjectName>
-    <NuGetPackageImportStamp>2cf17d43</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDEXE|Win32">
