@@ -246,5 +246,5 @@ AS_CASE([${CC}], [*gcc*],
 
 # Process outputs into templates.
 #==============================================================================
-AC_CONFIG_FILES([Makefile libbitcoin-client.pc ])
+AC_CONFIG_FILES([Makefile libbitcoin-client.pc])
 AC_OUTPUT
