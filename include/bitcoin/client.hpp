@@ -1,50 +1,27 @@
-/*
- * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin-client.
- *
- * libbitcoin-client is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-#ifndef LIBBITCOIN_CLIENT_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_CLIENT_HPP
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2014-2015 libbitcoin-client developers (see COPYING).
+//
+//        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
+//
+///////////////////////////////////////////////////////////////////////////////
+#ifndef LIBBITCOIN_CLIENT_HPP
+#define LIBBITCOIN_CLIENT_HPP
 
 /**
- * @mainpage libbitcoin-client API dox
+ * API Users: Include only this header. Direct use of other headers is fragile 
+ * and unsupported as header organization is subject to change.
  *
- * @section intro_sec Introduction
- *
- * This library will contain the logic and communications code needed to talk
- * to a libbitcoin-server.
+ * Maintainers: Do not include this header internal to this library.
  */
 
-// Convenience header that includes everything
-// Not to be used internally. For API users.
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/sleeper.hpp>
+#include <bitcoin/client/socket_stream.hpp>
+#include <bitcoin/client/version.hpp>
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
 #include <bitcoin/client/obelisk/obelisk_router.hpp>
 #include <bitcoin/client/obelisk/obelisk_types.hpp>
-//#include <bitcoin/client/random_number_generator.hpp>
-//#include <bitcoin/client/request_stream.hpp>
-//#include <bitcoin/client/response_stream.hpp>
-//#include <bitcoin/client/server_codec.hpp>
-//#include <bitcoin/client/server_codec_impl.hpp>
-#include <bitcoin/client/sleeper.hpp>
-#include <bitcoin/client/socket_stream.hpp>
-//#include <bitcoin/client/uniform_uint32_generator.hpp>
-#include <bitcoin/client/version.hpp>
 
 #endif
