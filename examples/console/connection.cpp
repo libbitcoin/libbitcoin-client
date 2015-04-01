@@ -37,12 +37,10 @@ static void on_unknown(const std::string& command)
 /**
  * Update message callback handler.
  */
-static void on_update(const payment_address& address, size_t height,
-    const hash_digest& blk_hash, const transaction_type&)
+static void on_update(const payment_address& address, size_t,
+    const hash_digest&, const transaction_type&)
 {
     std::cout << "update:" << address.encoded() << std::endl;
-    (void)height;
-    (void)blk_hash;
 }
 
 connection::connection(czmqpp::socket& socket)

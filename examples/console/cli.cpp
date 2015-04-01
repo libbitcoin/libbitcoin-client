@@ -61,6 +61,7 @@ void cli::cmd_connect(std::stringstream& args)
     std::string server;
     if (!read_string(args, server, "error: no server given"))
         return;
+
     std::cout << "connecting to " << server << std::endl;
 
     czmqpp::socket obelisk_socket(context_, ZMQ_DEALER);
@@ -76,19 +77,18 @@ void cli::cmd_connect(std::stringstream& args)
     }
 }
 
-void cli::cmd_disconnect(std::stringstream& args)
+void cli::cmd_disconnect(std::stringstream&)
 {
     if (!check_connection())
         return;
-    (void)args;
+
     connection_.reset();
 }
 
-void cli::cmd_height(std::stringstream& args)
+void cli::cmd_height(std::stringstream&)
 {
     if (!check_connection())
         return;
-    (void)args;
 
     auto handler = [this](size_t height)
     {
@@ -103,6 +103,7 @@ void cli::cmd_history(std::stringstream& args)
 {
     if (!check_connection())
         return;
+
     payment_address address;
     if (!read_address(args, address))
         return;
@@ -111,6 +112,7 @@ void cli::cmd_history(std::stringstream& args)
     {
         for (auto row: history)
             std::cout << row.value << std::endl;
+
         request_done();
     };
     pending_request_ = true;
@@ -125,40 +127,29 @@ int cli::run()
 
     while (!done_)
     {
-        long delay = -1;
+        int delay = -1;
         czmqpp::poller poller;
-
         poller.add(terminal_.get_socket());
 
         if (connection_)
         {
             poller.add(connection_->stream->get_socket());
-
             auto next_wakeup = connection_->codec->wakeup();
             if (next_wakeup.count())
-            {
-                delay = static_cast<long>(next_wakeup.count());
-            }
+                delay = static_cast<int>(next_wakeup.count());
         }
 
         czmqpp::socket which = poller.wait(delay);
 
         if (poller.terminated())
-        {
             break;
-        }
 
         if (!poller.expired())
         {
             if (which == terminal_.get_socket())
-            {
                 command();
-            }
-
             else if (which == connection_->stream->get_socket())
-            {
                 connection_->stream->signal_response(connection_->codec);
-            }
         }
     }
 
@@ -207,6 +198,7 @@ bool cli::check_connection()
         std::cout << "error: no connection" << std::endl;
         return false;
     }
+
     return true;
 }
 
@@ -219,6 +211,7 @@ bool cli::read_string(std::stringstream& args, std::string& out,
         std::cout << error_message << std::endl;
         return false;
     }
+
     return true;
 }
 
@@ -227,10 +220,12 @@ bool cli::read_address(std::stringstream& args, payment_address& out)
     std::string address;
     if (!read_string(args, address, "error: no address given"))
         return false;
+
     if (!out.set_encoded(address))
     {
         std::cout << "error: invalid address " << address << std::endl;
         return false;
     }
+
     return true;
 }

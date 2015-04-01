@@ -62,14 +62,14 @@ std::string read_line::get_line()
     std::string data;
     czmqpp::message message;
     czmqpp::poller poller(socket_);
-
     czmqpp::socket which = poller.wait(1);
 
     if (!poller.expired() && !poller.terminated() && (which == socket_))
     {
         if (message.receive(socket_))
         {
-            data = std::string(message.parts()[0].begin(), message.parts()[0].end());
+            const auto& first = message.parts().front();
+            data = std::string(first.begin(), first.end());
         }
     }
 
@@ -86,32 +86,26 @@ void read_line::run(czmqpp::context* context)
         czmqpp::message request;
 
         // Wait for a socket request:
-        if (request.receive(socket))
-        {
-            czmqpp::data_stack stack = request.parts();
-
-            auto bytes = *(stack.begin());
-            auto signal = bc::from_little_endian<uint32_t>(bytes.begin(), bytes.end());
-
-            if (signal == signal_halt)
-            {
-                break;
-            }
-
-            // Read input:
-            char line[1000];
-            std::cin.getline(line, sizeof(line));
-
-            std::string response_text(line);
-
-            czmqpp::message response;
-            response.append(czmqpp::data_chunk(response_text.begin(), response_text.end()));
-            response.send(socket);
-        }
-        else
-        {
+        if (!request.receive(socket))
             break;
-        }
+
+        czmqpp::data_stack stack = request.parts();
+
+        auto bytes = *(stack.begin());
+        auto signal = bc::from_little_endian<uint32_t>(bytes.begin(), bytes.end());
+
+        if (signal == signal_halt)
+            break;
+
+        // Read input:
+        char line[1000];
+        std::cin.getline(line, sizeof(line));
+
+        std::string text(line);
+
+        czmqpp::message response;
+        response.append(czmqpp::data_chunk(text.begin(), text.end()));
+        response.send(socket);
     }
 }
 
@@ -119,4 +113,3 @@ czmqpp::socket& read_line::get_socket()
 {
     return socket_;
 }
-
