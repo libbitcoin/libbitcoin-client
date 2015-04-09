@@ -57,7 +57,7 @@ obelisk_codec::~obelisk_codec()
 
 BCC_API void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
-    const payment_address& address, uint32_t from_height)
+    const wallet::payment_address& address, uint32_t from_height)
 {
     auto data = build_data({
         to_byte(address.version()),
@@ -151,11 +151,9 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
 
 BCC_API void obelisk_codec::validate(error_handler on_error,
     validate_handler on_reply,
-    const transaction_type& tx)
+    const chain::transaction& tx)
 {
-    data_chunk data(satoshi_raw_size(tx));
-    DEBUG_ONLY(auto it =) satoshi_save(tx, data.begin());
-    BITCOIN_ASSERT(it == data.end());
+    data_chunk data = tx;
 
     send_request("transaction_pool.validate", data, std::move(on_error),
         std::bind(decode_validate, _1, std::move(on_reply)));
@@ -177,11 +175,9 @@ BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
 
 BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
     empty_handler on_reply,
-    const transaction_type& tx)
+    const chain::transaction& tx)
 {
-    data_chunk data(satoshi_raw_size(tx));
-    DEBUG_ONLY(auto it =) satoshi_save(tx, data.begin());
-    BITCOIN_ASSERT(it == data.end());
+    data_chunk data = tx;
 
     send_request("protocol.broadcast_transaction", data, std::move(on_error),
         std::bind(decode_empty, _1, std::move(on_reply)));
@@ -189,7 +185,7 @@ BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
 
 BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
-    const payment_address& address, uint32_t from_height)
+    const wallet::payment_address& address, uint32_t from_height)
 {
     auto data = build_data({
         to_byte(address.version()),
@@ -203,7 +199,7 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
 
 BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
-    const payment_address& address)
+    const wallet::payment_address& address)
 {
     binary_type prefix((short_hash_size * byte_bits), address.hash());
 
@@ -343,9 +339,8 @@ void obelisk_codec::decode_fetch_history(data_deserial& payload,
 void obelisk_codec::decode_fetch_transaction(data_deserial& payload,
     fetch_transaction_handler& handler)
 {
-    transaction_type tx;
-    satoshi_load(payload.iterator(), payload.end(), tx);
-    payload.set_iterator(payload.iterator() + satoshi_raw_size(tx));
+    chain::transaction tx(payload);
+//    payload.set_iterator(payload.iterator() + satoshi_raw_size(tx));
     check_end(payload);
     handler(tx);
 }
@@ -361,9 +356,8 @@ void obelisk_codec::decode_fetch_last_height(data_deserial& payload,
 void obelisk_codec::decode_fetch_block_header(data_deserial& payload,
     fetch_block_header_handler& handler)
 {
-    block_header_type header;
-    satoshi_load(payload.iterator(), payload.end(), header);
-    payload.set_iterator(payload.iterator() + satoshi_raw_size(header));
+    chain::block_header header(payload);
+//    payload.set_iterator(payload.iterator() + satoshi_raw_size(header));
     check_end(payload);
     handler(header);
 }
@@ -390,7 +384,7 @@ void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
         row.ephemkey.insert(row.ephemkey.begin(), 0x02);
 
         // presume address_version
-        uint8_t address_version = payment_address::pubkey_version;
+        uint8_t address_version = wallet::payment_address::pubkey_version;
         const short_hash address_hash = payload.read_short_hash();
         row.address.set(address_version, reverse(address_hash));
 
@@ -405,7 +399,7 @@ void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
 void obelisk_codec::decode_validate(data_deserial& payload,
     validate_handler& handler)
 {
-    index_list unconfirmed;
+    chain::index_list unconfirmed;
     while (payload.iterator() != payload.end())
     {
         uint32_t unconfirm_index = payload.read_4_bytes();
