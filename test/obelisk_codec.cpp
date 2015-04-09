@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_history_test)
     auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const history_list&) {};
     codec.fetch_history(on_error, on_reply,
-        payment_address(addressSatoshi), 0x12345678);
+        wallet::payment_address(addressSatoshi), 0x12345678);
 
     BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_transaction_test)
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
     auto on_error = [](const std::error_code&) {};
-    auto on_reply = [](const transaction_type&) {};
+    auto on_reply = [](const chain::transaction&) {};
     codec.fetch_transaction(on_error, on_reply,
         hash_literal(hashSatoshi));
 
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_block_header_height_test)
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
     auto on_error = [](const std::error_code&) {};
-    auto on_reply = [](const block_header_type&) {};
+    auto on_reply = [](const chain::block_header&) {};
     codec.fetch_block_header(on_error, on_reply,
         0x12345678);
 
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_block_header_hash_test)
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
     auto on_error = [](const std::error_code&) {};
-    auto on_reply = [](const block_header_type&) {};
+    auto on_reply = [](const chain::block_header&) {};
     codec.fetch_block_header(on_error, on_reply,
         hash_literal(hashSatoshi));
 
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_fetch_unconfirmed_transaction_test)
     obelisk_codec codec(std::static_pointer_cast<message_stream>(capture));
 
     auto on_error = [](const std::error_code&) {};
-    auto on_reply = [](const transaction_type&) {};
+    auto on_reply = [](const chain::transaction&) {};
     codec.fetch_unconfirmed_transaction(on_error, on_reply,
         hash_literal(hashSatoshi));
 
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_address_fetch_history_test)
     auto on_error = [](const std::error_code&) {};
     auto on_reply = [](const history_list&) {};
     codec.address_fetch_history(on_error, on_reply,
-        payment_address(addressSatoshi), 0x12345678);
+        wallet::payment_address(addressSatoshi), 0x12345678);
 
     BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec_subscribe_test)
     auto on_error = [](const std::error_code&) {};
     auto on_reply = []() {};
     codec.subscribe(on_error, on_reply,
-        payment_address(addressSatoshi));
+        wallet::payment_address(addressSatoshi));
 
     BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture->out[0]),

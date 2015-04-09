@@ -104,7 +104,7 @@ void cli::cmd_history(std::stringstream& args)
     if (!check_connection())
         return;
 
-    payment_address address;
+    bc::wallet::payment_address address;
     if (!read_address(args, address))
         return;
 
@@ -215,13 +215,14 @@ bool cli::read_string(std::stringstream& args, std::string& out,
     return true;
 }
 
-bool cli::read_address(std::stringstream& args, payment_address& out)
+bool cli::read_address(std::stringstream& args,
+    bc::wallet::payment_address& out)
 {
     std::string address;
     if (!read_string(args, address, "error: no address given"))
         return false;
 
-    if (!out.set_encoded(address))
+    if (!out.from_string(address))
     {
         std::cout << "error: invalid address " << address << std::endl;
         return false;
