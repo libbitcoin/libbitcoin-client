@@ -56,24 +56,24 @@ public:
     // Message reply handlers:
     typedef std::function<void (const history_list&)>
         fetch_history_handler;
-    typedef std::function<void (const transaction_type&)>
+    typedef std::function<void (const chain::transaction&)>
         fetch_transaction_handler;
     typedef std::function<void (size_t)>
         fetch_last_height_handler;
-    typedef std::function<void (const block_header_type&)>
+    typedef std::function<void (const chain::block_header&)>
         fetch_block_header_handler;
     typedef std::function<void (size_t block_height, size_t index)>
         fetch_transaction_index_handler;
     typedef std::function<void (const stealth_list&)>
         fetch_stealth_handler;
-    typedef std::function<void (const index_list& unconfirmed)>
+    typedef std::function<void (const chain::index_list& unconfirmed)>
         validate_handler;
     typedef std::function<void ()> empty_handler;
 
     // Outgoing messages:
     BCC_API void fetch_history(error_handler on_error,
         fetch_history_handler on_reply,
-        const payment_address& address, uint32_t from_height=0);
+        const wallet::payment_address& address, uint32_t from_height=0);
     BCC_API void fetch_transaction(error_handler on_error,
         fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
@@ -93,19 +93,19 @@ public:
         const bc::binary_type& prefix, uint32_t from_height=0);
     BCC_API void validate(error_handler on_error,
         validate_handler on_reply,
-        const transaction_type& tx);
+        const chain::transaction& tx);
     BCC_API void fetch_unconfirmed_transaction(error_handler on_error,
         fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
     BCC_API void broadcast_transaction(error_handler on_error,
         empty_handler on_reply,
-        const transaction_type& tx);
+        const chain::transaction& tx);
     BCC_API void address_fetch_history(error_handler on_error,
         fetch_history_handler on_reply,
-        const payment_address& address, uint32_t from_height=0);
+        const wallet::payment_address& address, uint32_t from_height=0);
     BCC_API void subscribe(error_handler on_error,
         empty_handler on_reply,
-        const bc::payment_address& address);
+        const wallet::payment_address& address);
     BCC_API void subscribe(error_handler on_error,
         empty_handler on_reply,
         subscribe_type discriminator,

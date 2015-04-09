@@ -204,12 +204,11 @@ void obelisk_router::decode_update(const obelisk_message& message)
         // This message does not have an error_code at the beginning.
         uint8_t version_byte = deserial.read_byte();
         short_hash addr_hash = deserial.read_short_hash();
-        payment_address address(version_byte, addr_hash);
+        wallet::payment_address address(version_byte, addr_hash);
         uint32_t height = deserial.read_4_bytes();
         hash_digest blk_hash = deserial.read_hash();
-        transaction_type tx;
-        satoshi_load(deserial.iterator(), deserial.end(), tx);
-        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
+        chain::transaction tx(deserial);
+//        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
         check_end(deserial);
         on_update_(address, height, blk_hash, tx);
     }
@@ -235,9 +234,8 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
 
         uint32_t height = deserial.read_4_bytes();
         hash_digest blk_hash = deserial.read_hash();
-        transaction_type tx;
-        satoshi_load(deserial.iterator(), deserial.end(), tx);
-        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
+        chain::transaction tx(deserial);
+//        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
         check_end(deserial);
         on_stealth_update_(prefix, height, blk_hash, tx);
     }
@@ -279,13 +277,13 @@ BCC_API void obelisk_router::on_unknown_nop(const std::string&)
 {
 }
 
-BCC_API void obelisk_router::on_update_nop(const payment_address&,
-    size_t, const hash_digest&, const transaction_type&)
+BCC_API void obelisk_router::on_update_nop(const wallet::payment_address&,
+    size_t, const hash_digest&, const chain::transaction&)
 {
 }
 
 BCC_API void obelisk_router::on_stealth_update_nop(const binary_type&,
-    size_t, const hash_digest&, const transaction_type&)
+    size_t, const hash_digest&, const chain::transaction&)
 {
 }
 
