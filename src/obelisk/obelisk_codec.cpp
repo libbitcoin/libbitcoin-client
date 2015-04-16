@@ -324,12 +324,13 @@ void obelisk_codec::decode_fetch_history(data_deserial& payload,
     while (payload.iterator() != payload.end())
     {
         history_row row;
-        row.output.hash = payload.read_hash();
-        row.output.index = payload.read_4_bytes();
+        row.output = chain::output_point(payload);
+
         row.output_height = payload.read_4_bytes();
         row.value = payload.read_8_bytes();
-        row.spend.hash = payload.read_hash();
-        row.spend.index = payload.read_4_bytes();
+
+        row.spend = chain::input_point(payload);
+
         row.spend_height = payload.read_4_bytes();
         history.push_back(row);
     }
