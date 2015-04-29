@@ -18,27 +18,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBBITCOIN_CLIENT_RESPONSE_STREAM_HPP
-#define LIBBITCOIN_CLIENT_RESPONSE_STREAM_HPP
-
-#include <memory>
-#include <bitcoin/protocol.hpp>
-#include <bitcoin/client/define.hpp>
+#ifndef LIBBITCOIN_CLIENT_RANDOM_NUMBER_GENERATOR_HPP
+#define LIBBITCOIN_CLIENT_RANDOM_NUMBER_GENERATOR_HPP
 
 namespace libbitcoin {
 namespace client {
 
-class response_stream
+template<class ResultType>
+class BCC_API random_number_generator
 {
 public:
 
-    BCC_API virtual ~response_stream() {};
-
-    BCC_API virtual void write(
-        const std::shared_ptr<bc::protocol::response>& response) = 0;
+    virtual ResultType operator()() = 0;
 };
 
 }
 }
 
 #endif
+

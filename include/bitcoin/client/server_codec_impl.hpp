@@ -33,7 +33,7 @@
 namespace libbitcoin {
 namespace client {
 
-class server_codec_impl
+class BCC_API server_codec_impl
   : public response_stream, public server_codec, public sleeper
 {
 public:
@@ -41,54 +41,54 @@ public:
     typedef std::function<void (
         const bc::protocol::response&)> response_handler;
 
-    BCC_API static void on_unknown_nop(const bc::protocol::response&);
+    static void on_unknown_nop(const bc::protocol::response&);
 
-    BCC_API server_codec_impl(
+    server_codec_impl(
         std::shared_ptr<request_stream> outgoing,
         std::shared_ptr<random_number_generator<uint32_t>> generator,
         period_ms timeout = std::chrono::seconds(2),
         uint8_t retries = 0,
         const response_handler& on_unknown_response = on_unknown_nop);
 
-    BCC_API virtual ~server_codec_impl();
+    virtual ~server_codec_impl();
 
-    BCC_API virtual void set_retries(uint8_t retries);
+    virtual void set_retries(uint8_t retries);
 
-    BCC_API virtual void set_timeout(period_ms timeout);
+    virtual void set_timeout(period_ms timeout);
 
-    BCC_API virtual void set_unknown_response_handler(
+    virtual void set_unknown_response_handler(
         response_handler& handler);
 
-    BCC_API virtual uint64_t outstanding_call_count() const;
+    virtual uint64_t outstanding_call_count() const;
 
-    BCC_API virtual void write(const bc::protocol::response& response);
+    virtual void write(const bc::protocol::response& response);
 
     // response_stream interface
-    BCC_API virtual void write(
+    virtual void write(
         const std::shared_ptr<bc::protocol::response>& response);
 
     // sleeper interface
-    BCC_API virtual period_ms wakeup() override;
+    virtual period_ms wakeup() override;
 
     // server_codec interface
-    BCC_API virtual void get_block_headers(
+    virtual void get_block_headers(
         error_handler&& on_error,
         block_headers_handler&& on_reply,
         std::shared_ptr<bc::protocol::block_id> start
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32);
 
-    BCC_API  virtual void post_block(
+    virtual void post_block(
         error_handler&& on_error,
         post_handler&& on_reply,
         const bc::protocol::block& block);
 
-    BCC_API virtual void validate_block(
+    virtual void validate_block(
         error_handler&& on_error,
         validate_handler&& on_reply,
         const bc::protocol::block& block);
 
-    BCC_API virtual void get_transactions(
+    virtual void get_transactions(
         error_handler&& on_error,
         transaction_results_handler&& on_reply,
         const bc::protocol::filter_list& query,
@@ -100,7 +100,7 @@ public:
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32);
 
-    BCC_API virtual void get_transaction_hashes(
+    virtual void get_transaction_hashes(
         error_handler&& on_error,
         transaction_hash_results_handler&& on_reply,
         const bc::protocol::filter_list& query,
@@ -112,7 +112,7 @@ public:
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32);
 
-    BCC_API virtual void get_utxos(
+    virtual void get_utxos(
         error_handler&& on_error,
         utxo_results_handler&& on_reply,
         const bc::protocol::filter_list& query,
@@ -124,12 +124,12 @@ public:
             = std::shared_ptr<bc::protocol::block_id>(),
         uint32_t results_per_page = MAX_UINT32);
 
-    BCC_API virtual void post_transaction(
+    virtual void post_transaction(
         error_handler&& on_error,
         post_handler&& on_reply,
         const bc::protocol::tx& transaction);
 
-    BCC_API virtual void validate_transaction(
+    virtual void validate_transaction(
         error_handler&& on_error,
         validate_handler&& on_reply,
         const bc::protocol::tx& transaction);
@@ -139,12 +139,12 @@ protected:
     typedef std::function<void (
         const bc::protocol::response&, error_handler&)> response_interpreter;
 
-    BCC_API virtual void send(
+    virtual void send(
         error_handler&& on_error,
         response_interpreter&& on_reply,
         const std::shared_ptr<bc::protocol::request>& request);
 
-    BCC_API virtual void broadcast_request(
+    virtual void broadcast_request(
         const std::shared_ptr<bc::protocol::request>& request);
 
 private:

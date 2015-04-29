@@ -27,7 +27,7 @@
 namespace libbitcoin {
 namespace client {
 
-class uniform_uint32_generator : random_number_generator<uint32_t>
+class BCC_API uniform_uint32_generator : random_number_generator<uint32_t>
 {
 public:
 
@@ -51,4 +51,3 @@ private:
 }
 
 #endif
-
