@@ -48,17 +48,18 @@ typedef std::chrono::milliseconds period_ms;
  * loop, calling the `wakeup` method will perform the pending work
  * (assuming enough time has elapsed).
  */
-class sleeper
+class BCC_API sleeper
 {
 public:
-    BCC_API virtual ~sleeper() {};
+
+    virtual ~sleeper() {};
 
     /**
      * Performs any pending time-based work, and returns the number of
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    BCC_API virtual period_ms wakeup() = 0;
+    virtual period_ms wakeup() = 0;
 };
 
 /**

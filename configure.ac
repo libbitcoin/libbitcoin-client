@@ -168,6 +168,14 @@ AC_SUBST([bitcoin_CPPFLAGS], [${bitcoin_CFLAGS}])
 AC_MSG_NOTICE([bitcoin_CPPFLAGS : ${bitcoin_CPPFLAGS}])
 AC_MSG_NOTICE([bitcoin_LIBS : ${bitcoin_LIBS}])
 
+# Require bitcoin-protocol of at least version 0.1.0 and output ${bitcoin_protocol_CPPFLAGS/LIBS/PKG}.
+#------------------------------------------------------------------------------
+PKG_CHECK_MODULES([bitcoin_protocol], [libbitcoin-protocol >= 0.1.0])
+AC_SUBST([bitcoin_protocol_PKG], ['libbitcoin-protocol >= 0.1.0'])
+AC_SUBST([bitcoin_protocol_CPPFLAGS], [${bitcoin_protocol_CFLAGS}])
+AC_MSG_NOTICE([bitcoin_protocol_CPPFLAGS : ${bitcoin_protocol_CPPFLAGS}])
+AC_MSG_NOTICE([bitcoin_protocol_LIBS : ${bitcoin_protocol_LIBS}])
+
 
 # Set flags.
 #==============================================================================

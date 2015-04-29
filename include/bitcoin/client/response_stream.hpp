@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBBITCOIN_CLIENT_REQUEST_STREAM_HPP
-#define LIBBITCOIN_CLIENT_REQUEST_STREAM_HPP
+#ifndef LIBBITCOIN_CLIENT_RESPONSE_STREAM_HPP
+#define LIBBITCOIN_CLIENT_RESPONSE_STREAM_HPP
 
 #include <memory>
 #include <bitcoin/protocol.hpp>
@@ -28,14 +28,14 @@
 namespace libbitcoin {
 namespace client {
 
-class request_stream
+class BCC_API response_stream
 {
 public:
 
-    BCC_API virtual ~request_stream() {};
+    virtual ~response_stream() {};
 
-    BCC_API virtual void write(
-        const std::shared_ptr<bc::protocol::request>& request) = 0;
+    virtual void write(
+        const std::shared_ptr<libbitcoin::protocol::response>& response) = 0;
 };
 
 }

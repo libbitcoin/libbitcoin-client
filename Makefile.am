@@ -32,10 +32,12 @@ doc_DATA = \
 # src/libbitcoin-client.la => ${libdir}
 #------------------------------------------------------------------------------
 lib_LTLIBRARIES = src/libbitcoin-client.la
-src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_protocol_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+src_libbitcoin_client_la_LIBADD = ${bitcoin_protocol_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 src_libbitcoin_client_la_SOURCES = \
+    src/server_codec_impl.cpp \
     src/socket_stream.cpp \
+    src/uniform_uint32_generator.cpp \
     src/obelisk/obelisk_codec.cpp \
     src/obelisk/obelisk_router.cpp
 
@@ -46,8 +48,8 @@ if WITH_TESTS
 TESTS = libbitcoin_client_test_runner.sh
 
 check_PROGRAMS = test/libbitcoin_client_test
-test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_protocol_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_protocol_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 test_libbitcoin_client_test_SOURCES = \
     test/main.cpp \
     test/obelisk_codec.cpp
@@ -77,8 +79,8 @@ endif WITH_EXAMPLES
 if WITH_EXAMPLES
 
 noinst_PROGRAMS += examples/get_height/get_height
-examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_protocol_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_protocol_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 examples_get_height_get_height_SOURCES = \
     examples/get_height/get_height.cpp
 
@@ -94,8 +96,14 @@ include_bitcoin_clientdir = ${includedir}/bitcoin/client
 include_bitcoin_client_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/message_stream.hpp \
+    include/bitcoin/client/random_number_generator.hpp \
+    include/bitcoin/client/request_stream.hpp \
+    include/bitcoin/client/response_stream.hpp \
+    include/bitcoin/client/server_codec.hpp \
+    include/bitcoin/client/server_codec_impl.hpp \
     include/bitcoin/client/sleeper.hpp \
     include/bitcoin/client/socket_stream.hpp \
+    include/bitcoin/client/uniform_uint32_generator.hpp \
     include/bitcoin/client/version.hpp
 
 include_bitcoin_client_obeliskdir = ${includedir}/bitcoin/client/obelisk
