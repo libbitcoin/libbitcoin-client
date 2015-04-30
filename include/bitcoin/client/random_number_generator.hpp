@@ -25,7 +25,7 @@ namespace libbitcoin {
 namespace client {
 
 template<class ResultType>
-class BCC_API random_number_generator
+class random_number_generator
 {
 public:
 
