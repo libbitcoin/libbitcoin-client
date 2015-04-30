@@ -22,6 +22,7 @@
 #define LIBBITCOIN_CLIENT_UNIFORM_UINT32_GENERATOR_HPP
 
 #include <boost/random.hpp>
+#include <bitcoin/client/define.hpp>
 #include <bitcoin/client/random_number_generator.hpp>
 
 namespace libbitcoin {
