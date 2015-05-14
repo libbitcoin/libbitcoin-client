@@ -86,8 +86,6 @@ public:
 
 protected:
 
-    typedef deserializer<data_chunk::const_iterator, true> data_deserial;
-
     /**
      * Decodes a message and calls the appropriate callback.
      * By the time this is called, the error code has already been read
@@ -95,7 +93,7 @@ protected:
      * If there is something wrong with the payload, this function should
      * throw a end_of_stream exception.
      */
-    typedef std::function<void(data_deserial& payload)> decoder;
+    typedef std::function<bool(std::istream& payload)> decoder;
 
     /**
      * Sends an outgoing request, and adds the handlers to the pending
@@ -119,10 +117,10 @@ protected:
         decoder& on_reply);
 
     /**
-     * Verifies that the deserializer has reached the end of the payload,
+     * Verifies that deserialization has reached the end of the payload,
      * and throws end_of_stream if not.
      */
-    static void check_end(data_deserial& payload);
+    static bool is_stream_exhausted(std::istream& payload);
 
     // Request management:
     uint32_t last_request_id_;

@@ -197,80 +197,86 @@ void obelisk_router::receive(const obelisk_message& message)
 
 void obelisk_router::decode_update(const obelisk_message& message)
 {
-    data_deserial deserial = make_deserializer(
-        message.payload.begin(), message.payload.end());
-    try
-    {
-        // This message does not have an error_code at the beginning.
-        uint8_t version_byte = deserial.read_byte();
-        short_hash addr_hash = deserial.read_short_hash();
-        wallet::payment_address address(version_byte, addr_hash);
-        uint32_t height = deserial.read_4_bytes();
-        hash_digest blk_hash = deserial.read_hash();
-        chain::transaction tx(deserial);
-//        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
-        check_end(deserial);
+    bool success = true;
+    data_chunk_stream_host host(message.payload);
+
+    // This message does not have an error_code at the beginning.
+    uint8_t version_byte = read_byte(host.stream);
+    short_hash addr_hash = read_short_hash(host.stream);
+    wallet::payment_address address(version_byte, addr_hash);
+
+    uint32_t height = read_4_bytes(host.stream);
+    hash_digest blk_hash = read_hash(host.stream);
+    chain::transaction tx;
+    success = tx.from_data(host.stream);
+
+    if (success)
+        success = is_stream_exhausted(host.stream);
+
+    if (success)
         on_update_(address, height, blk_hash, tx);
-    }
-    catch (end_of_stream)
-    {
+    else
         on_unknown_(message.command);
-    }
 }
 
 void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
-    data_deserial deserial = make_deserializer(
-        message.payload.begin(), message.payload.end());
-    try
-    {
-        // This message does not have an error_code at the beginning.
-        data_chunk raw_prefix;
-        raw_prefix.push_back(deserial.read_byte());
-        raw_prefix.push_back(deserial.read_byte());
-        raw_prefix.push_back(deserial.read_byte());
-        raw_prefix.push_back(deserial.read_byte());
-        binary_type prefix(32, raw_prefix);
+    bool success = true;
+    data_chunk_stream_host host(message.payload);
 
-        uint32_t height = deserial.read_4_bytes();
-        hash_digest blk_hash = deserial.read_hash();
-        chain::transaction tx(deserial);
-//        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
-        check_end(deserial);
+    // This message does not have an error_code at the beginning.
+    data_chunk raw_prefix;
+    raw_prefix.push_back(read_byte(host.stream));
+    raw_prefix.push_back(read_byte(host.stream));
+    raw_prefix.push_back(read_byte(host.stream));
+    raw_prefix.push_back(read_byte(host.stream));
+    binary_type prefix(32, raw_prefix);
+
+    uint32_t height = read_4_bytes(host.stream);
+    hash_digest blk_hash = read_hash(host.stream);
+    chain::transaction tx;
+
+    success = tx.from_data(host.stream);
+
+    if (success)
+        success = is_stream_exhausted(host.stream);
+
+    if (success)
         on_stealth_update_(prefix, height, blk_hash, tx);
-    }
-    catch (end_of_stream)
-    {
+    else
         on_unknown_(message.command);
-    }
 }
 
 void obelisk_router::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
+    bool success = true;
     std::error_code ec;
-    data_deserial deserial = make_deserializer(
-        message.payload.begin(), message.payload.end());
-    try
+    data_chunk_stream_host host(message.payload);
+
+    uint32_t val = read_4_bytes(host.stream);
+
+    if (val)
+        ec = static_cast<error::error_code_t>(val);
+
+    success = !host.stream.fail();
+
+    if (success)
     {
-        uint32_t val = deserial.read_4_bytes();
-        if (val)
-            ec = static_cast<error::error_code_t>(val);
-        else
-            on_reply(deserial);
+        success = on_reply(host.stream);
+
+        if (!success)
+            ec = std::make_error_code(std::errc::bad_message);
     }
-    catch (end_of_stream)
-    {
-        ec = std::make_error_code(std::errc::bad_message);
-    }
+
     if (ec)
         on_error(ec);
 }
 
-void obelisk_router::check_end(data_deserial& payload)
+bool obelisk_router::is_stream_exhausted(std::istream& payload)
 {
-    if (payload.iterator() != payload.end())
-        throw end_of_stream();
+    return (payload.peek() == std::istream::traits_type::eof())
+        && payload.good();
 }
 
 BCC_API void obelisk_router::on_unknown_nop(const std::string&)

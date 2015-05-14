@@ -153,9 +153,8 @@ BCC_API void obelisk_codec::validate(error_handler on_error,
     validate_handler on_reply,
     const chain::transaction& tx)
 {
-    data_chunk data = tx;
-
-    send_request("transaction_pool.validate", data, std::move(on_error),
+    send_request("transaction_pool.validate", tx.to_data(),
+        std::move(on_error),
         std::bind(decode_validate, _1, std::move(on_reply)));
 }
 
@@ -177,9 +176,8 @@ BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
     empty_handler on_reply,
     const chain::transaction& tx)
 {
-    data_chunk data = tx;
-
-    send_request("protocol.broadcast_transaction", data, std::move(on_error),
+    send_request("protocol.broadcast_transaction", tx.to_data(),
+        std::move(on_error),
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
@@ -310,103 +308,140 @@ is the same as for "address.subscribe, and the server will respond
 with a 4 byte error code.
 */
 
-void obelisk_codec::decode_empty(data_deserial& payload,
+bool obelisk_codec::decode_empty(std::istream& payload,
     empty_handler& handler)
 {
-    check_end(payload);
-    handler();
+    bool success = is_stream_exhausted(payload);
+
+    if (success)
+        handler();
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_history(data_deserial& payload,
+bool obelisk_codec::decode_fetch_history(std::istream& payload,
     fetch_history_handler& handler)
 {
+    bool success = true;
     history_list history;
-    while (payload.iterator() != payload.end())
+
+    while (success && !is_stream_exhausted(payload))
     {
         history_row row;
-        row.output = chain::output_point(payload);
-
-        row.output_height = payload.read_4_bytes();
-        row.value = payload.read_8_bytes();
-
-        row.spend = chain::input_point(payload);
-
-        row.spend_height = payload.read_4_bytes();
+        success = row.output.from_data(payload);
+        row.output_height = read_4_bytes(payload);
+        row.value = read_8_bytes(payload);
+        success &= row.spend.from_data(payload);
+        row.spend_height = read_4_bytes(payload);
         history.push_back(row);
+        success &= payload.good();
     }
-    handler(history);
+
+    if (success)
+        handler(history);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_transaction(data_deserial& payload,
+bool obelisk_codec::decode_fetch_transaction(std::istream& payload,
     fetch_transaction_handler& handler)
 {
-    chain::transaction tx(payload);
-//    payload.set_iterator(payload.iterator() + satoshi_raw_size(tx));
-    check_end(payload);
-    handler(tx);
+    chain::transaction tx;
+    bool success = tx.from_data(payload);
+    success &= is_stream_exhausted(payload);
+
+    if (success)
+        handler(tx);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_last_height(data_deserial& payload,
+bool obelisk_codec::decode_fetch_last_height(std::istream& payload,
     fetch_last_height_handler& handler)
 {
-    uint32_t last_height = payload.read_4_bytes();
-    check_end(payload);
-    handler(last_height);
+    uint32_t last_height = read_4_bytes(payload);
+    bool success = is_stream_exhausted(payload);
+
+    if (success)
+        handler(last_height);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_block_header(data_deserial& payload,
+bool obelisk_codec::decode_fetch_block_header(std::istream& payload,
     fetch_block_header_handler& handler)
 {
-    chain::block_header header(payload);
-//    payload.set_iterator(payload.iterator() + satoshi_raw_size(header));
-    check_end(payload);
-    handler(header);
+    chain::block_header header;
+    bool success = header.from_data(payload);
+    success &= is_stream_exhausted(payload);
+
+    if (success)
+        handler(header);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_transaction_index(data_deserial& payload,
+bool obelisk_codec::decode_fetch_transaction_index(std::istream& payload,
     fetch_transaction_index_handler& handler)
 {
-    uint32_t block_height = payload.read_4_bytes();
-    uint32_t index = payload.read_4_bytes();
-    check_end(payload);
-    handler(block_height, index);
+    uint32_t block_height = read_4_bytes(payload);
+    uint32_t index = read_4_bytes(payload);
+    bool success = is_stream_exhausted(payload);
+
+    if (success)
+        handler(block_height, index);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
+bool obelisk_codec::decode_fetch_stealth(std::istream& payload,
     fetch_stealth_handler& handler)
 {
+    bool success = true;
     stealth_list results;
-    while (payload.iterator() != payload.end())
+
+    while (success && !is_stream_exhausted(payload))
     {
         stealth_row row;
 
         // presume first byte based on convention
-        row.ephemkey = payload.read_data(32);
+        row.ephemkey = read_data(payload, 32);
         row.ephemkey.insert(row.ephemkey.begin(), 0x02);
 
         // presume address_version
         uint8_t address_version = wallet::payment_address::pubkey_version;
-        const short_hash address_hash = payload.read_short_hash();
+        const short_hash address_hash = read_short_hash(payload);
         row.address.set(address_version, reverse(address_hash));
 
-        row.transaction_hash = payload.read_hash();
+        row.transaction_hash = read_hash(payload);
 
         results.push_back(row);
+        success = payload.good();
     }
 
-    handler(results);
+    if (success)
+        handler(results);
+
+    return success;
 }
 
-void obelisk_codec::decode_validate(data_deserial& payload,
+bool obelisk_codec::decode_validate(std::istream& payload,
     validate_handler& handler)
 {
+    bool success = true;
     chain::index_list unconfirmed;
-    while (payload.iterator() != payload.end())
+
+    while (success && is_stream_exhausted(payload))
     {
-        uint32_t unconfirm_index = payload.read_4_bytes();
+        uint32_t unconfirm_index = read_4_bytes(payload);
         unconfirmed.push_back(unconfirm_index);
+        success = payload.good();
     }
-    handler(unconfirmed);
+
+    if (success)
+        handler(unconfirmed);
+
+    return success;
 }
 
 } // namespace client
