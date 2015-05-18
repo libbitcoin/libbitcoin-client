@@ -325,7 +325,7 @@ bool obelisk_codec::decode_fetch_history(std::istream& payload,
     bool success = true;
     history_list history;
 
-    while (success && !is_stream_exhausted(payload))
+    while (success && payload && !is_stream_exhausted(payload))
     {
         history_row row;
         success = row.output.from_data(payload);
@@ -334,13 +334,12 @@ bool obelisk_codec::decode_fetch_history(std::istream& payload,
         success &= row.spend.from_data(payload);
         row.spend_height = read_4_bytes(payload);
         history.push_back(row);
-        success &= payload.good();
     }
 
-    if (success)
+    if (success && payload)
         handler(history);
 
-    return success;
+    return success && payload;
 }
 
 bool obelisk_codec::decode_fetch_transaction(std::istream& payload,
@@ -416,7 +415,7 @@ bool obelisk_codec::decode_fetch_stealth(std::istream& payload,
         row.transaction_hash = read_hash(payload);
 
         results.push_back(row);
-        success = payload.good();
+        success = payload;
     }
 
     if (success)
@@ -433,9 +432,8 @@ bool obelisk_codec::decode_validate(std::istream& payload,
 
     while (success && is_stream_exhausted(payload))
     {
-        uint32_t unconfirm_index = read_4_bytes(payload);
-        unconfirmed.push_back(unconfirm_index);
-        success = payload.good();
+        unconfirmed.push_back(read_4_bytes(payload));
+        success = payload;
     }
 
     if (success)

@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/client/obelisk/obelisk_router.hpp>
+#include <boost/iostreams/stream.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -198,20 +199,21 @@ void obelisk_router::receive(const obelisk_message& message)
 void obelisk_router::decode_update(const obelisk_message& message)
 {
     bool success = true;
-    data_chunk_stream_host host(message.payload);
+    byte_source<data_chunk> source(message.payload);
+    boost::iostreams::stream<byte_source<data_chunk>> istream(source);
 
     // This message does not have an error_code at the beginning.
-    uint8_t version_byte = read_byte(host.stream);
-    short_hash addr_hash = read_short_hash(host.stream);
+    uint8_t version_byte = read_byte(istream);
+    short_hash addr_hash = read_short_hash(istream);
     wallet::payment_address address(version_byte, addr_hash);
 
-    uint32_t height = read_4_bytes(host.stream);
-    hash_digest blk_hash = read_hash(host.stream);
+    uint32_t height = read_4_bytes(istream);
+    hash_digest blk_hash = read_hash(istream);
     chain::transaction tx;
-    success = tx.from_data(host.stream);
+    success = tx.from_data(istream);
 
     if (success)
-        success = is_stream_exhausted(host.stream);
+        success = is_stream_exhausted(istream);
 
     if (success)
         on_update_(address, height, blk_hash, tx);
@@ -222,24 +224,25 @@ void obelisk_router::decode_update(const obelisk_message& message)
 void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
     bool success = true;
-    data_chunk_stream_host host(message.payload);
+    byte_source<data_chunk> source(message.payload);
+    boost::iostreams::stream<byte_source<data_chunk>> istream(source);
 
     // This message does not have an error_code at the beginning.
     data_chunk raw_prefix;
-    raw_prefix.push_back(read_byte(host.stream));
-    raw_prefix.push_back(read_byte(host.stream));
-    raw_prefix.push_back(read_byte(host.stream));
-    raw_prefix.push_back(read_byte(host.stream));
+    raw_prefix.push_back(read_byte(istream));
+    raw_prefix.push_back(read_byte(istream));
+    raw_prefix.push_back(read_byte(istream));
+    raw_prefix.push_back(read_byte(istream));
     binary_type prefix(32, raw_prefix);
 
-    uint32_t height = read_4_bytes(host.stream);
-    hash_digest blk_hash = read_hash(host.stream);
+    uint32_t height = read_4_bytes(istream);
+    hash_digest blk_hash = read_hash(istream);
     chain::transaction tx;
 
-    success = tx.from_data(host.stream);
+    success = tx.from_data(istream);
 
     if (success)
-        success = is_stream_exhausted(host.stream);
+        success = is_stream_exhausted(istream);
 
     if (success)
         on_stealth_update_(prefix, height, blk_hash, tx);
@@ -250,20 +253,20 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
 void obelisk_router::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
-    bool success = true;
     std::error_code ec;
-    data_chunk_stream_host host(message.payload);
+    byte_source<data_chunk> source(message.payload);
+    boost::iostreams::stream<byte_source<data_chunk>> istream(source);
 
-    uint32_t val = read_4_bytes(host.stream);
+    uint32_t val = read_4_bytes(istream);
 
     if (val)
         ec = static_cast<error::error_code_t>(val);
 
-    success = !host.stream.fail();
+    bool success = istream;
 
     if (success)
     {
-        success = on_reply(host.stream);
+        success = on_reply(istream);
 
         if (!success)
             ec = std::make_error_code(std::errc::bad_message);
@@ -275,8 +278,7 @@ void obelisk_router::decode_reply(const obelisk_message& message,
 
 bool obelisk_router::is_stream_exhausted(std::istream& payload)
 {
-    return (payload.peek() == std::istream::traits_type::eof())
-        && payload.good();
+    return payload && (payload.peek() == std::istream::traits_type::eof());
 }
 
 BCC_API void obelisk_router::on_unknown_nop(const std::string&)
