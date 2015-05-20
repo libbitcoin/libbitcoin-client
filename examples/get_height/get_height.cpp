@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin-client.
@@ -17,17 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * @file A minimalist example that connects to a server,
- * fetches the current height, and exits.
- */
-
 #include <iostream>
 #include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
 
+/**
+ * A minimalist example that connects to a server,
+ * fetches the current height, and exits.
+ */
 int main(int argc, char* argv[])
 {
     if (argc != 2)
