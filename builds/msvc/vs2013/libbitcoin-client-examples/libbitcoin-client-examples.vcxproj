@@ -4,7 +4,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <ProjectGuid>{FBCC58AD-93A1-4247-B660-B32C61ACA680}</ProjectGuid>
-    <ProjectName>example-client</ProjectName>
+    <ProjectName>libbitcoin-client-examples</ProjectName>
     <NuGetPackageImportStamp>776edf89</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -106,14 +106,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\examples\console\cli.hpp" />
-    <ClInclude Include="..\..\..\..\examples\console\connection.hpp" />
-    <ClInclude Include="..\..\..\..\examples\console\read_line.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\console\cli.cpp" />
-    <ClCompile Include="..\..\..\..\examples\console\connection.cpp" />
-    <ClCompile Include="..\..\..\..\examples\console\main.cpp" />
-    <ClCompile Include="..\..\..\..\examples\console\read_line.cpp" />
+    <ClCompile Include="..\..\..\..\examples\get_height\get_height.cpp" />
   </ItemGroup>
 </Project>

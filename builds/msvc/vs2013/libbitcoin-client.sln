@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example-client", "example-client\example-client.vcxproj", "{FBCC58AD-93A1-4247-B660-B32C61ACA680}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbitcoin-client", "libbitcoin-client\libbitcoin-client.vcxproj", "{475E189D-F147-4122-B5FE-5BCF1153696E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbitcoin-client-examples", "libbitcoin-client-examples\libbitcoin-client-examples.vcxproj", "{FBCC58AD-93A1-4247-B660-B32C61ACA680}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbitcoin-client-test", "libbitcoin-client-test\libbitcoin-client-test.vcxproj", "{A56A00C6-669B-4535-9DC2-772A931B04C2}"
 EndProject
@@ -17,14 +17,6 @@ Global
 		StaticRelease|x64 = StaticRelease|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|Win32.ActiveCfg = DebugSEXE|Win32
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|Win32.Build.0 = DebugSEXE|Win32
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|x64.ActiveCfg = DebugSEXE|x64
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|x64.Build.0 = DebugSEXE|x64
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|Win32.ActiveCfg = ReleaseSEXE|Win32
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|Win32.Build.0 = ReleaseSEXE|Win32
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|x64.ActiveCfg = ReleaseSEXE|x64
-		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|x64.Build.0 = ReleaseSEXE|x64
 		{475E189D-F147-4122-B5FE-5BCF1153696E}.StaticDebug|Win32.ActiveCfg = DebugLIB|Win32
 		{475E189D-F147-4122-B5FE-5BCF1153696E}.StaticDebug|Win32.Build.0 = DebugLIB|Win32
 		{475E189D-F147-4122-B5FE-5BCF1153696E}.StaticDebug|x64.ActiveCfg = DebugLIB|x64
@@ -33,6 +25,14 @@ Global
 		{475E189D-F147-4122-B5FE-5BCF1153696E}.StaticRelease|Win32.Build.0 = ReleaseLIB|Win32
 		{475E189D-F147-4122-B5FE-5BCF1153696E}.StaticRelease|x64.ActiveCfg = ReleaseLIB|x64
 		{475E189D-F147-4122-B5FE-5BCF1153696E}.StaticRelease|x64.Build.0 = ReleaseLIB|x64
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|Win32.ActiveCfg = DebugSEXE|Win32
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|Win32.Build.0 = DebugSEXE|Win32
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|x64.ActiveCfg = DebugSEXE|x64
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticDebug|x64.Build.0 = DebugSEXE|x64
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|Win32.ActiveCfg = ReleaseSEXE|Win32
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|Win32.Build.0 = ReleaseSEXE|Win32
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|x64.ActiveCfg = ReleaseSEXE|x64
+		{FBCC58AD-93A1-4247-B660-B32C61ACA680}.StaticRelease|x64.Build.0 = ReleaseSEXE|x64
 		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticDebug|Win32.ActiveCfg = DebugSEXE|Win32
 		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticDebug|Win32.Build.0 = DebugSEXE|Win32
 		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticDebug|x64.ActiveCfg = DebugSEXE|x64
@@ -40,6 +40,7 @@ Global
 		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticRelease|Win32.ActiveCfg = ReleaseSEXE|Win32
 		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticRelease|Win32.Build.0 = ReleaseSEXE|Win32
 		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticRelease|x64.ActiveCfg = ReleaseSEXE|x64
+		{A56A00C6-669B-4535-9DC2-772A931B04C2}.StaticRelease|x64.Build.0 = ReleaseSEXE|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
