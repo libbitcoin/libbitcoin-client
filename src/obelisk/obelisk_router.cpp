@@ -199,8 +199,7 @@ void obelisk_router::receive(const obelisk_message& message)
 void obelisk_router::decode_update(const obelisk_message& message)
 {
     bool success = true;
-    byte_source<data_chunk> source(message.payload);
-    boost::iostreams::stream<byte_source<data_chunk>> istream(source);
+    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
 
     // This message does not have an error_code at the beginning.
     uint8_t version_byte = read_byte(istream);
@@ -224,8 +223,7 @@ void obelisk_router::decode_update(const obelisk_message& message)
 void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
     bool success = true;
-    byte_source<data_chunk> source(message.payload);
-    boost::iostreams::stream<byte_source<data_chunk>> istream(source);
+    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
 
     // This message does not have an error_code at the beginning.
     data_chunk raw_prefix;
@@ -254,8 +252,7 @@ void obelisk_router::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
     std::error_code ec;
-    byte_source<data_chunk> source(message.payload);
-    boost::iostreams::stream<byte_source<data_chunk>> istream(source);
+    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
 
     uint32_t val = read_4_bytes(istream);
 
