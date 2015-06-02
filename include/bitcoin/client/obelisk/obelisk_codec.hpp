@@ -131,28 +131,28 @@ public:
 
 private:
 
-    static bool decode_empty(std::istream& payload,
+    static bool decode_empty(reader& payload,
         empty_handler& handler);
 
-    static bool decode_fetch_history(std::istream& payload,
+    static bool decode_fetch_history(reader& payload,
         fetch_history_handler& handler);
 
-    static bool decode_fetch_transaction(std::istream& payload,
+    static bool decode_fetch_transaction(reader& payload,
         fetch_transaction_handler& handler);
 
-    static bool decode_fetch_last_height(std::istream& payload,
+    static bool decode_fetch_last_height(reader& payload,
         fetch_last_height_handler& handler);
 
-    static bool decode_fetch_block_header(std::istream& payload,
+    static bool decode_fetch_block_header(reader& payload,
         fetch_block_header_handler& handler);
 
-    static bool decode_fetch_transaction_index(std::istream& payload,
+    static bool decode_fetch_transaction_index(reader& payload,
         fetch_transaction_index_handler& handler);
 
-    static bool decode_fetch_stealth(std::istream& payload,
+    static bool decode_fetch_stealth(reader& payload,
         fetch_stealth_handler& handler);
 
-    static bool decode_validate(std::istream& payload,
+    static bool decode_validate(reader& payload,
         validate_handler& handler);
 };
 
