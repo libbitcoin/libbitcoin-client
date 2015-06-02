@@ -200,19 +200,20 @@ void obelisk_router::decode_update(const obelisk_message& message)
 {
     bool success = true;
     boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
-    uint8_t version_byte = read_byte(istream);
-    short_hash addr_hash = read_short_hash(istream);
+    uint8_t version_byte = source.read_byte();
+    short_hash addr_hash = source.read_short_hash();
     wallet::payment_address address(version_byte, addr_hash);
 
-    uint32_t height = read_4_bytes(istream);
-    hash_digest blk_hash = read_hash(istream);
+    uint32_t height = source.read_4_bytes_little_endian();
+    hash_digest blk_hash = source.read_hash();
     chain::transaction tx;
-    success = tx.from_data(istream);
+    success = tx.from_data(source);
 
     if (success)
-        success = is_stream_exhausted(istream);
+        success = source.is_exhausted();
 
     if (success)
         on_update_(address, height, blk_hash, tx);
@@ -224,23 +225,24 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
     bool success = true;
     boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
     data_chunk raw_prefix;
-    raw_prefix.push_back(read_byte(istream));
-    raw_prefix.push_back(read_byte(istream));
-    raw_prefix.push_back(read_byte(istream));
-    raw_prefix.push_back(read_byte(istream));
+    raw_prefix.push_back(source.read_byte());
+    raw_prefix.push_back(source.read_byte());
+    raw_prefix.push_back(source.read_byte());
+    raw_prefix.push_back(source.read_byte());
     binary_type prefix(32, raw_prefix);
 
-    uint32_t height = read_4_bytes(istream);
-    hash_digest blk_hash = read_hash(istream);
+    uint32_t height = source.read_4_bytes_little_endian();
+    hash_digest blk_hash = source.read_hash();
     chain::transaction tx;
 
-    success = tx.from_data(istream);
+    success = tx.from_data(source);
 
     if (success)
-        success = is_stream_exhausted(istream);
+        success = source.is_exhausted();
 
     if (success)
         on_stealth_update_(prefix, height, blk_hash, tx);
@@ -253,17 +255,18 @@ void obelisk_router::decode_reply(const obelisk_message& message,
 {
     std::error_code ec;
     boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    istream_reader source(istream);
 
-    uint32_t val = read_4_bytes(istream);
+    uint32_t val = source.read_4_bytes_little_endian();
 
     if (val)
         ec = static_cast<error::error_code_t>(val);
 
-    bool success = istream;
+    bool success = source;
 
     if (success)
     {
-        success = on_reply(istream);
+        success = on_reply(source);
 
         if (!success)
             ec = std::make_error_code(std::errc::bad_message);
@@ -271,11 +274,6 @@ void obelisk_router::decode_reply(const obelisk_message& message,
 
     if (ec)
         on_error(ec);
-}
-
-bool obelisk_router::is_stream_exhausted(std::istream& payload)
-{
-    return payload && (payload.peek() == std::istream::traits_type::eof());
 }
 
 BCC_API void obelisk_router::on_unknown_nop(const std::string&)

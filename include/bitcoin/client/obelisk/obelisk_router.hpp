@@ -93,7 +93,7 @@ protected:
      * If there is something wrong with the payload, this function should
      * throw a end_of_stream exception.
      */
-    typedef std::function<bool(std::istream& payload)> decoder;
+    typedef std::function<bool(reader& payload)> decoder;
 
     /**
      * Sends an outgoing request, and adds the handlers to the pending
@@ -115,12 +115,6 @@ protected:
     void decode_stealth_update(const obelisk_message& message);
     void decode_reply(const obelisk_message& message, error_handler& on_error,
         decoder& on_reply);
-
-    /**
-     * Verifies that deserialization has reached the end of the payload,
-     * and throws end_of_stream if not.
-     */
-    static bool is_stream_exhausted(std::istream& payload);
 
     // Request management:
     uint32_t last_request_id_;

@@ -308,10 +308,10 @@ is the same as for "address.subscribe, and the server will respond
 with a 4 byte error code.
 */
 
-bool obelisk_codec::decode_empty(std::istream& payload,
+bool obelisk_codec::decode_empty(reader& payload,
     empty_handler& handler)
 {
-    bool success = is_stream_exhausted(payload);
+    bool success = payload.is_exhausted();
 
     if (success)
         handler();
@@ -319,20 +319,20 @@ bool obelisk_codec::decode_empty(std::istream& payload,
     return success;
 }
 
-bool obelisk_codec::decode_fetch_history(std::istream& payload,
+bool obelisk_codec::decode_fetch_history(reader& payload,
     fetch_history_handler& handler)
 {
     bool success = true;
     history_list history;
 
-    while (success && payload && !is_stream_exhausted(payload))
+    while (success && payload && !payload.is_exhausted())
     {
         history_row row;
         success = row.output.from_data(payload);
-        row.output_height = read_4_bytes(payload);
-        row.value = read_8_bytes(payload);
+        row.output_height = payload.read_4_bytes_little_endian();
+        row.value = payload.read_8_bytes_little_endian();
         success &= row.spend.from_data(payload);
-        row.spend_height = read_4_bytes(payload);
+        row.spend_height = payload.read_4_bytes_little_endian();
         history.push_back(row);
     }
 
@@ -342,12 +342,12 @@ bool obelisk_codec::decode_fetch_history(std::istream& payload,
     return success && payload;
 }
 
-bool obelisk_codec::decode_fetch_transaction(std::istream& payload,
+bool obelisk_codec::decode_fetch_transaction(reader& payload,
     fetch_transaction_handler& handler)
 {
     chain::transaction tx;
     bool success = tx.from_data(payload);
-    success &= is_stream_exhausted(payload);
+    success &= payload.is_exhausted();
 
     if (success)
         handler(tx);
@@ -355,11 +355,11 @@ bool obelisk_codec::decode_fetch_transaction(std::istream& payload,
     return success;
 }
 
-bool obelisk_codec::decode_fetch_last_height(std::istream& payload,
+bool obelisk_codec::decode_fetch_last_height(reader& payload,
     fetch_last_height_handler& handler)
 {
-    uint32_t last_height = read_4_bytes(payload);
-    bool success = is_stream_exhausted(payload);
+    uint32_t last_height = payload.read_4_bytes_little_endian();
+    bool success = payload.is_exhausted();
 
     if (success)
         handler(last_height);
@@ -367,12 +367,12 @@ bool obelisk_codec::decode_fetch_last_height(std::istream& payload,
     return success;
 }
 
-bool obelisk_codec::decode_fetch_block_header(std::istream& payload,
+bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
     chain::block_header header;
     bool success = header.from_data(payload);
-    success &= is_stream_exhausted(payload);
+    success &= payload.is_exhausted();
 
     if (success)
         handler(header);
@@ -380,12 +380,12 @@ bool obelisk_codec::decode_fetch_block_header(std::istream& payload,
     return success;
 }
 
-bool obelisk_codec::decode_fetch_transaction_index(std::istream& payload,
+bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
     fetch_transaction_index_handler& handler)
 {
-    uint32_t block_height = read_4_bytes(payload);
-    uint32_t index = read_4_bytes(payload);
-    bool success = is_stream_exhausted(payload);
+    uint32_t block_height = payload.read_4_bytes_little_endian();
+    uint32_t index = payload.read_4_bytes_little_endian();
+    bool success = payload.is_exhausted();
 
     if (success)
         handler(block_height, index);
@@ -393,26 +393,26 @@ bool obelisk_codec::decode_fetch_transaction_index(std::istream& payload,
     return success;
 }
 
-bool obelisk_codec::decode_fetch_stealth(std::istream& payload,
+bool obelisk_codec::decode_fetch_stealth(reader& payload,
     fetch_stealth_handler& handler)
 {
     bool success = true;
     stealth_list results;
 
-    while (success && !is_stream_exhausted(payload))
+    while (success && !payload.is_exhausted())
     {
         stealth_row row;
 
         // presume first byte based on convention
-        row.ephemkey = read_data(payload, 32);
+        row.ephemkey = payload.read_data(32);
         row.ephemkey.insert(row.ephemkey.begin(), 0x02);
 
         // presume address_version
         uint8_t address_version = wallet::payment_address::pubkey_version;
-        const short_hash address_hash = read_short_hash(payload);
+        const short_hash address_hash = payload.read_short_hash();
         row.address.set(address_version, reverse(address_hash));
 
-        row.transaction_hash = read_hash(payload);
+        row.transaction_hash = payload.read_hash();
 
         results.push_back(row);
         success = payload;
@@ -424,15 +424,15 @@ bool obelisk_codec::decode_fetch_stealth(std::istream& payload,
     return success;
 }
 
-bool obelisk_codec::decode_validate(std::istream& payload,
+bool obelisk_codec::decode_validate(reader& payload,
     validate_handler& handler)
 {
     bool success = true;
     chain::index_list unconfirmed;
 
-    while (success && is_stream_exhausted(payload))
+    while (success && payload.is_exhausted())
     {
-        unconfirmed.push_back(read_4_bytes(payload));
+        unconfirmed.push_back(payload.read_4_bytes_little_endian());
         success = payload;
     }
 
