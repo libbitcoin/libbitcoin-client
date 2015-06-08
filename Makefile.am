@@ -54,14 +54,14 @@ test_libbitcoin_client_test_SOURCES = \
 
 endif WITH_TESTS
 
-# local: examples/console/libbitcoin_client
+# local: examples/console/console
 #------------------------------------------------------------------------------
 if WITH_EXAMPLES
 
-noinst_PROGRAMS = examples/console/libbitcoin_client
-examples_console_libbitcoin_client_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-examples_console_libbitcoin_client_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
-examples_console_libbitcoin_client_SOURCES = \
+noinst_PROGRAMS = examples/console/console
+examples_console_console_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
+examples_console_console_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+examples_console_console_SOURCES = \
     examples/console/cli.cpp \
     examples/console/cli.hpp \
     examples/console/connection.cpp \
@@ -110,7 +110,7 @@ include_bitcoin_client_obelisk_HEADERS = \
 # make target: examples
 #------------------------------------------------------------------------------
 target_examples = \
-    examples/console/libbitcoin_client \
+    examples/console/console \
     examples/get_height/get_height
 
 examples: ${target_examples}
