@@ -371,7 +371,7 @@ bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
     chain::block_header header;
-    bool success = header.from_data(payload);
+    bool success = header.from_data(payload, false);
     success &= payload.is_exhausted();
 
     if (success)
