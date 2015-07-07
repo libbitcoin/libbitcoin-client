@@ -117,6 +117,25 @@ done
 echo "Build directory: $BUILD_DIR"
 echo "Prefix directory: $PREFIX"
 
+# Warn on configurations that imply static/prefix isolation.
+#------------------------------------------------------------------------------
+if [[ $BUILD_ICU == yes ]]; then
+    if [[ !($PREFIX)]]; then    
+        echo "Warning: --prefix recommended when building ICU."
+    fi
+    if [[ !($DISABLE_SHARED) ]]; then
+        echo "Warning: --disable-shared recommended when building ICU."
+    fi
+fi
+if [[ $BUILD_BOOST == yes ]]; then
+    if [[ !($PREFIX)]]; then    
+        echo "Warning: --prefix recommended when building boost."
+    fi
+    if [[ !($DISABLE_SHARED) ]]; then
+        echo "Warning: --disable-shared recommended when building boost."
+    fi
+fi
+
 # Purge custom options so they don't go to configure.
 #------------------------------------------------------------------------------
 CONFIGURE_OPTIONS=( "$@" )
@@ -551,8 +570,8 @@ build_all()
     build_from_github zeromq czmq master $PARALLEL "$@" $CZMQ_OPTIONS
     build_from_github zeromq czmqpp master $PARALLEL "$@" $CZMQPP_OPTIONS
     build_from_github libbitcoin secp256k1 version3 $PARALLEL "$@" $SECP256K1_OPTIONS
-    build_from_github libbitcoin libbitcoin master $PARALLEL "$@" $BITCOIN_OPTIONS
-    build_from_travis libbitcoin libbitcoin-client master $PARALLEL "$@" $BITCOIN_CLIENT_OPTIONS
+    build_from_github libbitcoin libbitcoin version2 $PARALLEL "$@" $BITCOIN_OPTIONS
+    build_from_travis libbitcoin libbitcoin-client version2 $PARALLEL "$@" $BITCOIN_CLIENT_OPTIONS
 }
 
 
