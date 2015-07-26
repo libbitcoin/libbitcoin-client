@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
+/**
+ * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin-client.
  *
@@ -48,7 +48,7 @@ void socket_stream::write(const data_stack& data)
     message.send(socket_);
 }
 
-/*
+/**
 void socket_stream::write(const std::shared_ptr<request>& request)
 {
     if (request)
@@ -80,7 +80,7 @@ bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
     return success;
 }
 
-/*
+/**
 bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
 {
     bool signaled = false;

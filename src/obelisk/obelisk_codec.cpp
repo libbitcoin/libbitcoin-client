@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2011-2014 libbitcoin developers (see AUTHORS)
+/**
+ * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin-client.
  *
@@ -269,7 +269,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 //        std::bind(decode_empty, _1, std::move(on_reply)));
 //}
 
-/*
+/**
 See also libbitcoin-server repo subscribe_manager::post_updates() and
 subscribe_manager::post_stealth_updates().
 
