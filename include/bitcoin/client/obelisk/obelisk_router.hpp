@@ -34,48 +34,57 @@ namespace client {
  * retries.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class obelisk_router
-  : public message_stream, public sleeper
+class BCC_API obelisk_router: public message_stream, public sleeper
 {
 public:
     /**
      * Constructor.
      * @param out a stream to receive outgoing messages created by the codec.
      */
-    BCC_API obelisk_router(std::shared_ptr<message_stream> out);
+    obelisk_router(std::shared_ptr<message_stream> out);
 
-    BCC_API virtual ~obelisk_router();
+    virtual ~obelisk_router();
 
     // Loose message handlers:
-    typedef std::function<void (const std::error_code&)> error_handler;
-    typedef std::function<void (const std::string& command)> unknown_handler;
-    typedef std::function<void (const payment_address& address, size_t height,
-        const hash_digest& blk_hash, const transaction_type&)> update_handler;
-    typedef std::function<void (const binary_type& prefix, size_t height,
-        const hash_digest& blk_hash, const transaction_type& tx)> stealth_update_handler;
+    typedef std::function<void(const std::error_code&)> error_handler;
 
-    BCC_API static void on_unknown_nop(const std::string&);
-    BCC_API static void on_update_nop(const payment_address&,
-        size_t, const hash_digest&, const transaction_type&);
-    BCC_API static void on_stealth_update_nop(const binary_type&, size_t,
-            const hash_digest&, const transaction_type&);
+    typedef std::function<void(const std::string& command)> unknown_handler;
 
-    BCC_API virtual void set_on_update(update_handler on_update);
-    BCC_API virtual void set_on_stealth_update(stealth_update_handler on_update);
-    BCC_API virtual void set_on_unknown(unknown_handler on_unknown);
-    BCC_API virtual void set_retries(uint8_t retries);
-    BCC_API virtual void set_timeout(period_ms timeout);
+    typedef std::function<
+        void(const wallet::payment_address& address, size_t height,
+            const hash_digest& blk_hash, const chain::transaction&)> update_handler;
 
-    BCC_API uint64_t outstanding_call_count() const;
+    typedef std::function<
+        void(const binary_type& prefix, size_t height,
+            const hash_digest& blk_hash, const chain::transaction& tx)> stealth_update_handler;
+
+    static void on_unknown_nop(const std::string&);
+
+    static void on_update_nop(const wallet::payment_address&, size_t,
+        const hash_digest&, const chain::transaction&);
+
+    static void on_stealth_update_nop(const binary_type&, size_t,
+        const hash_digest&, const chain::transaction&);
+
+    virtual void set_on_update(update_handler on_update);
+
+    virtual void set_on_stealth_update(stealth_update_handler on_update);
+
+    virtual void set_on_unknown(unknown_handler on_unknown);
+
+    virtual void set_retries(uint8_t retries);
+
+    virtual void set_timeout(period_ms timeout);
+
+    uint64_t outstanding_call_count() const;
 
     // message-stream interface:
-    BCC_API virtual void write(const data_stack& data) override;
+    virtual void write(const data_stack& data) override;
 
     // sleeper interface:
-    BCC_API virtual period_ms wakeup() override;
+    virtual period_ms wakeup() override;
 
 protected:
-    typedef deserializer<data_chunk::const_iterator, true> data_deserial;
 
     /**
      * Decodes a message and calls the appropriate callback.
@@ -84,14 +93,13 @@ protected:
      * If there is something wrong with the payload, this function should
      * throw a end_of_stream exception.
      */
-    typedef std::function<void (data_deserial& payload)> decoder;
+    typedef std::function<bool(reader& payload)> decoder;
 
     /**
      * Sends an outgoing request, and adds the handlers to the pending
      * request table.
      */
-    void send_request(const std::string& command,
-        const data_chunk& payload,
+    void send_request(const std::string& command, const data_chunk& payload,
         error_handler on_error, decoder on_reply);
 
     struct obelisk_message
@@ -100,18 +108,13 @@ protected:
         uint32_t id;
         data_chunk payload;
     };
+
     void send(const obelisk_message& message);
     void receive(const obelisk_message& message);
     void decode_update(const obelisk_message& message);
     void decode_stealth_update(const obelisk_message& message);
-    void decode_reply(const obelisk_message& message,
-        error_handler& on_error, decoder& on_reply);
-
-    /**
-     * Verifies that the deserializer has reached the end of the payload,
-     * and throws end_of_stream if not.
-     */
-    static void check_end(data_deserial& payload);
+    void decode_reply(const obelisk_message& message, error_handler& on_error,
+        decoder& on_reply);
 
     // Request management:
     uint32_t last_request_id_;

@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/client/obelisk/obelisk_router.hpp>
+#include <boost/iostreams/stream.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -197,95 +198,95 @@ void obelisk_router::receive(const obelisk_message& message)
 
 void obelisk_router::decode_update(const obelisk_message& message)
 {
-    data_deserial deserial = make_deserializer(
-        message.payload.begin(), message.payload.end());
-    try
-    {
-        // This message does not have an error_code at the beginning.
-        uint8_t version_byte = deserial.read_byte();
-        short_hash addr_hash = deserial.read_short_hash();
-        payment_address address(version_byte, addr_hash);
-        uint32_t height = deserial.read_4_bytes();
-        hash_digest blk_hash = deserial.read_hash();
-        transaction_type tx;
-        satoshi_load(deserial.iterator(), deserial.end(), tx);
-        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
-        check_end(deserial);
+    bool success = true;
+    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    istream_reader source(istream);
+
+    // This message does not have an error_code at the beginning.
+    uint8_t version_byte = source.read_byte();
+    short_hash addr_hash = source.read_short_hash();
+    wallet::payment_address address(version_byte, addr_hash);
+
+    uint32_t height = source.read_4_bytes_little_endian();
+    hash_digest blk_hash = source.read_hash();
+    chain::transaction tx;
+    success = tx.from_data(source);
+
+    if (success)
+        success = source.is_exhausted();
+
+    if (success)
         on_update_(address, height, blk_hash, tx);
-    }
-    catch (end_of_stream)
-    {
+    else
         on_unknown_(message.command);
-    }
 }
 
 void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
-    data_deserial deserial = make_deserializer(
-        message.payload.begin(), message.payload.end());
-    try
-    {
-        // This message does not have an error_code at the beginning.
-        data_chunk raw_prefix;
-        raw_prefix.push_back(deserial.read_byte());
-        raw_prefix.push_back(deserial.read_byte());
-        raw_prefix.push_back(deserial.read_byte());
-        raw_prefix.push_back(deserial.read_byte());
-        binary_type prefix(32, raw_prefix);
+    bool success = true;
+    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    istream_reader source(istream);
 
-        uint32_t height = deserial.read_4_bytes();
-        hash_digest blk_hash = deserial.read_hash();
-        transaction_type tx;
-        satoshi_load(deserial.iterator(), deserial.end(), tx);
-        deserial.set_iterator(deserial.iterator() + satoshi_raw_size(tx));
-        check_end(deserial);
+    // This message does not have an error_code at the beginning.
+    data_chunk raw_prefix;
+    raw_prefix.push_back(source.read_byte());
+    raw_prefix.push_back(source.read_byte());
+    raw_prefix.push_back(source.read_byte());
+    raw_prefix.push_back(source.read_byte());
+    binary_type prefix(32, raw_prefix);
+
+    uint32_t height = source.read_4_bytes_little_endian();
+    hash_digest blk_hash = source.read_hash();
+    chain::transaction tx;
+
+    success = tx.from_data(source);
+
+    if (success)
+        success = source.is_exhausted();
+
+    if (success)
         on_stealth_update_(prefix, height, blk_hash, tx);
-    }
-    catch (end_of_stream)
-    {
+    else
         on_unknown_(message.command);
-    }
 }
 
 void obelisk_router::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
     std::error_code ec;
-    data_deserial deserial = make_deserializer(
-        message.payload.begin(), message.payload.end());
-    try
+    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    istream_reader source(istream);
+
+    uint32_t val = source.read_4_bytes_little_endian();
+
+    if (val)
+        ec = static_cast<error::error_code_t>(val);
+
+    bool success = source;
+
+    if (success)
     {
-        uint32_t val = deserial.read_4_bytes();
-        if (val)
-            ec = static_cast<error::error_code_t>(val);
-        else
-            on_reply(deserial);
+        success = on_reply(source);
+
+        if (!success)
+            ec = std::make_error_code(std::errc::bad_message);
     }
-    catch (end_of_stream)
-    {
-        ec = std::make_error_code(std::errc::bad_message);
-    }
+
     if (ec)
         on_error(ec);
-}
-
-void obelisk_router::check_end(data_deserial& payload)
-{
-    if (payload.iterator() != payload.end())
-        throw end_of_stream();
 }
 
 BCC_API void obelisk_router::on_unknown_nop(const std::string&)
 {
 }
 
-BCC_API void obelisk_router::on_update_nop(const payment_address&,
-    size_t, const hash_digest&, const transaction_type&)
+BCC_API void obelisk_router::on_update_nop(const wallet::payment_address&,
+    size_t, const hash_digest&, const chain::transaction&)
 {
 }
 
 BCC_API void obelisk_router::on_stealth_update_nop(const binary_type&,
-    size_t, const hash_digest&, const transaction_type&)
+    size_t, const hash_digest&, const chain::transaction&)
 {
 }
 

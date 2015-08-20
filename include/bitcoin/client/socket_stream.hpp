@@ -31,27 +31,27 @@
 namespace libbitcoin {
 namespace client {
 
-class socket_stream
+class BCC_API socket_stream
   : public message_stream //, public request_stream
 {
 public:
 
-    BCC_API socket_stream(czmqpp::socket& socket);
+    socket_stream(czmqpp::socket& socket);
 
-    BCC_API virtual ~socket_stream();
+    virtual ~socket_stream();
 
-    BCC_API virtual void write(const data_stack& data);
+    virtual void write(const data_stack& data);
 
-//    BCC_API virtual void write(
+//    virtual void write(
 //        const std::shared_ptr<bc::protocol::request>& request);
 
-    BCC_API virtual bool signal_response(
+    virtual bool signal_response(
         std::shared_ptr<message_stream> stream);
 
-//    BCC_API virtual bool signal_response(
+//    virtual bool signal_response(
 //        std::shared_ptr<response_stream> stream);
 
-    BCC_API czmqpp::socket& get_socket();
+    czmqpp::socket& get_socket();
 
 private:
 

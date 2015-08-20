@@ -95,7 +95,8 @@ private:
      * Reads a bitcoin address from the command-line, or prints an error if
      * the address is missing or invalid.
      */
-    bool read_address(std::stringstream& args, bc::payment_address& out);
+    bool read_address(std::stringstream& args,
+        bc::wallet::payment_address& out);
 
     /**
      * Private members.

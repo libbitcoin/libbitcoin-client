@@ -57,7 +57,7 @@ obelisk_codec::~obelisk_codec()
 
 BCC_API void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
-    const payment_address& address, uint32_t from_height)
+    const wallet::payment_address& address, uint32_t from_height)
 {
     auto data = build_data({
         to_byte(address.version()),
@@ -151,13 +151,10 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
 
 BCC_API void obelisk_codec::validate(error_handler on_error,
     validate_handler on_reply,
-    const transaction_type& tx)
+    const chain::transaction& tx)
 {
-    data_chunk data(satoshi_raw_size(tx));
-    DEBUG_ONLY(auto it =) satoshi_save(tx, data.begin());
-    BITCOIN_ASSERT(it == data.end());
-
-    send_request("transaction_pool.validate", data, std::move(on_error),
+    send_request("transaction_pool.validate", tx.to_data(),
+        std::move(on_error),
         std::bind(decode_validate, _1, std::move(on_reply)));
 }
 
@@ -177,19 +174,16 @@ BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
 
 BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
     empty_handler on_reply,
-    const transaction_type& tx)
+    const chain::transaction& tx)
 {
-    data_chunk data(satoshi_raw_size(tx));
-    DEBUG_ONLY(auto it =) satoshi_save(tx, data.begin());
-    BITCOIN_ASSERT(it == data.end());
-
-    send_request("protocol.broadcast_transaction", data, std::move(on_error),
+    send_request("protocol.broadcast_transaction", tx.to_data(),
+        std::move(on_error),
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
 BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
-    const payment_address& address, uint32_t from_height)
+    const wallet::payment_address& address, uint32_t from_height)
 {
     auto data = build_data({
         to_byte(address.version()),
@@ -203,7 +197,7 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
 
 BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
-    const payment_address& address)
+    const wallet::payment_address& address)
 {
     binary_type prefix((short_hash_size * byte_bits), address.hash());
 
@@ -314,74 +308,98 @@ is the same as for "address.subscribe, and the server will respond
 with a 4 byte error code.
 */
 
-void obelisk_codec::decode_empty(data_deserial& payload,
+bool obelisk_codec::decode_empty(reader& payload,
     empty_handler& handler)
 {
-    check_end(payload);
-    handler();
+    bool success = payload.is_exhausted();
+
+    if (success)
+        handler();
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_history(data_deserial& payload,
+bool obelisk_codec::decode_fetch_history(reader& payload,
     fetch_history_handler& handler)
 {
+    bool success = true;
     history_list history;
-    while (payload.iterator() != payload.end())
+
+    while (success && payload && !payload.is_exhausted())
     {
         history_row row;
-        row.output.hash = payload.read_hash();
-        row.output.index = payload.read_4_bytes();
-        row.output_height = payload.read_4_bytes();
-        row.value = payload.read_8_bytes();
-        row.spend.hash = payload.read_hash();
-        row.spend.index = payload.read_4_bytes();
-        row.spend_height = payload.read_4_bytes();
+        success = row.output.from_data(payload);
+        row.output_height = payload.read_4_bytes_little_endian();
+        row.value = payload.read_8_bytes_little_endian();
+        success &= row.spend.from_data(payload);
+        row.spend_height = payload.read_4_bytes_little_endian();
         history.push_back(row);
     }
-    handler(history);
+
+    if (success && payload)
+        handler(history);
+
+    return success && payload;
 }
 
-void obelisk_codec::decode_fetch_transaction(data_deserial& payload,
+bool obelisk_codec::decode_fetch_transaction(reader& payload,
     fetch_transaction_handler& handler)
 {
-    transaction_type tx;
-    satoshi_load(payload.iterator(), payload.end(), tx);
-    payload.set_iterator(payload.iterator() + satoshi_raw_size(tx));
-    check_end(payload);
-    handler(tx);
+    chain::transaction tx;
+    bool success = tx.from_data(payload);
+    success &= payload.is_exhausted();
+
+    if (success)
+        handler(tx);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_last_height(data_deserial& payload,
+bool obelisk_codec::decode_fetch_last_height(reader& payload,
     fetch_last_height_handler& handler)
 {
-    uint32_t last_height = payload.read_4_bytes();
-    check_end(payload);
-    handler(last_height);
+    uint32_t last_height = payload.read_4_bytes_little_endian();
+    bool success = payload.is_exhausted();
+
+    if (success)
+        handler(last_height);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_block_header(data_deserial& payload,
+bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
-    block_header_type header;
-    satoshi_load(payload.iterator(), payload.end(), header);
-    payload.set_iterator(payload.iterator() + satoshi_raw_size(header));
-    check_end(payload);
-    handler(header);
+    chain::block_header header;
+    bool success = header.from_data(payload, false);
+    success &= payload.is_exhausted();
+
+    if (success)
+        handler(header);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_transaction_index(data_deserial& payload,
+bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
     fetch_transaction_index_handler& handler)
 {
-    uint32_t block_height = payload.read_4_bytes();
-    uint32_t index = payload.read_4_bytes();
-    check_end(payload);
-    handler(block_height, index);
+    uint32_t block_height = payload.read_4_bytes_little_endian();
+    uint32_t index = payload.read_4_bytes_little_endian();
+    bool success = payload.is_exhausted();
+
+    if (success)
+        handler(block_height, index);
+
+    return success;
 }
 
-void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
+bool obelisk_codec::decode_fetch_stealth(reader& payload,
     fetch_stealth_handler& handler)
 {
+    bool success = true;
     stealth_list results;
-    while (payload.iterator() != payload.end())
+
+    while (success && !payload.is_exhausted())
     {
         stealth_row row;
 
@@ -390,28 +408,38 @@ void obelisk_codec::decode_fetch_stealth(data_deserial& payload,
         row.ephemkey.insert(row.ephemkey.begin(), 0x02);
 
         // presume address_version
-        uint8_t address_version = payment_address::pubkey_version;
+        uint8_t address_version = wallet::payment_address::pubkey_version;
         const short_hash address_hash = payload.read_short_hash();
         row.address.set(address_version, reverse(address_hash));
 
         row.transaction_hash = payload.read_hash();
 
         results.push_back(row);
+        success = payload;
     }
 
-    handler(results);
+    if (success)
+        handler(results);
+
+    return success;
 }
 
-void obelisk_codec::decode_validate(data_deserial& payload,
+bool obelisk_codec::decode_validate(reader& payload,
     validate_handler& handler)
 {
-    index_list unconfirmed;
-    while (payload.iterator() != payload.end())
+    bool success = true;
+    chain::index_list unconfirmed;
+
+    while (success && payload.is_exhausted())
     {
-        uint32_t unconfirm_index = payload.read_4_bytes();
-        unconfirmed.push_back(unconfirm_index);
+        unconfirmed.push_back(payload.read_4_bytes_little_endian());
+        success = payload;
     }
-    handler(unconfirmed);
+
+    if (success)
+        handler(unconfirmed);
+
+    return success;
 }
 
 } // namespace client

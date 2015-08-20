@@ -28,14 +28,14 @@
 namespace libbitcoin {
 namespace client {
 
-class response_stream
+class BCC_API response_stream
 {
 public:
 
-    BCC_API virtual ~response_stream() {};
+    virtual ~response_stream() {};
 
-    BCC_API virtual void write(
-        const std::shared_ptr<bc::protocol::response>& response) = 0;
+    virtual void write(
+        const std::shared_ptr<libbitcoin::protocol::response>& response) = 0;
 };
 
 }

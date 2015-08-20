@@ -32,8 +32,7 @@ namespace client {
  * Decodes and encodes messages in the obelisk protocol.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class obelisk_codec
-  : public obelisk_router
+class BCC_API obelisk_codec : public obelisk_router
 {
 public:
     /**
@@ -44,89 +43,116 @@ public:
      * @param timeout the call timeout. Defaults to 2 seconds.
      * @param retries the number of retries to attempt.
      */
-    BCC_API obelisk_codec(
+    obelisk_codec(
         std::shared_ptr<message_stream> out,
         update_handler on_update=on_update_nop,
         unknown_handler on_unknown=on_unknown_nop,
         period_ms timeout=std::chrono::seconds(2),
         uint8_t retries=0);
 
-    BCC_API virtual ~obelisk_codec();
+    virtual ~obelisk_codec();
 
     // Message reply handlers:
     typedef std::function<void (const history_list&)>
         fetch_history_handler;
-    typedef std::function<void (const transaction_type&)>
+
+    typedef std::function<void (const chain::transaction&)>
         fetch_transaction_handler;
+
     typedef std::function<void (size_t)>
         fetch_last_height_handler;
-    typedef std::function<void (const block_header_type&)>
+
+    typedef std::function<void (const chain::block_header&)>
         fetch_block_header_handler;
+
     typedef std::function<void (size_t block_height, size_t index)>
         fetch_transaction_index_handler;
+
     typedef std::function<void (const stealth_list&)>
         fetch_stealth_handler;
-    typedef std::function<void (const index_list& unconfirmed)>
+
+    typedef std::function<void (const chain::index_list& unconfirmed)>
         validate_handler;
+
     typedef std::function<void ()> empty_handler;
 
     // Outgoing messages:
-    BCC_API void fetch_history(error_handler on_error,
+    void fetch_history(error_handler on_error,
         fetch_history_handler on_reply,
-        const payment_address& address, uint32_t from_height=0);
-    BCC_API void fetch_transaction(error_handler on_error,
+        const wallet::payment_address& address, uint32_t from_height=0);
+
+    void fetch_transaction(error_handler on_error,
         fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
-    BCC_API void fetch_last_height(error_handler on_error,
+
+    void fetch_last_height(error_handler on_error,
         fetch_last_height_handler on_reply);
-    BCC_API void fetch_block_header(error_handler on_error,
+
+    void fetch_block_header(error_handler on_error,
         fetch_block_header_handler on_reply,
         uint32_t height);
-    BCC_API void fetch_block_header(error_handler on_error,
+
+    void fetch_block_header(error_handler on_error,
         fetch_block_header_handler on_reply,
         const hash_digest& blk_hash);
-    BCC_API void fetch_transaction_index(error_handler on_error,
+
+    void fetch_transaction_index(error_handler on_error,
         fetch_transaction_index_handler on_reply,
         const hash_digest& tx_hash);
-    BCC_API void fetch_stealth(error_handler on_error,
+
+    void fetch_stealth(error_handler on_error,
         fetch_stealth_handler on_reply,
         const bc::binary_type& prefix, uint32_t from_height=0);
-    BCC_API void validate(error_handler on_error,
+
+    void validate(error_handler on_error,
         validate_handler on_reply,
-        const transaction_type& tx);
-    BCC_API void fetch_unconfirmed_transaction(error_handler on_error,
+        const chain::transaction& tx);
+
+    void fetch_unconfirmed_transaction(error_handler on_error,
         fetch_transaction_handler on_reply,
         const hash_digest& tx_hash);
-    BCC_API void broadcast_transaction(error_handler on_error,
+
+    void broadcast_transaction(error_handler on_error,
         empty_handler on_reply,
-        const transaction_type& tx);
-    BCC_API void address_fetch_history(error_handler on_error,
+        const chain::transaction& tx);
+
+    void address_fetch_history(error_handler on_error,
         fetch_history_handler on_reply,
-        const payment_address& address, uint32_t from_height=0);
-    BCC_API void subscribe(error_handler on_error,
+        const wallet::payment_address& address, uint32_t from_height=0);
+
+    void subscribe(error_handler on_error,
         empty_handler on_reply,
-        const bc::payment_address& address);
-    BCC_API void subscribe(error_handler on_error,
+        const wallet::payment_address& address);
+
+    void subscribe(error_handler on_error,
         empty_handler on_reply,
         subscribe_type discriminator,
         const bc::binary_type& prefix);
 
 private:
-    static void decode_empty(data_deserial& payload,
+
+    static bool decode_empty(reader& payload,
         empty_handler& handler);
-    static void decode_fetch_history(data_deserial& payload,
+
+    static bool decode_fetch_history(reader& payload,
         fetch_history_handler& handler);
-    static void decode_fetch_transaction(data_deserial& payload,
+
+    static bool decode_fetch_transaction(reader& payload,
         fetch_transaction_handler& handler);
-    static void decode_fetch_last_height(data_deserial& payload,
+
+    static bool decode_fetch_last_height(reader& payload,
         fetch_last_height_handler& handler);
-    static void decode_fetch_block_header(data_deserial& payload,
+
+    static bool decode_fetch_block_header(reader& payload,
         fetch_block_header_handler& handler);
-    static void decode_fetch_transaction_index(data_deserial& payload,
+
+    static bool decode_fetch_transaction_index(reader& payload,
         fetch_transaction_index_handler& handler);
-    static void decode_fetch_stealth(data_deserial& payload,
+
+    static bool decode_fetch_stealth(reader& payload,
         fetch_stealth_handler& handler);
-    static void decode_validate(data_deserial& payload,
+
+    static bool decode_validate(reader& payload,
         validate_handler& handler);
 };
 
@@ -134,4 +160,3 @@ private:
 } // namespace libbitcoin
 
 #endif
-

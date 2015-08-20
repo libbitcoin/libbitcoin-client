@@ -33,15 +33,15 @@ namespace client {
  * code from the message-handling code. This interface is the glue between
  * the two worlds.
  */
-class message_stream
+class BCC_API message_stream
 {
 public:
-    BCC_API virtual ~message_stream() {};
+    virtual ~message_stream() {};
 
     /**
      * Sends one multi-part message.
      */
-    BCC_API virtual void write(const data_stack& data) = 0;
+    virtual void write(const data_stack& data) = 0;
 };
 
 } // namespace client

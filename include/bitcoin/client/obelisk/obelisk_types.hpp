@@ -27,10 +27,10 @@ namespace client {
 
 struct BCC_API history_row
 {
-    output_point output;
+    chain::output_point output;
     size_t output_height;
     uint64_t value;
-    input_point spend;
+    chain::input_point spend;
     size_t spend_height;
 };
 
@@ -39,7 +39,7 @@ typedef std::vector<history_row> history_list;
 struct BCC_API stealth_row
 {
     data_chunk ephemkey;
-    payment_address address;
+    wallet::payment_address address;
     hash_digest transaction_hash;
 };
 
