@@ -62,7 +62,7 @@ public:
     typedef std::function<void (size_t)>
         fetch_last_height_handler;
 
-    typedef std::function<void (const chain::block_header&)>
+    typedef std::function<void (const chain::header&)>
         fetch_block_header_handler;
 
     typedef std::function<void (size_t block_height, size_t index)>

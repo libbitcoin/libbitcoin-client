@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_block_header__height_test)
 {
     OBELISK_CODEC_TEST_SETUP;
 
-    auto on_reply = [](const chain::block_header&) {};
+    auto on_reply = [](const chain::header&) {};
     codec.fetch_block_header(on_error, on_reply, test_height);
 
     BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_block_header__hash_test)
 {
     OBELISK_CODEC_TEST_SETUP;
 
-    auto on_reply = [](const chain::block_header&) {};
+    auto on_reply = [](const chain::header&) {};
     codec.fetch_block_header(on_error, on_reply, hash_literal(hashSatoshi));
 
     BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
