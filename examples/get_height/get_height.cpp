@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
         std::static_pointer_cast<bc::client::message_stream>(stream));
 
     // Make the request:
-    const auto error_handler = [](const std::error_code& code)
+    const auto error_handler = [](const code& code)
     {
         std::cout << "error: " << code.message() << std::endl;
     };

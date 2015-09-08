@@ -19,6 +19,8 @@
  */
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
 
+#include <bitcoin/bitcoin.hpp>
+
 namespace libbitcoin {
 namespace client {
 

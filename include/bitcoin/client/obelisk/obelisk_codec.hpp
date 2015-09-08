@@ -21,6 +21,7 @@
 #define LIBBITCOIN_CLIENT_OBELISK_OBELISK_CODEC_HPP
 
 #include <functional>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/obelisk/obelisk_router.hpp>
 #include <bitcoin/client/obelisk/obelisk_types.hpp>
@@ -32,7 +33,8 @@ namespace client {
  * Decodes and encodes messages in the obelisk protocol.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class BCC_API obelisk_codec : public obelisk_router
+class BCC_API obelisk_codec
+  : public obelisk_router
 {
 public:
     /**

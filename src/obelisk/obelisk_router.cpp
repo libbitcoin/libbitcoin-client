@@ -18,7 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/client/obelisk/obelisk_router.hpp>
+
 #include <boost/iostreams/stream.hpp>
+#include <bitcoin/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -72,7 +74,7 @@ BCC_API void obelisk_router::write(const data_stack& data)
 {
     if (data.size() == 3)
     {
-        bool success = true;
+        auto success = true;
         obelisk_message message;
 
         auto it = data.begin();
@@ -114,7 +116,7 @@ BCC_API void obelisk_router::write(const data_stack& data)
 BCC_API period_ms obelisk_router::wakeup()
 {
     period_ms next_wakeup(0);
-    auto now = std::chrono::steady_clock::now();
+    const auto now = std::chrono::steady_clock::now();
 
     auto i = pending_requests_.begin();
     while (i != pending_requests_.end())
@@ -150,8 +152,8 @@ void obelisk_router::send_request(const std::string& command,
     const data_chunk& payload,
     error_handler on_error, decoder on_reply)
 {
-    uint32_t id = ++last_request_id_;
-    pending_request& request = pending_requests_[id];
+    const auto id = ++last_request_id_;
+    auto& request = pending_requests_[id];
     request.message = obelisk_message{command, id, payload};
     request.on_error = std::move(on_error);
     request.on_reply = std::move(on_reply);
@@ -186,29 +188,30 @@ void obelisk_router::receive(const obelisk_message& message)
         return;
     }
 
-    auto i = pending_requests_.find(message.id);
+    const auto i = pending_requests_.find(message.id);
     if (i == pending_requests_.end())
     {
         on_unknown_(message.command);
         return;
     }
+
     decode_reply(message, i->second.on_error, i->second.on_reply);
     pending_requests_.erase(i);
 }
 
 void obelisk_router::decode_update(const obelisk_message& message)
 {
-    bool success = true;
+    auto success = true;
     boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
     istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
-    uint8_t version_byte = source.read_byte();
-    short_hash addr_hash = source.read_short_hash();
-    wallet::payment_address address(version_byte, addr_hash);
+    const auto version_byte = source.read_byte();
+    const auto address_hash = source.read_short_hash();
+    const wallet::payment_address address(version_byte, address_hash);
 
-    uint32_t height = source.read_4_bytes_little_endian();
-    hash_digest blk_hash = source.read_hash();
+    const auto height = source.read_4_bytes_little_endian();
+    const auto block_hash = source.read_hash();
     chain::transaction tx;
     success = tx.from_data(source);
 
@@ -216,14 +219,14 @@ void obelisk_router::decode_update(const obelisk_message& message)
         success = source.is_exhausted();
 
     if (success)
-        on_update_(address, height, blk_hash, tx);
+        on_update_(address, height, block_hash, tx);
     else
         on_unknown_(message.command);
 }
 
 void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
-    bool success = true;
+    auto success = true;
     boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
     istream_reader source(istream);
 
@@ -235,8 +238,8 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
     raw_prefix.push_back(source.read_byte());
     binary_type prefix(32, raw_prefix);
 
-    uint32_t height = source.read_4_bytes_little_endian();
-    hash_digest blk_hash = source.read_hash();
+    const auto height = source.read_4_bytes_little_endian();
+    const auto block_hash = source.read_hash();
     chain::transaction tx;
 
     success = tx.from_data(source);
@@ -245,7 +248,7 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
         success = source.is_exhausted();
 
     if (success)
-        on_stealth_update_(prefix, height, blk_hash, tx);
+        on_stealth_update_(prefix, height, block_hash, tx);
     else
         on_unknown_(message.command);
 }
@@ -253,14 +256,14 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
 void obelisk_router::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
-    std::error_code ec;
+    code ec;
     boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
     istream_reader source(istream);
 
-    uint32_t val = source.read_4_bytes_little_endian();
+    const auto value = source.read_4_bytes_little_endian();
 
-    if (val)
-        ec = static_cast<error::error_code_t>(val);
+    if (value != 0)
+        ec = static_cast<error::error_code_t>(value);
 
     bool success = source;
 
