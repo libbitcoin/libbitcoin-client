@@ -19,6 +19,8 @@
  */
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
 
+#include <bitcoin/bitcoin.hpp>
+
 namespace libbitcoin {
 namespace client {
 
@@ -370,7 +372,7 @@ bool obelisk_codec::decode_fetch_last_height(reader& payload,
 bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
-    chain::block_header header;
+    chain::header header;
     bool success = header.from_data(payload, false);
     success &= payload.is_exhausted();
 
