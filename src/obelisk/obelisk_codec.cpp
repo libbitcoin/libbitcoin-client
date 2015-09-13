@@ -61,8 +61,8 @@ BCC_API void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const wallet::payment_address& address, uint32_t from_height)
 {
-    auto data = build_data({
-        to_byte(address.version()),
+    auto data = build_chunk({
+        to_array(address.version()),
         reverse(address.hash()),
         to_little_endian<uint32_t>(from_height)
     });
@@ -75,7 +75,7 @@ BCC_API void obelisk_codec::fetch_transaction(error_handler on_error,
     fetch_transaction_handler on_reply,
     const hash_digest& tx_hash)
 {
-    auto data = build_data({
+    auto data = build_chunk({
         tx_hash
     });
 
@@ -97,7 +97,7 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
     fetch_block_header_handler on_reply,
     uint32_t height)
 {
-    auto data = build_data({
+    auto data = build_chunk({
         to_little_endian<uint32_t>(height)
     });
 
@@ -109,7 +109,7 @@ BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
     fetch_block_header_handler on_reply,
     const hash_digest& blk_hash)
 {
-    auto data = build_data({
+    auto data = build_chunk({
         blk_hash
     });
 
@@ -121,7 +121,7 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
     fetch_transaction_index_handler on_reply,
     const hash_digest& tx_hash)
 {
-    auto data = build_data({
+    auto data = build_chunk({
         tx_hash
     });
 
@@ -141,8 +141,8 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
         return;
     }
 
-    auto data = build_data({
-        to_byte(static_cast<uint8_t>(prefix.size())),
+    auto data = build_chunk({
+        to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks(),
         to_little_endian<uint32_t>(from_height)
     });
@@ -165,7 +165,7 @@ BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
     fetch_transaction_handler on_reply,
     const hash_digest& tx_hash)
 {
-    auto data = build_data({
+    auto data = build_chunk({
         tx_hash
     });
 
@@ -187,8 +187,8 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const wallet::payment_address& address, uint32_t from_height)
 {
-    auto data = build_data({
-        to_byte(address.version()),
+    auto data = build_chunk({
+        to_array(address.version()),
         reverse(address.hash()),
         to_little_endian<uint32_t>(from_height)
     });
@@ -206,9 +206,9 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
     // [ prefix_bitsize:1 ]
     // [ prefix_blocks:...  ]
-    auto data = build_data({
-        to_byte(static_cast<uint8_t>(subscribe_type::address)),
-        to_byte(static_cast<uint8_t>(prefix.size())),
+    auto data = build_chunk({
+        to_array(static_cast<uint8_t>(subscribe_type::address)),
+        to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
     });
 
@@ -228,9 +228,9 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
         return;
     }
 
-    auto data = build_data({
-        to_byte(static_cast<uint8_t>(discriminator)),
-        to_byte(static_cast<uint8_t>(prefix.size())),
+    auto data = build_chunk({
+        to_array(static_cast<uint8_t>(discriminator)),
+        to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
     });
 
@@ -255,9 +255,9 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 //    // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
 //    // [ prefix_bitsize:1 ]
 //    // [ prefix_blocks:...  ]
-//    auto data = build_data({
-//        to_byte(static_cast<uint8_t>(subscribe_type::address)),
-//        to_byte(prefix.size()),
+//    auto data = build_chunk({
+//        to_array(static_cast<uint8_t>(subscribe_type::address)),
+//        to_array(prefix.size()),
 //        prefix.blocks()
 //    });
 //

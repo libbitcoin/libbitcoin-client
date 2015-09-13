@@ -167,8 +167,8 @@ void obelisk_router::send(const obelisk_message& message)
     if (out_)
     {
         data_stack data;
-        data.push_back(to_data_chunk(message.command));
-        data.push_back(to_data_chunk(to_little_endian(message.id)));
+        data.push_back(to_chunk(message.command));
+        data.push_back(to_chunk(to_little_endian(message.id)));
         data.push_back(message.payload);
         out_->write(data);
     }
