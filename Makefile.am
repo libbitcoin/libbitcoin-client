@@ -80,7 +80,7 @@ noinst_PROGRAMS += examples/get_height/get_height
 examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
 examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 examples_get_height_get_height_SOURCES = \
-    examples/get_height/get_height.cpp
+    examples/get_height/main.cpp
 
 endif WITH_EXAMPLES
 
