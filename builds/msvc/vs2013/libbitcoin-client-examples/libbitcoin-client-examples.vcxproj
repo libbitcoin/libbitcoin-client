@@ -110,7 +110,9 @@
     <ClCompile Include="..\..\..\..\examples\console\connection.cpp" />
     <ClCompile Include="..\..\..\..\examples\console\main.cpp" />
     <ClCompile Include="..\..\..\..\examples\console\read_line.cpp" />
-    <ClCompile Include="..\..\..\..\examples\get_height\main.cpp" />
+    <ClCompile Include="..\..\..\..\examples\get_height\main.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\examples\console\cli.hpp" />
