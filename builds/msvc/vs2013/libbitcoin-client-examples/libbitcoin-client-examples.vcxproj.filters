@@ -7,10 +7,39 @@
     <Filter Include="src">
       <UniqueIdentifier>{b32af42c-d1df-4ace-a60c-9f2bea8886ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\get_height">
+      <UniqueIdentifier>{3cac48f2-f6d4-468f-835d-d8b746f5ad78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\console">
+      <UniqueIdentifier>{4f396b1c-780b-4f56-8f79-1180698acbf4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\get_height\get_height.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\..\..\..\examples\console\cli.cpp">
+      <Filter>src\console</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\examples\console\connection.cpp">
+      <Filter>src\console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\examples\console\main.cpp">
+      <Filter>src\console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\examples\console\read_line.cpp">
+      <Filter>src\console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\examples\get_height\main.cpp">
+      <Filter>src\get_height</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\examples\console\read_line.hpp">
+      <Filter>src\console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\examples\console\cli.hpp">
+      <Filter>src\console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\examples\console\connection.hpp">
+      <Filter>src\console</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ uint32_t signal_continue = 1;
 read_line::~read_line()
 {
     czmqpp::message message;
-    message.append(bc::to_data_chunk(bc::to_little_endian(signal_halt)));
+    message.append(bc::to_chunk(bc::to_little_endian(signal_halt)));
     message.send(socket_);
     thread_->join();
     delete thread_;
@@ -53,7 +53,7 @@ void read_line::show_prompt()
 {
     std::cout << "> " << std::flush;
     czmqpp::message message;
-    message.append(bc::to_data_chunk(bc::to_little_endian(signal_continue)));
+    message.append(bc::to_chunk(bc::to_little_endian(signal_continue)));
     message.send(socket_);
 }
 
