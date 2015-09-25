@@ -40,7 +40,7 @@ static void on_unknown(const std::string& command)
 static void on_update(const bc::wallet::payment_address& address, size_t,
     const hash_digest&, const chain::transaction&)
 {
-    std::cout << "update:" << address.to_string() << std::endl;
+    std::cout << "update:" << address.encoded() << std::endl;
 }
 
 connection::connection(czmqpp::socket& socket)

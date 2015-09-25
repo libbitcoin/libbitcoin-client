@@ -405,17 +405,14 @@ bool obelisk_codec::decode_fetch_stealth(reader& payload,
     {
         stealth_row row;
 
-        // presume first byte based on convention
-        row.ephemkey = payload.read_data(32);
-        row.ephemkey.insert(row.ephemkey.begin(), 0x02);
+        // The sign byte of the ephmemeral key is fixed (0x02) by convetion.
+        // To recover the key concatenate: [0x02, ephemeral_key_hash]. 
+        row.ephemeral_key_hash = payload.read_hash();
 
-        // presume address_version
-        uint8_t address_version = wallet::payment_address::pubkey_version;
-        const short_hash address_hash = payload.read_short_hash();
-        row.address.set(address_version, reverse(address_hash));
+        // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
+        row.public_key_hash = reverse(payload.read_short_hash());
 
         row.transaction_hash = payload.read_hash();
-
         results.push_back(row);
         success = payload;
     }
