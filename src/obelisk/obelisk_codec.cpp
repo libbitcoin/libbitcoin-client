@@ -61,6 +61,9 @@ BCC_API void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const wallet::payment_address& address, uint32_t from_height)
 {
+    // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
+    // We un-reverse here to limit confusion downsteam.
+
     auto data = build_chunk({
         to_array(address.version()),
         reverse(address.hash()),
@@ -187,6 +190,9 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const wallet::payment_address& address, uint32_t from_height)
 {
+    // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
+    // We un-reverse here to limit confusion downsteam.
+
     auto data = build_chunk({
         to_array(address.version()),
         reverse(address.hash()),
@@ -217,8 +223,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 }
 
 BCC_API void obelisk_codec::subscribe(error_handler on_error,
-    empty_handler on_reply,
-    subscribe_type discriminator,
+    empty_handler on_reply, subscribe_type discriminator,
     const binary_type& prefix)
 {
     // should this be a throw or should there be a return type instead?
@@ -313,7 +318,7 @@ with a 4 byte error code.
 bool obelisk_codec::decode_empty(reader& payload,
     empty_handler& handler)
 {
-    bool success = payload.is_exhausted();
+    auto success = payload.is_exhausted();
 
     if (success)
         handler();
@@ -324,7 +329,7 @@ bool obelisk_codec::decode_empty(reader& payload,
 bool obelisk_codec::decode_fetch_history(reader& payload,
     fetch_history_handler& handler)
 {
-    bool success = true;
+    auto success = true;
     history_list history;
 
     while (success && payload && !payload.is_exhausted())
@@ -348,7 +353,7 @@ bool obelisk_codec::decode_fetch_transaction(reader& payload,
     fetch_transaction_handler& handler)
 {
     chain::transaction tx;
-    bool success = tx.from_data(payload);
+    auto success = tx.from_data(payload);
     success &= payload.is_exhausted();
 
     if (success)
@@ -373,7 +378,7 @@ bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
     chain::header header;
-    bool success = header.from_data(payload, false);
+    auto success = header.from_data(payload, false);
     success &= payload.is_exhausted();
 
     if (success)
@@ -398,24 +403,25 @@ bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
 bool obelisk_codec::decode_fetch_stealth(reader& payload,
     fetch_stealth_handler& handler)
 {
-    bool success = true;
+    auto success = true;
     stealth_list results;
 
     while (success && !payload.is_exhausted())
     {
         stealth_row row;
 
-        // presume first byte based on convention
-        row.ephemkey = payload.read_data(32);
-        row.ephemkey.insert(row.ephemkey.begin(), 0x02);
+        // The sign byte of the ephmemeral key is fixed (0x02) by convetion.
+        // To recover the key concatenate: [0x02, ephemeral_key_hash]. 
+        row.ephemeral_public_key = splice(to_array(ephemeral_public_key_sign),
+            payload.read_hash());
 
-        // presume address_version
-        uint8_t address_version = wallet::payment_address::pubkey_version;
-        const short_hash address_hash = payload.read_short_hash();
-        row.address.set(address_version, reverse(address_hash));
+        // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
+        // We un-reverse here to limit confusion downsteam.
+        // See libbitcoin-server COMPAT_fetch_history.
+        const auto address_hash = payload.read_short_hash();
+        row.public_key_hash = reverse(address_hash);
 
         row.transaction_hash = payload.read_hash();
-
         results.push_back(row);
         success = payload;
     }
@@ -429,7 +435,7 @@ bool obelisk_codec::decode_fetch_stealth(reader& payload,
 bool obelisk_codec::decode_validate(reader& payload,
     validate_handler& handler)
 {
-    bool success = true;
+    auto success = true;
     chain::index_list unconfirmed;
 
     while (success && payload.is_exhausted())

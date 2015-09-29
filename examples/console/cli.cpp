@@ -222,11 +222,13 @@ bool cli::read_address(std::stringstream& args,
     if (!read_string(args, address, "error: no address given"))
         return false;
 
-    if (!out.from_string(address))
+    bc::wallet::payment_address payment(address);
+    if (!payment)
     {
         std::cout << "error: invalid address " << address << std::endl;
         return false;
     }
 
+    out = payment;
     return true;
 }

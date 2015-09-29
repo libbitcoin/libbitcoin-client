@@ -38,9 +38,9 @@ typedef std::vector<history_row> history_list;
 
 struct BCC_API stealth_row
 {
-    data_chunk ephemkey;
-    wallet::payment_address address;
+    short_hash public_key_hash;
     hash_digest transaction_hash;
+    ec_compressed ephemeral_public_key;
 };
 
 typedef std::vector<stealth_row> stealth_list;

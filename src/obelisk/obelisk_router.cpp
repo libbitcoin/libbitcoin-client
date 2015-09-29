@@ -208,7 +208,7 @@ void obelisk_router::decode_update(const obelisk_message& message)
     // This message does not have an error_code at the beginning.
     const auto version_byte = source.read_byte();
     const auto address_hash = source.read_short_hash();
-    const wallet::payment_address address(version_byte, address_hash);
+    const wallet::payment_address address(address_hash, version_byte);
 
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
