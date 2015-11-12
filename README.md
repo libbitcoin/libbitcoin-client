@@ -6,7 +6,7 @@
 
 *The Bitcoin Client Protocol Implementation*
 
-Note that you need g++ 4.8 or higher. For this reason Ubuntu 12.04 and older are not supported. Make sure you have installed [libbitcoin](https://github.com/libbitcoin/libbitcoin) beforehand according to its build instructions.
+Note that you need g++ 4.8 or higher. For this reason Ubuntu 12.04 and older are not supported. Make sure you have installed [libbitcoin](https://github.com/libbitcoin/libbitcoin) beforehand according to its build instructions, as well as libzmq, czmq and czmqpp.
 
 ```sh
 $ ./autogen.sh
