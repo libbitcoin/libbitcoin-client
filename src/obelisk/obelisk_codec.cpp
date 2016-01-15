@@ -436,7 +436,7 @@ bool obelisk_codec::decode_validate(reader& payload,
     validate_handler& handler)
 {
     auto success = true;
-    chain::index_list unconfirmed;
+    index_list unconfirmed;
 
     while (success && payload.is_exhausted())
     {

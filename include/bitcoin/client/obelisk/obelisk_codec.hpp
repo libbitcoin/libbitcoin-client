@@ -73,7 +73,7 @@ public:
     typedef std::function<void (const stealth_list&)>
         fetch_stealth_handler;
 
-    typedef std::function<void (const chain::index_list& unconfirmed)>
+    typedef std::function<void (const index_list& unconfirmed)>
         validate_handler;
 
     typedef std::function<void ()> empty_handler;
