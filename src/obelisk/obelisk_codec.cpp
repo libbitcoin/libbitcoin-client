@@ -20,6 +20,7 @@
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
 
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -135,7 +136,7 @@ BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
 
 BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
     fetch_stealth_handler on_reply,
-    const binary_type& prefix, uint32_t from_height)
+    const binary& prefix, uint32_t from_height)
 {
     // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
@@ -207,7 +208,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply,
     const wallet::payment_address& address)
 {
-    binary_type prefix((short_hash_size * byte_bits), address.hash());
+    binary prefix((short_hash_size * byte_bits), address.hash());
 
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
     // [ prefix_bitsize:1 ]
@@ -224,7 +225,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 
 BCC_API void obelisk_codec::subscribe(error_handler on_error,
     empty_handler on_reply, subscribe_type discriminator,
-    const binary_type& prefix)
+    const binary& prefix)
 {
     // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)

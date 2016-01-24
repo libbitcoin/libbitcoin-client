@@ -38,4 +38,6 @@
 #define BCC_INTERNAL BC_HELPER_DLL_LOCAL
 #endif
 
+typedef std::vector<size_t> index_list;
+
 #endif

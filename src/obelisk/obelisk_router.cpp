@@ -236,7 +236,7 @@ void obelisk_router::decode_stealth_update(const obelisk_message& message)
     raw_prefix.push_back(source.read_byte());
     raw_prefix.push_back(source.read_byte());
     raw_prefix.push_back(source.read_byte());
-    binary_type prefix(32, raw_prefix);
+    binary prefix(32, raw_prefix);
 
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
@@ -288,7 +288,7 @@ BCC_API void obelisk_router::on_update_nop(const wallet::payment_address&,
 {
 }
 
-BCC_API void obelisk_router::on_stealth_update_nop(const binary_type&,
+BCC_API void obelisk_router::on_stealth_update_nop(const binary&,
     size_t, const hash_digest&, const chain::transaction&)
 {
 }

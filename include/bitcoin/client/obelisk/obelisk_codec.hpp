@@ -104,7 +104,7 @@ public:
 
     void fetch_stealth(error_handler on_error,
         fetch_stealth_handler on_reply,
-        const bc::binary_type& prefix, uint32_t from_height=0);
+        const bc::binary& prefix, uint32_t from_height=0);
 
     void validate(error_handler on_error,
         validate_handler on_reply,
@@ -129,7 +129,7 @@ public:
     void subscribe(error_handler on_error,
         empty_handler on_reply,
         subscribe_type discriminator,
-        const bc::binary_type& prefix);
+        const bc::binary& prefix);
 
 private:
 

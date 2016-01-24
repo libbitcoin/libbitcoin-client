@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_stealth__test)
     auto on_reply = [](const stealth_list&) {};
 
     std::vector<uint8_t> raw_prefix = {0xff, 0xff, 0x00, 0x00};
-    binary_type prefix(16, raw_prefix);
+    binary prefix(16, raw_prefix);
     codec.fetch_stealth(on_error, on_reply, prefix, test_height);
 
     BOOST_REQUIRE_EQUAL(capture->out.size(), 3u);
