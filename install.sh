@@ -238,6 +238,7 @@ ZMQ_OPTIONS=\
 #------------------------------------------------------------------------------
 CZMQ_OPTIONS=\
 "--disable-zmakecert "\
+"--disable-czmq_selftest "\
 "${with_pkgconfigdir} "
 
 # Define czmqpp options.
