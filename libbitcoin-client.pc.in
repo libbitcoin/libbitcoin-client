@@ -16,7 +16,7 @@ includedir=@includedir@
 # Metadata
 #==============================================================================
 Name: libbitcoin-client
-Description: Bitcoin Client Protocol Implementation
+Description: Bitcoin Client Protocol Library
 URL: https://github.com/libbitcoin/libbitcoin-client
 Version: @PACKAGE_VERSION@
 

@@ -54,13 +54,13 @@ public:
         void(const wallet::payment_address& address, size_t height,
             const hash_digest& blk_hash, const chain::transaction&)> update_handler;
     typedef std::function<
-        void(const binary_type& prefix, size_t height,
+        void(const binary& prefix, size_t height,
             const hash_digest& blk_hash, const chain::transaction& tx)> stealth_update_handler;
 
     static void on_unknown_nop(const std::string&);
     static void on_update_nop(const wallet::payment_address&, size_t,
         const hash_digest&, const chain::transaction&);
-    static void on_stealth_update_nop(const binary_type&, size_t,
+    static void on_stealth_update_nop(const binary&, size_t,
         const hash_digest&, const chain::transaction&);
 
     virtual void set_on_update(update_handler on_update);

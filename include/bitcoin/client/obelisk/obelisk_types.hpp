@@ -34,6 +34,7 @@ struct BCC_API history_row
     size_t spend_height;
 };
 
+typedef std::vector<size_t> index_list;
 typedef std::vector<history_row> history_list;
 
 struct BCC_API stealth_row
