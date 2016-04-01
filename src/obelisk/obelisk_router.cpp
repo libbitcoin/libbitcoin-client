@@ -37,6 +37,11 @@ BCC_API obelisk_router::obelisk_router(std::shared_ptr<message_stream> out)
 
 obelisk_router::~obelisk_router()
 {
+    for (const auto &request: pending_requests_)
+    {
+        const auto ec = std::make_error_code(std::errc::operation_canceled);
+        request.second.on_error(ec);
+    }
 }
 
 BCC_API void obelisk_router::set_on_update(update_handler on_update)
