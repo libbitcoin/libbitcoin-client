@@ -439,7 +439,7 @@ bool obelisk_codec::decode_validate(reader& payload,
     auto success = true;
     index_list unconfirmed;
 
-    while (success && payload.is_exhausted())
+    while (success && !payload.is_exhausted())
     {
         unconfirmed.push_back(payload.read_4_bytes_little_endian());
         success = payload;
