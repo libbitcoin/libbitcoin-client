@@ -32,8 +32,9 @@ socket_stream::socket_stream(czmqpp::socket& socket)
 {
 }
 
-socket_stream::~socket_stream()
+czmqpp::socket& socket_stream::get_socket()
 {
+    return socket_;
 }
 
 void socket_stream::write(const data_stack& data)
@@ -41,31 +42,23 @@ void socket_stream::write(const data_stack& data)
     czmqpp::message message;
 
     for (auto chunk: data)
-    {
         message.append(chunk);
-    }
 
     message.send(socket_);
 }
 
-/**
-void socket_stream::write(const std::shared_ptr<request>& request)
-{
-    if (request)
-    {
-        request_message message;
-
-        message.set_request(request);
-
-        message.send(socket_);
-    }
-}
-*/
+////void socket_stream::write(const std::shared_ptr<request>& request)
+////{
+////    if (request)
+////    {
+////        request_message message;
+////        message.set_request(request);
+////        message.send(socket_);
+////    }
+////}
 
 bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
 {
-    bool success = false;
-
     if (stream)
     {
         czmqpp::message message;
@@ -73,43 +66,34 @@ bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
         if (message.receive(socket_))
         {
             stream->write(message.parts());
-            success = true;
+            return true;
         }
     }
 
-    return success;
+    return false;
 }
 
-/**
-bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
-{
-    bool signaled = false;
+////bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
+////{
+////    if (stream)
+////    {
+////        response_message message;
+////
+////        if (message.receive(socket_))
+////        {
+////            std::shared_ptr<bc::protocol::response> response = 
+////            message.get_response();
+////
+////            if (response)
+////            {
+////                stream->write(response);
+////                return true;
+////            }
+////        }
+////    }
+////
+////    return false;
+////}
 
-    if (stream)
-    {
-        response_message message;
-
-        if (message.receive(socket_))
-        {
-            std::shared_ptr<bc::protocol::response> response =
-                message.get_response();
-
-            if (response)
-            {
-                stream->write(response);
-                signaled = true;
-            }
-        }
-    }
-
-    return signaled;
-}
-*/
-
-czmqpp::socket& socket_stream::get_socket()
-{
-    return socket_;
-}
-
-}
-}
+} // namespace client
+} // namespace libbitcoin

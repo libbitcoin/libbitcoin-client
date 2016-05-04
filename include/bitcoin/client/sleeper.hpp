@@ -69,8 +69,10 @@ inline period_ms min_sleep(period_ms a, period_ms b)
 {
     if (a.count() == period_forever)
         return b;
+
     if (b.count() == period_forever)
         return a;
+
     return std::min(a, b);
 }
 

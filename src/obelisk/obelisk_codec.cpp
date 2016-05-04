@@ -40,7 +40,7 @@ T reverse(const T& in)
     return out;
 }
 
-BCC_API obelisk_codec::obelisk_codec(
+obelisk_codec::obelisk_codec(
     std::shared_ptr<message_stream> out,
     update_handler on_update,
     unknown_handler on_unknown,
@@ -54,18 +54,15 @@ BCC_API obelisk_codec::obelisk_codec(
     set_retries(retries);
 }
 
-obelisk_codec::~obelisk_codec()
-{
-}
-
-BCC_API void obelisk_codec::fetch_history(error_handler on_error,
+void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
     const wallet::payment_address& address, uint32_t from_height)
 {
     // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
     // We un-reverse here to limit confusion downsteam.
 
-    auto data = build_chunk({
+    const auto data = build_chunk(
+    {
         to_array(address.version()),
         reverse(address.hash()),
         to_little_endian<uint32_t>(from_height)
@@ -75,68 +72,54 @@ BCC_API void obelisk_codec::fetch_history(error_handler on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_transaction(error_handler on_error,
-    fetch_transaction_handler on_reply,
-    const hash_digest& tx_hash)
+void obelisk_codec::fetch_transaction(error_handler on_error,
+    fetch_transaction_handler on_reply, const hash_digest& tx_hash)
 {
-    auto data = build_chunk({
-        tx_hash
-    });
+    const auto data = build_chunk({ tx_hash });
 
     send_request("blockchain.fetch_transaction", data, std::move(on_error),
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_last_height(error_handler on_error,
+void obelisk_codec::fetch_last_height(error_handler on_error,
     fetch_last_height_handler on_reply)
 {
-    auto data = data_chunk();
+    const data_chunk data;
 
-    send_request("blockchain.fetch_last_height", data,
-        std::move(on_error),
+    send_request("blockchain.fetch_last_height", data, std::move(on_error),
         std::bind(decode_fetch_last_height, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
-    fetch_block_header_handler on_reply,
-    uint32_t height)
+void obelisk_codec::fetch_block_header(error_handler on_error,
+    fetch_block_header_handler on_reply, uint32_t height)
 {
-    auto data = build_chunk({
-        to_little_endian<uint32_t>(height)
-    });
+    const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_block_header(error_handler on_error,
-    fetch_block_header_handler on_reply,
-    const hash_digest& blk_hash)
+void obelisk_codec::fetch_block_header(error_handler on_error,
+    fetch_block_header_handler on_reply, const hash_digest& block_hash)
 {
-    auto data = build_chunk({
-        blk_hash
-    });
+    const auto data = build_chunk({ block_hash });
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
         std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_transaction_index(error_handler on_error,
-    fetch_transaction_index_handler on_reply,
-    const hash_digest& tx_hash)
+void obelisk_codec::fetch_transaction_index(error_handler on_error,
+    fetch_transaction_index_handler on_reply, const hash_digest& tx_hash)
 {
-    auto data = build_chunk({
-        tx_hash
-    });
+    const auto data = build_chunk({ tx_hash });
 
     send_request("blockchain.fetch_transaction_index", data,
         std::move(on_error),
         std::bind(decode_fetch_transaction_index, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
-    fetch_stealth_handler on_reply,
-    const binary& prefix, uint32_t from_height)
+void obelisk_codec::fetch_stealth(error_handler on_error,
+    fetch_stealth_handler on_reply, const binary& prefix, uint32_t from_height)
 {
     // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
@@ -145,7 +128,8 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
         return;
     }
 
-    auto data = build_chunk({
+    const auto data = build_chunk(
+    {
         to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks(),
         to_little_endian<uint32_t>(from_height)
@@ -155,8 +139,7 @@ BCC_API void obelisk_codec::fetch_stealth(error_handler on_error,
         std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::validate(error_handler on_error,
-    validate_handler on_reply,
+void obelisk_codec::validate(error_handler on_error, validate_handler on_reply,
     const chain::transaction& tx)
 {
     send_request("transaction_pool.validate", tx.to_data(),
@@ -164,37 +147,33 @@ BCC_API void obelisk_codec::validate(error_handler on_error,
         std::bind(decode_validate, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::fetch_unconfirmed_transaction(
-    error_handler on_error,
-    fetch_transaction_handler on_reply,
-    const hash_digest& tx_hash)
+void obelisk_codec::fetch_unconfirmed_transaction(error_handler on_error,
+    fetch_transaction_handler on_reply, const hash_digest& tx_hash)
 {
-    auto data = build_chunk({
-        tx_hash
-    });
+    const auto data = build_chunk({ tx_hash });
 
     send_request("transaction_pool.fetch_transaction", data,
         std::move(on_error),
         std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::broadcast_transaction(error_handler on_error,
-    empty_handler on_reply,
-    const chain::transaction& tx)
+void obelisk_codec::broadcast_transaction(error_handler on_error,
+    empty_handler on_reply, const chain::transaction& tx)
 {
     send_request("protocol.broadcast_transaction", tx.to_data(),
         std::move(on_error),
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
-    fetch_history_handler on_reply,
-    const wallet::payment_address& address, uint32_t from_height)
+void obelisk_codec::address_fetch_history(error_handler on_error,
+    fetch_history_handler on_reply, const wallet::payment_address& address,
+    uint32_t from_height)
 {
     // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
     // We un-reverse here to limit confusion downsteam.
 
-    auto data = build_chunk({
+    const auto data = build_chunk(
+    {
         to_array(address.version()),
         reverse(address.hash()),
         to_little_endian<uint32_t>(from_height)
@@ -204,8 +183,7 @@ BCC_API void obelisk_codec::address_fetch_history(error_handler on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::subscribe(error_handler on_error,
-    empty_handler on_reply,
+void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
     const wallet::payment_address& address)
 {
     binary prefix((short_hash_size * byte_bits), address.hash());
@@ -213,7 +191,8 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
     // [ prefix_bitsize:1 ]
     // [ prefix_blocks:...  ]
-    auto data = build_chunk({
+    const auto data = build_chunk(
+    {
         to_array(static_cast<uint8_t>(subscribe_type::address)),
         to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
@@ -223,9 +202,8 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
-BCC_API void obelisk_codec::subscribe(error_handler on_error,
-    empty_handler on_reply, subscribe_type discriminator,
-    const binary& prefix)
+void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
+    subscribe_type discriminator, const binary& prefix)
 {
     // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
@@ -234,7 +212,8 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
         return;
     }
 
-    auto data = build_chunk({
+    const auto data = build_chunk(
+    {
         to_array(static_cast<uint8_t>(discriminator)),
         to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
@@ -251,7 +230,7 @@ BCC_API void obelisk_codec::subscribe(error_handler on_error,
 //    stealth = 1
 //};
 //
-//BCC_API void obelisk_codec::subscribe(error_handler on_error,
+//void obelisk_codec::subscribe(error_handler on_error,
 //    empty_handler on_reply,
 //    const address_prefix& prefix)
 //{
@@ -284,7 +263,7 @@ The address result is:
     [ height:4 ]
     [ block_hash:32 ]
 
-    struct BCC_API address_subscribe_result
+    struct address_subscribe_result
     {
         payment_address address;
         uint32_t height;
@@ -300,7 +279,7 @@ When the subscription type is stealth, then the result is:
     [ block_hash:32 ]
     
     // Currently not used.
-    struct BCC_API stealth_subscribe_result
+    struct stealth_subscribe_result
     {
         typedef byte_array<4> stealth_prefix_bytes;
         // Protocol will send back 4 bytes of prefix.
@@ -316,10 +295,9 @@ is the same as for "address.subscribe, and the server will respond
 with a 4 byte error code.
 */
 
-bool obelisk_codec::decode_empty(reader& payload,
-    empty_handler& handler)
+bool obelisk_codec::decode_empty(reader& payload, empty_handler& handler)
 {
-    auto success = payload.is_exhausted();
+    const auto success = payload.is_exhausted();
 
     if (success)
         handler();
@@ -354,8 +332,7 @@ bool obelisk_codec::decode_fetch_transaction(reader& payload,
     fetch_transaction_handler& handler)
 {
     chain::transaction tx;
-    auto success = tx.from_data(payload);
-    success &= payload.is_exhausted();
+    const auto success = tx.from_data(payload) && payload.is_exhausted();
 
     if (success)
         handler(tx);
@@ -366,8 +343,8 @@ bool obelisk_codec::decode_fetch_transaction(reader& payload,
 bool obelisk_codec::decode_fetch_last_height(reader& payload,
     fetch_last_height_handler& handler)
 {
-    uint32_t last_height = payload.read_4_bytes_little_endian();
-    bool success = payload.is_exhausted();
+    const auto last_height = payload.read_4_bytes_little_endian();
+    const auto success = payload.is_exhausted();
 
     if (success)
         handler(last_height);
@@ -379,8 +356,8 @@ bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
     chain::header header;
-    auto success = header.from_data(payload, false);
-    success &= payload.is_exhausted();
+    const auto success = header.from_data(payload, false) && 
+        payload.is_exhausted();
 
     if (success)
         handler(header);
@@ -391,9 +368,9 @@ bool obelisk_codec::decode_fetch_block_header(reader& payload,
 bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
     fetch_transaction_index_handler& handler)
 {
-    uint32_t block_height = payload.read_4_bytes_little_endian();
-    uint32_t index = payload.read_4_bytes_little_endian();
-    bool success = payload.is_exhausted();
+    const auto block_height = payload.read_4_bytes_little_endian();
+    const auto index = payload.read_4_bytes_little_endian();
+    const auto success = payload.is_exhausted();
 
     if (success)
         handler(block_height, index);

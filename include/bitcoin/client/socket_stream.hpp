@@ -32,33 +32,23 @@ namespace libbitcoin {
 namespace client {
 
 class BCC_API socket_stream
-  : public message_stream //, public request_stream
+  : public message_stream ////, public request_stream
 {
 public:
-
     socket_stream(czmqpp::socket& socket);
-
-    virtual ~socket_stream();
-
-    virtual void write(const data_stack& data);
-
-//    virtual void write(
-//        const std::shared_ptr<bc::protocol::request>& request);
-
-    virtual bool signal_response(
-        std::shared_ptr<message_stream> stream);
-
-//    virtual bool signal_response(
-//        std::shared_ptr<response_stream> stream);
 
     czmqpp::socket& get_socket();
 
-private:
+    virtual void write(const data_stack& data);
+    ////virtual void write(const std::shared_ptr<bc::protocol::request>& request);
+    virtual bool signal_response(std::shared_ptr<message_stream> stream);
+    ////virtual bool signal_response(std::shared_ptr<response_stream> stream);
 
+private:
     czmqpp::socket socket_;
 };
 
-}
-}
+} // namespace client
+} // namespace libbitcoin
 
 #endif
