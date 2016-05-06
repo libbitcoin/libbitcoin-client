@@ -36,7 +36,8 @@ namespace client {
  * retries.
  * This class is a pure codec; it does not talk directly to zeromq.
  */
-class BCC_API obelisk_router: public message_stream, public sleeper
+class BCC_API obelisk_router
+  : public message_stream, public sleeper
 {
 public:
     /**
@@ -52,10 +53,12 @@ public:
     typedef std::function<void(const std::string& command)> unknown_handler;
     typedef std::function<
         void(const wallet::payment_address& address, size_t height,
-            const hash_digest& blk_hash, const chain::transaction&)> update_handler;
+            const hash_digest& block_hash, const chain::transaction&)>
+            update_handler;
     typedef std::function<
         void(const binary& prefix, size_t height,
-            const hash_digest& blk_hash, const chain::transaction& tx)> stealth_update_handler;
+            const hash_digest& block_hash, const chain::transaction& tx)>
+            stealth_update_handler;
 
     static void on_unknown_nop(const std::string&);
     static void on_update_nop(const wallet::payment_address&, size_t,

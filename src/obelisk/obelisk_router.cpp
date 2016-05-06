@@ -27,7 +27,7 @@ namespace client {
 
 using std::placeholders::_1;
 
-BCC_API obelisk_router::obelisk_router(std::shared_ptr<message_stream> out)
+obelisk_router::obelisk_router(std::shared_ptr<message_stream> out)
   : last_request_id_(0),
     timeout_(std::chrono::seconds(2)), retries_(0),
     on_unknown_(on_unknown_nop), on_update_(on_update_nop),
@@ -44,38 +44,37 @@ obelisk_router::~obelisk_router()
     }
 }
 
-BCC_API void obelisk_router::set_on_update(update_handler on_update)
+void obelisk_router::set_on_update(update_handler on_update)
 {
     on_update_ = std::move(on_update);
 }
 
-BCC_API void obelisk_router::set_on_stealth_update(
-    stealth_update_handler on_update)
+void obelisk_router::set_on_stealth_update(stealth_update_handler on_update)
 {
     on_stealth_update_ = std::move(on_update);
 }
 
-BCC_API void obelisk_router::set_on_unknown(unknown_handler on_unknown)
+void obelisk_router::set_on_unknown(unknown_handler on_unknown)
 {
     on_unknown_ = std::move(on_unknown);
 }
 
-BCC_API void obelisk_router::set_retries(uint8_t retries)
+void obelisk_router::set_retries(uint8_t retries)
 {
     retries_ = retries;
 }
 
-BCC_API void obelisk_router::set_timeout(period_ms timeout)
+void obelisk_router::set_timeout(period_ms timeout)
 {
     timeout_ = timeout;
 }
 
-BCC_API uint64_t obelisk_router::outstanding_call_count() const
+uint64_t obelisk_router::outstanding_call_count() const
 {
     return pending_requests_.size();
 }
 
-BCC_API void obelisk_router::write(const data_stack& data)
+void obelisk_router::write(const data_stack& data)
 {
     if (data.size() == 3)
     {
@@ -118,7 +117,7 @@ BCC_API void obelisk_router::write(const data_stack& data)
     }
 }
 
-BCC_API period_ms obelisk_router::wakeup()
+period_ms obelisk_router::wakeup()
 {
     period_ms next_wakeup(0);
     const auto now = std::chrono::steady_clock::now();
@@ -284,16 +283,16 @@ void obelisk_router::decode_reply(const obelisk_message& message,
         on_error(ec);
 }
 
-BCC_API void obelisk_router::on_unknown_nop(const std::string&)
+void obelisk_router::on_unknown_nop(const std::string&)
 {
 }
 
-BCC_API void obelisk_router::on_update_nop(const wallet::payment_address&,
+void obelisk_router::on_update_nop(const wallet::payment_address&,
     size_t, const hash_digest&, const chain::transaction&)
 {
 }
 
-BCC_API void obelisk_router::on_stealth_update_nop(const binary&,
+void obelisk_router::on_stealth_update_nop(const binary&,
     size_t, const hash_digest&, const chain::transaction&)
 {
 }

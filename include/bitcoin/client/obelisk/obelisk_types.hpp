@@ -53,7 +53,7 @@ enum class subscribe_type : uint8_t
     stealth = 1
 };
 
-}
-}
+} // namespace client
+} // namespace libbitcoin
 
 #endif

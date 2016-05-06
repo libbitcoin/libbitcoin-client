@@ -45,14 +45,11 @@ public:
      * @param timeout the call timeout. Defaults to 2 seconds.
      * @param retries the number of retries to attempt.
      */
-    obelisk_codec(
-        std::shared_ptr<message_stream> out,
+    obelisk_codec(std::shared_ptr<message_stream> out,
         update_handler on_update=on_update_nop,
         unknown_handler on_unknown=on_unknown_nop,
         period_ms timeout=std::chrono::seconds(2),
         uint8_t retries=0);
-
-    virtual ~obelisk_codec();
 
     // Message reply handlers:
     typedef std::function<void (const history_list&)>
@@ -96,7 +93,7 @@ public:
 
     void fetch_block_header(error_handler on_error,
         fetch_block_header_handler on_reply,
-        const hash_digest& blk_hash);
+        const hash_digest& block_hash);
 
     void fetch_transaction_index(error_handler on_error,
         fetch_transaction_index_handler on_reply,
