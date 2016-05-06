@@ -30,6 +30,8 @@ namespace client {
 socket_stream::socket_stream(czmqpp::socket& socket)
   : socket_(socket.self())
 {
+    // Disable czmq signal handling.
+    zsys_handler_set(NULL);
 }
 
 czmqpp::socket& socket_stream::get_socket()
