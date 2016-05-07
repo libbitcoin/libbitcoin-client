@@ -48,7 +48,7 @@ public:
     obelisk_codec(std::shared_ptr<message_stream> out,
         update_handler on_update=on_update_nop,
         unknown_handler on_unknown=on_unknown_nop,
-        period_ms timeout=std::chrono::seconds(2),
+        period_ms timeout=period_ms(2000),
         uint8_t retries=0);
 
     // Message reply handlers:

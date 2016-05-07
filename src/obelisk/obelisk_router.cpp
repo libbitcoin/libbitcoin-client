@@ -19,6 +19,8 @@
  */
 #include <bitcoin/client/obelisk/obelisk_router.hpp>
 
+#include <cstdint>
+#include <string>
 #include <boost/iostreams/stream.hpp>
 #include <bitcoin/bitcoin.hpp>
 
@@ -26,22 +28,29 @@ namespace libbitcoin {
 namespace client {
 
 using std::placeholders::_1;
+using namespace std::chrono;
+using namespace boost::iostreams;
+using namespace bc::chain;
+using namespace bc::wallet;
 
+static constexpr period_ms default_timeout_ms(2000);
+
+// This class is not thread safe.
 obelisk_router::obelisk_router(std::shared_ptr<message_stream> out)
-  : last_request_id_(0),
-    timeout_(std::chrono::seconds(2)), retries_(0),
-    on_unknown_(on_unknown_nop), on_update_(on_update_nop),
-    on_stealth_update_(on_stealth_update_nop), out_(out)
+  : retries_(0),
+    last_request_index_(0),
+    timeout_ms_(default_timeout_ms),
+    on_update_(on_update_nop),
+    on_unknown_(on_unknown_nop),
+    on_stealth_update_(on_stealth_update_nop),
+    out_(out)
 {
 }
 
 obelisk_router::~obelisk_router()
 {
     for (const auto &request: pending_requests_)
-    {
-        const auto ec = std::make_error_code(std::errc::operation_canceled);
-        request.second.on_error(ec);
-    }
+        request.second.on_error(error::channel_stopped);
 }
 
 void obelisk_router::set_on_update(update_handler on_update)
@@ -66,7 +75,7 @@ void obelisk_router::set_retries(uint8_t retries)
 
 void obelisk_router::set_timeout(period_ms timeout)
 {
-    timeout_ = timeout;
+    timeout_ms_ = timeout;
 }
 
 uint64_t obelisk_router::outstanding_call_count() const
@@ -76,211 +85,163 @@ uint64_t obelisk_router::outstanding_call_count() const
 
 void obelisk_router::write(const data_stack& data)
 {
-    if (data.size() == 3)
+    if (data.size() != 3)
+        return;
+
+    obelisk_message message;
+
+    auto it = data.begin();
+    message.command = std::string(it->begin(), it->end());
+
+    if ((++it)->size() == sizeof(uint32_t))
     {
-        auto success = true;
-        obelisk_message message;
-
-        auto it = data.begin();
-
-        if (success)
-        {
-            // read command
-            message.command = std::string((*it).begin(), (*it).end());
-            it++;
-        }
-
-        if (success)
-        {
-            // read id
-            if ((*it).size() == sizeof(uint32_t))
-            {
-                message.id = from_little_endian_unsafe<uint32_t>(
-                    (*it).begin());
-            }
-            else
-            {
-                success = false;
-            }
-
-            it++;
-        }
-
-        if (success)
-        {
-            // read payload
-            message.payload = (*it);
-            it++;
-        }
-
-        receive(message);
+        message.id = from_little_endian_unsafe<uint32_t>(it->begin());
+        message.payload = *(++it);
     }
+
+    receive(message);
 }
 
 period_ms obelisk_router::wakeup()
 {
     period_ms next_wakeup(0);
-    const auto now = std::chrono::steady_clock::now();
+    const auto now = steady_clock::now();
 
-    auto i = pending_requests_.begin();
-    while (i != pending_requests_.end())
+    // Use explicit iteration to allow for erase in loop.
+    auto request = pending_requests_.begin();
+    while (request != pending_requests_.end())
     {
-        auto request = i++;
-        auto elapsed = std::chrono::duration_cast<period_ms>(
-            now - request->second.last_action);
-        if (timeout_ <= elapsed)
+        const auto elapsed = now - request->second.last_action;
+        const auto elapsed_ms = duration_cast<period_ms>(elapsed);
+
+        if (timeout_ms_ > elapsed_ms)
         {
-            if (request->second.retries < retries_)
-            {
-                // Resend:
-                ++request->second.retries;
-                request->second.last_action = now;
-                next_wakeup = min_sleep(next_wakeup, timeout_);
-                send(request->second.message);
-            }
-            else
-            {
-                // Cancel:
-                auto ec = std::make_error_code(std::errc::timed_out);
-                request->second.on_error(ec);
-                pending_requests_.erase(request);
-            }
+            next_wakeup = min_sleep(next_wakeup, timeout_ms_ - elapsed_ms);
+            ++request;
+        }
+        else if (request->second.retries >= retries_)
+        {
+            request->second.on_error(error::channel_timeout);
+            request = pending_requests_.erase(request);
         }
         else
-            next_wakeup = min_sleep(next_wakeup, timeout_ - elapsed);
+        {
+            request->second.retries++;
+            request->second.last_action = now;
+            next_wakeup = min_sleep(next_wakeup, timeout_ms_);
+            send(request->second.message);
+            ++request;
+        } 
     }
+
     return next_wakeup;
 }
 
 void obelisk_router::send_request(const std::string& command,
-    const data_chunk& payload,
-    error_handler on_error, decoder on_reply)
+    const data_chunk& payload, error_handler on_error, decoder on_reply)
 {
-    const auto id = ++last_request_id_;
+    const auto id = ++last_request_index_;
     auto& request = pending_requests_[id];
-    request.message = obelisk_message{command, id, payload};
+    request.message = obelisk_message{ command, id, payload };
     request.on_error = std::move(on_error);
     request.on_reply = std::move(on_reply);
     request.retries = 0;
-    request.last_action = std::chrono::steady_clock::now();
+    request.last_action = steady_clock::now();
     send(request.message);
 }
 
 void obelisk_router::send(const obelisk_message& message)
 {
-    if (out_)
-    {
-        data_stack data;
-        data.push_back(to_chunk(message.command));
-        data.push_back(to_chunk(to_little_endian(message.id)));
-        data.push_back(message.payload);
-        out_->write(data);
-    }
+    if (!out_)
+        return;
+
+    data_stack data;
+    data.push_back(to_chunk(message.command));
+    data.push_back(to_chunk(to_little_endian(message.id)));
+    data.push_back(message.payload);
+    out_->write(data);
 }
 
 void obelisk_router::receive(const obelisk_message& message)
 {
-    if ("address.update" == message.command)
+    if (message.command == "address.update")
     {
         decode_update(message);
         return;
     }
 
-    if ("address.stealth_update" == message.command)
+    if (message.command == "address.stealth_update")
     {
         decode_stealth_update(message);
         return;
     }
 
-    const auto i = pending_requests_.find(message.id);
-    if (i == pending_requests_.end())
+    const auto command = pending_requests_.find(message.id);
+    if (command == pending_requests_.end())
     {
         on_unknown_(message.command);
         return;
     }
 
-    decode_reply(message, i->second.on_error, i->second.on_reply);
-    pending_requests_.erase(i);
+    decode_reply(message, command->second.on_error, command->second.on_reply);
+    pending_requests_.erase(command);
 }
 
 void obelisk_router::decode_update(const obelisk_message& message)
 {
-    auto success = true;
-    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    stream<byte_source<data_chunk>> istream(message.payload);
     istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
     const auto version_byte = source.read_byte();
     const auto address_hash = source.read_short_hash();
-    const wallet::payment_address address(address_hash, version_byte);
-
+    const payment_address address(address_hash, version_byte);
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
-    chain::transaction tx;
-    success = tx.from_data(source);
+    transaction tx;
 
-    if (success)
-        success = source.is_exhausted();
-
-    if (success)
-        on_update_(address, height, block_hash, tx);
-    else
+    if (!tx.from_data(source) || !source.is_exhausted())
+    {
         on_unknown_(message.command);
+        return;
+    }
+
+    on_update_(address, height, block_hash, tx);
 }
 
 void obelisk_router::decode_stealth_update(const obelisk_message& message)
 {
-    auto success = true;
-    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    stream<byte_source<data_chunk>> istream(message.payload);
     istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
-    data_chunk raw_prefix;
-    raw_prefix.push_back(source.read_byte());
-    raw_prefix.push_back(source.read_byte());
-    raw_prefix.push_back(source.read_byte());
-    raw_prefix.push_back(source.read_byte());
-    binary prefix(32, raw_prefix);
-
+    static constexpr size_t size = 4;
+    binary prefix(size * bc::byte_bits, source.read_bytes<size>());
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
-    chain::transaction tx;
+    transaction tx;
 
-    success = tx.from_data(source);
-
-    if (success)
-        success = source.is_exhausted();
-
-    if (success)
-        on_stealth_update_(prefix, height, block_hash, tx);
-    else
+    if (!tx.from_data(source) || !source.is_exhausted())
+    {
         on_unknown_(message.command);
+        return;
+    }
+
+    on_stealth_update_(prefix, height, block_hash, tx);
 }
 
 void obelisk_router::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
-    code ec;
-    boost::iostreams::stream<byte_source<data_chunk>> istream(message.payload);
+    stream<byte_source<data_chunk>> istream(message.payload);
     istream_reader source(istream);
-
-    const auto value = source.read_4_bytes_little_endian();
-
-    if (value != 0)
-        ec = static_cast<error::error_code_t>(value);
-
-    bool success = source;
-
-    if (success)
-    {
-        success = on_reply(source);
-
-        if (!success)
-            ec = std::make_error_code(std::errc::bad_message);
-    }
+    code ec = static_cast<error::error_code_t>(
+        source.read_4_bytes_little_endian());
 
     if (ec)
         on_error(ec);
+    else if (!on_reply(source))
+        on_error(error::bad_stream);
 }
 
 void obelisk_router::on_unknown_nop(const std::string&)

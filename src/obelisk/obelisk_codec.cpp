@@ -19,6 +19,7 @@
  */
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
 
+#include <chrono>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 
@@ -26,6 +27,8 @@ namespace libbitcoin {
 namespace client {
 
 using std::placeholders::_1;
+using namespace std::chrono;
+using namespace bc::chain;
 
 /**
  * Reverses data.
@@ -205,10 +208,9 @@ void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
 void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
     subscribe_type discriminator, const binary& prefix)
 {
-    // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
     {
-        on_error(std::make_error_code(std::errc::bad_address));
+        on_error(error::bad_stream);
         return;
     }
 
@@ -297,72 +299,67 @@ with a 4 byte error code.
 
 bool obelisk_codec::decode_empty(reader& payload, empty_handler& handler)
 {
-    const auto success = payload.is_exhausted();
+    if (!payload.is_exhausted())
+        return false;
 
-    if (success)
-        handler();
-
-    return success;
+    handler();
+    return true;
 }
 
 bool obelisk_codec::decode_fetch_history(reader& payload,
     fetch_history_handler& handler)
 {
-    auto success = true;
     history_list history;
 
-    while (success && payload && !payload.is_exhausted())
+    while (!payload.is_exhausted())
     {
         history_row row;
-        success = row.output.from_data(payload);
+        auto success = row.output.from_data(payload);
         row.output_height = payload.read_4_bytes_little_endian();
         row.value = payload.read_8_bytes_little_endian();
         success &= row.spend.from_data(payload);
         row.spend_height = payload.read_4_bytes_little_endian();
         history.push_back(row);
+
+        if (!success || !payload)
+            return false;
     }
 
-    if (success && payload)
-        handler(history);
-
-    return success && payload;
+    handler(history);
+    return true;
 }
 
 bool obelisk_codec::decode_fetch_transaction(reader& payload,
     fetch_transaction_handler& handler)
 {
-    chain::transaction tx;
-    const auto success = tx.from_data(payload) && payload.is_exhausted();
+    transaction tx;
+    if (!tx.from_data(payload) || !payload.is_exhausted())
+        return false;
 
-    if (success)
-        handler(tx);
-
-    return success;
+    handler(tx);
+    return true;
 }
 
 bool obelisk_codec::decode_fetch_last_height(reader& payload,
     fetch_last_height_handler& handler)
 {
     const auto last_height = payload.read_4_bytes_little_endian();
-    const auto success = payload.is_exhausted();
+    if (!payload.is_exhausted())
+        return false;
 
-    if (success)
-        handler(last_height);
-
-    return success;
+    handler(last_height);
+    return true;
 }
 
 bool obelisk_codec::decode_fetch_block_header(reader& payload,
     fetch_block_header_handler& handler)
 {
-    chain::header header;
-    const auto success = header.from_data(payload, false) && 
-        payload.is_exhausted();
+    header header;
+    if (!header.from_data(payload, false) || !payload.is_exhausted())
+        return false;
 
-    if (success)
-        handler(header);
-
-    return success;
+    handler(header);
+    return true;
 }
 
 bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
@@ -370,21 +367,19 @@ bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
 {
     const auto block_height = payload.read_4_bytes_little_endian();
     const auto index = payload.read_4_bytes_little_endian();
-    const auto success = payload.is_exhausted();
+    if (!payload.is_exhausted())
+        return false;
 
-    if (success)
-        handler(block_height, index);
-
-    return success;
+    handler(block_height, index);
+    return true;
 }
 
 bool obelisk_codec::decode_fetch_stealth(reader& payload,
     fetch_stealth_handler& handler)
 {
-    auto success = true;
     stealth_list results;
 
-    while (success && !payload.is_exhausted())
+    while (!payload.is_exhausted())
     {
         stealth_row row;
 
@@ -401,31 +396,29 @@ bool obelisk_codec::decode_fetch_stealth(reader& payload,
 
         row.transaction_hash = payload.read_hash();
         results.push_back(row);
-        success = payload;
+
+        if (!payload)
+            return false;
     }
 
-    if (success)
-        handler(results);
-
-    return success;
+    handler(results);
+    return true;
 }
 
-bool obelisk_codec::decode_validate(reader& payload,
-    validate_handler& handler)
+bool obelisk_codec::decode_validate(reader& payload, validate_handler& handler)
 {
-    auto success = true;
     index_list unconfirmed;
 
-    while (success && !payload.is_exhausted())
+    while (!payload.is_exhausted())
     {
         unconfirmed.push_back(payload.read_4_bytes_little_endian());
-        success = payload;
+
+        if (!payload)
+            return false;
     }
 
-    if (success)
-        handler(unconfirmed);
-
-    return success;
+    handler(unconfirmed);
+    return true;
 }
 
 } // namespace client

@@ -21,6 +21,7 @@
 #define LIBBITCOIN_CLIENT_OBELISK_OBELISK_ROUTER_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <bitcoin/bitcoin.hpp>
@@ -80,22 +81,8 @@ public:
     virtual period_ms wakeup() override;
 
 protected:
-
-    /**
-     * Decodes a message and calls the appropriate callback.
-     * By the time this is called, the error code has already been read
-     * out of the payload and checked.
-     * If there is something wrong with the payload, this function should
-     * throw a end_of_stream exception.
-     */
+    // Decodes a message and calls the appropriate callback.
     typedef std::function<bool(reader& payload)> decoder;
-
-    /**
-     * Sends an outgoing request, and adds the handlers to the pending
-     * request table.
-     */
-    void send_request(const std::string& command, const data_chunk& payload,
-        error_handler on_error, decoder on_reply);
 
     struct obelisk_message
     {
@@ -104,15 +91,6 @@ protected:
         data_chunk payload;
     };
 
-    void send(const obelisk_message& message);
-    void receive(const obelisk_message& message);
-    void decode_update(const obelisk_message& message);
-    void decode_stealth_update(const obelisk_message& message);
-    void decode_reply(const obelisk_message& message, error_handler& on_error,
-        decoder& on_reply);
-
-    // Request management:
-    uint32_t last_request_id_;
     struct pending_request
     {
         obelisk_message message;
@@ -121,19 +99,32 @@ protected:
         unsigned retries;
         std::chrono::steady_clock::time_point last_action;
     };
-    std::map<uint32_t, pending_request> pending_requests_;
 
-    // Timeout parameters:
-    period_ms timeout_;
+    void send(const obelisk_message& message);
+    void receive(const obelisk_message& message);
+    void decode_update(const obelisk_message& message);
+    void decode_stealth_update(const obelisk_message& message);
+
+    // Sends an outgoing request, and adds handlers to pending request table.
+    void send_request(const std::string& command, const data_chunk& payload,
+        error_handler on_error, decoder on_reply);
+
+    // Decodes an incoming message, invoking the error and/or reply handler.
+    // The reply handler must not invoke its handler if there is an error.
+    void decode_reply(const obelisk_message& message, error_handler& on_error,
+        decoder& on_reply);
+
+
     uint8_t retries_;
+    uint32_t last_request_index_;
+    period_ms timeout_ms_;
 
-    // Loose-message event handlers:
-    unknown_handler on_unknown_;
     update_handler on_update_;
+    unknown_handler on_unknown_;
     stealth_update_handler on_stealth_update_;
 
-    // Outgoing message stream:
     std::shared_ptr<message_stream> out_;
+    std::map<uint32_t, pending_request> pending_requests_;
 };
 
 } // namespace client
