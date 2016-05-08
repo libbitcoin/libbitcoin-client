@@ -69,7 +69,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\obelisk\obelisk_codec.cpp" />
-    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_router.cpp" />
+    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_dealer.cpp" />
     <ClCompile Include="..\..\..\..\src\socket_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +82,7 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\define.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\message_stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_codec.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_router.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_dealer.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_types.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp" />

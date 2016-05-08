@@ -37,9 +37,7 @@ class BCC_API message_stream
 {
 public:
 
-    /**
-     * Sends one multi-part message.
-     */
+    virtual bool read(message_stream& stream) = 0;
     virtual void write(const data_stack& data) = 0;
 };
 

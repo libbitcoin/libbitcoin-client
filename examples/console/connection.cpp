@@ -25,43 +25,26 @@
 #include <bitcoin/client.hpp>
 
 using namespace bc;
+using namespace bc::chain;
+using namespace bc::client;
+using namespace bc::wallet;
 
-/**
- * Unknown message callback handler.
- */
+/// Unknown message callback handler.
 static void on_unknown(const std::string& command)
 {
     std::cout << "unknown message:" << command << std::endl;
 }
 
-/**
- * Update message callback handler.
- */
-static void on_update(const bc::wallet::payment_address& address, size_t,
-    const hash_digest&, const chain::transaction&)
+/// Update message callback handler.
+static void on_update(const payment_address& address, size_t,
+    const hash_digest&, const transaction&)
 {
     std::cout << "update:" << address.encoded() << std::endl;
 }
 
-connection::connection(czmqpp::socket& socket)
+connection::connection(czmqpp::socket& socket, uint32_t timeout_ms)
+  : stream(socket),
+    codec(stream, on_unknown, timeout_ms, 0)
 {
-    stream = std::make_shared<bc::client::socket_stream>(socket);
-
-    std::shared_ptr<bc::client::message_stream> base_stream
-        = std::static_pointer_cast<bc::client::message_stream>(stream);
-
-    codec = std::make_shared<bc::client::obelisk_codec>(
-        base_stream, on_update, on_unknown);
+    codec.set_on_update(on_update);
 }
-
-/*
-std::shared_ptr<bc::client::socket_stream> connection::get_stream()
-{
-    return stream_;
-}
-
-std::shared_ptr<bc::client::obelisk_codec> connection::get_codec()
-{
-    return codec_;
-}
-*/

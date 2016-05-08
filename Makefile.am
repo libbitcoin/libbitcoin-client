@@ -37,7 +37,7 @@ src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 src_libbitcoin_client_la_SOURCES = \
     src/socket_stream.cpp \
     src/obelisk/obelisk_codec.cpp \
-    src/obelisk/obelisk_router.cpp
+    src/obelisk/obelisk_dealer.cpp
 
 # local: test/libbitcoin_client_test
 #------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ include_bitcoin_client_HEADERS = \
 include_bitcoin_client_obeliskdir = ${includedir}/bitcoin/client/obelisk
 include_bitcoin_client_obelisk_HEADERS = \
     include/bitcoin/client/obelisk/obelisk_codec.hpp \
-    include/bitcoin/client/obelisk/obelisk_router.hpp \
+    include/bitcoin/client/obelisk/obelisk_dealer.hpp \
     include/bitcoin/client/obelisk/obelisk_types.hpp
 
 

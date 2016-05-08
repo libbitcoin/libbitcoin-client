@@ -18,14 +18,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
+#include <memory>
 #include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
+using namespace bc::client;
 
 /**
- * A minimalist example that connects to a server,
- * fetches the current height, and exits.
+ * A minimalist example that connects to a server and fetches height.
  */
 int main(int argc, char* argv[])
 {
@@ -35,48 +36,49 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Set up the server connection:
+    // Set up the server connection.
     czmqpp::context context;
     czmqpp::socket socket(context, ZMQ_DEALER);
+
     if (socket.connect(argv[1]) < 0)
     {
         std::cerr << "Cannot connect to " << argv[1] << std::endl;
         return 1;
     }
 
-    auto stream = std::make_shared<bc::client::socket_stream>(socket);
-    auto codec = std::make_shared<bc::client::obelisk_codec>(
-        std::static_pointer_cast<bc::client::message_stream>(stream));
+    const auto unknown_handler = [](const std::string& command)
+    {
+        std::cout << "unknown command: " << command << std::endl;
+    };
 
-    // Make the request:
     const auto error_handler = [](const code& code)
     {
         std::cout << "error: " << code.message() << std::endl;
     };
-    const auto handler = [](size_t height)
+
+    const auto completion_handler = [](size_t height)
     {
         std::cout << "height: " << height << std::endl;
     };
-    codec->fetch_last_height(error_handler, handler);
+
+    socket_stream stream(socket);
+    obelisk_codec codec(stream, unknown_handler, 2000, 0);
+    czmqpp::poller poller(socket);
+
+    // Make the request.
+    codec.fetch_last_height(error_handler, completion_handler);
+
+    // Figure out how much time we have left.
+    auto remainder_ms = codec.refresh();
 
     // Wait for the response:
-    while (codec->outstanding_call_count())
+    while (!codec.empty() && !poller.terminated() && !poller.expired() &&
+        poller.wait(remainder_ms) == socket)
     {
-        czmqpp::poller poller;
-        poller.add(socket);
+        stream.read(codec);
 
-        // Figure out how much timeout we have left:
-        const auto delay = static_cast<int>(codec->wakeup().count());
-        if (!delay)
-            break;
-
-        // Sleep:
-        poller.wait(delay);
-        if (poller.terminated())
-            break;
-
-        if (!poller.expired())
-            stream->signal_response(codec);
+        // Update the time remaining.
+        remainder_ms = codec.refresh();
     }
 
     return 0;

@@ -21,7 +21,7 @@
 #include <bitcoin/client/socket_stream.hpp>
 #include <bitcoin/client/version.hpp>
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
-#include <bitcoin/client/obelisk/obelisk_router.hpp>
+#include <bitcoin/client/obelisk/obelisk_dealer.hpp>
 #include <bitcoin/client/obelisk/obelisk_types.hpp>
 
 #endif

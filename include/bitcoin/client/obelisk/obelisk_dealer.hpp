@@ -17,9 +17,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_ROUTER_HPP
-#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_ROUTER_HPP
+#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_DEALER_HPP
+#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_DEALER_HPP
 
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -32,55 +33,46 @@
 namespace libbitcoin {
 namespace client {
 
-/**
- * Matches replies with outgoing messages, accounting for timeouts and
- * retries.
- * This class is a pure codec; it does not talk directly to zeromq.
- */
-class BCC_API obelisk_router
+/// Matches replies and outgoing messages, accounting for timeouts and retries.
+// This class is a pure codec; it does not talk directly to zeromq.
+class BCC_API obelisk_dealer
   : public message_stream, public sleeper
 {
 public:
-    /**
-     * Constructor.
-     * @param out a stream to receive outgoing messages created by the codec.
-     */
-    obelisk_router(std::shared_ptr<message_stream> out);
-
-    virtual ~obelisk_router();
-
-    // Loose message handlers:
     typedef std::function<void(const code&)> error_handler;
-    typedef std::function<void(const std::string& command)> unknown_handler;
-    typedef std::function<
-        void(const wallet::payment_address& address, size_t height,
-            const hash_digest& block_hash, const chain::transaction&)>
-            update_handler;
-    typedef std::function<
-        void(const binary& prefix, size_t height,
-            const hash_digest& block_hash, const chain::transaction& tx)>
-            stealth_update_handler;
+    typedef std::function<void(const std::string&)> unknown_handler;
+    typedef std::function<void(const binary&, size_t, const hash_digest&,
+        const chain::transaction&)> stealth_update_handler;
+    typedef std::function<void(const wallet::payment_address&, size_t,
+        const hash_digest&, const chain::transaction&)> update_handler;
 
-    static void on_unknown_nop(const std::string&);
-    static void on_update_nop(const wallet::payment_address&, size_t,
-        const hash_digest&, const chain::transaction&);
-    static void on_stealth_update_nop(const binary&, size_t,
-        const hash_digest&, const chain::transaction&);
+    obelisk_dealer(message_stream& out, unknown_handler on_unknown,
+        uint32_t timeout_ms, uint8_t retries);
 
+    virtual ~obelisk_dealer();
+
+    /// True if there are no outstanding requests.
+    bool empty() const;
+
+    /// CLear all handlers with the specified error code.
+    void clear(const code& code);
+
+    /// Accessors.
     virtual void set_on_update(update_handler on_update);
     virtual void set_on_stealth_update(stealth_update_handler on_update);
-    virtual void set_on_unknown(unknown_handler on_unknown);
-    virtual void set_retries(uint8_t retries);
-    virtual void set_timeout(period_ms timeout);
-    uint64_t outstanding_call_count() const;
 
-    // message-stream interface:
+    /// message_stream interface:
+    virtual bool read(message_stream& stream) override;
     virtual void write(const data_stack& data) override;
 
-    // sleeper interface:
-    virtual period_ms wakeup() override;
+    /// sleeper interface:
+    /// Resend any timed out work and return the smallest time remaining.
+    virtual int32_t refresh();
 
 protected:
+    typedef std::chrono::system_clock clock;
+    typedef std::chrono::steady_clock::time_point time;
+
     // Decodes a message and calls the appropriate callback.
     typedef std::function<bool(reader& payload)> decoder;
 
@@ -96,14 +88,18 @@ protected:
         obelisk_message message;
         error_handler on_error;
         decoder on_reply;
-        unsigned retries;
-        std::chrono::steady_clock::time_point last_action;
+        uint32_t retries;
+        time deadline;
     };
 
+    // Calculate the number of milliseconds remaining in the deadline.
+    static int32_t remaining(const time& deadline);
+
+    // send_request->send
     void send(const obelisk_message& message);
+
+    // write->receive->decode_reply
     void receive(const obelisk_message& message);
-    void decode_update(const obelisk_message& message);
-    void decode_stealth_update(const obelisk_message& message);
 
     // Sends an outgoing request, and adds handlers to pending request table.
     void send_request(const std::string& command, const data_chunk& payload,
@@ -114,17 +110,20 @@ protected:
     void decode_reply(const obelisk_message& message, error_handler& on_error,
         decoder& on_reply);
 
+    // Address notification update.
+    void decode_update(const obelisk_message& message);
 
-    uint8_t retries_;
+    // Stealth address notification update.
+    void decode_stealth_update(const obelisk_message& message);
+
     uint32_t last_request_index_;
-    period_ms timeout_ms_;
-
+    const uint8_t retries_;
+    const int32_t timeout_ms_;
+    const unknown_handler on_unknown_;
     update_handler on_update_;
-    unknown_handler on_unknown_;
     stealth_update_handler on_stealth_update_;
-
-    std::shared_ptr<message_stream> out_;
-    std::map<uint32_t, pending_request> pending_requests_;
+    std::map<uint32_t, pending_request> pending_;
+    message_stream& out_;
 };
 
 } // namespace client

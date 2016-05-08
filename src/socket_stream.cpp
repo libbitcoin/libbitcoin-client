@@ -28,54 +28,30 @@ namespace libbitcoin {
 namespace client {
 
 socket_stream::socket_stream(czmqpp::socket& socket)
-  : socket_(socket.self())
+  : socket_(socket)
 {
     // Disable czmq signal handling.
     zsys_handler_set(NULL);
 }
 
-czmqpp::socket& socket_stream::get_socket()
+czmqpp::socket& socket_stream::socket()
 {
     return socket_;
 }
 
-void socket_stream::write(const data_stack& data)
+// Receieve a message from the socket onto the stream parameter.
+bool socket_stream::read(message_stream& stream)
 {
     czmqpp::message message;
 
-    for (auto chunk: data)
-        message.append(chunk);
+    if (!message.receive(socket_))
+        return false;
 
-    message.send(socket_);
+    stream.write(message.parts());
+    return true;
 }
 
-////void socket_stream::write(const std::shared_ptr<request>& request)
-////{
-////    if (request)
-////    {
-////        request_message message;
-////        message.set_request(request);
-////        message.send(socket_);
-////    }
-////}
-
-bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
-{
-    if (stream)
-    {
-        czmqpp::message message;
-
-        if (message.receive(socket_))
-        {
-            stream->write(message.parts());
-            return true;
-        }
-    }
-
-    return false;
-}
-
-////bool socket_stream::signal_response(std::shared_ptr<response_stream> stream)
+////bool socket_stream::read(std::shared_ptr<response_stream> stream)
 ////{
 ////    if (stream)
 ////    {
@@ -95,6 +71,27 @@ bool socket_stream::signal_response(std::shared_ptr<message_stream> stream)
 ////    }
 ////
 ////    return false;
+////}
+
+// Send a message built from the stack parameter to the socket.
+void socket_stream::write(const data_stack& data)
+{
+    czmqpp::message message;
+
+    for (const auto& chunk : data)
+        message.append(chunk);
+
+    message.send(socket_);
+}
+
+////void socket_stream::write(const std::shared_ptr<request>& request)
+////{
+////    if (request)
+////    {
+////        request_message message;
+////        message.set_request(request);
+////        message.send(socket_);
+////    }
 ////}
 
 } // namespace client

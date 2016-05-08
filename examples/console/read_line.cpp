@@ -21,10 +21,13 @@
 
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <thread>
 #include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
+
+using namespace bc;
 
 uint32_t signal_halt = 0;
 uint32_t signal_continue = 1;
@@ -32,10 +35,9 @@ uint32_t signal_continue = 1;
 read_line::~read_line()
 {
     czmqpp::message message;
-    message.append(bc::to_chunk(bc::to_little_endian(signal_halt)));
+    message.append(to_chunk(to_little_endian(signal_halt)));
     message.send(socket_);
     thread_->join();
-    delete thread_;
 }
 
 read_line::read_line(czmqpp::context& context)
@@ -44,9 +46,9 @@ read_line::read_line(czmqpp::context& context)
     socket_.bind("inproc://terminal");
 
     // The thread must be constructed after the socket is already bound.
-    // The context must be passed by pointer to avoid copying.
-    auto functor = std::bind(&read_line::run, this, &context);
-    thread_ = new std::thread(functor);
+    thread_ = std::make_shared<std::thread>(
+        std::bind(&read_line::run,
+            this, std::ref(context)));
 }
 
 void read_line::show_prompt()
@@ -76,22 +78,22 @@ std::string read_line::get_line()
     return data;
 }
 
-void read_line::run(czmqpp::context* context)
+void read_line::run(czmqpp::context& context)
 {
-    czmqpp::socket socket(*context, ZMQ_REP);
+    czmqpp::socket socket(context, ZMQ_REP);
     socket.connect("inproc://terminal");
 
     while (true)
     {
-        czmqpp::message request;
+        czmqpp::message message;
 
         // Wait for a socket request:
-        if (!request.receive(socket))
+        if (!message.receive(socket))
             break;
 
-        czmqpp::data_stack stack = request.parts();
+        czmqpp::data_stack stack = message.parts();
 
-        auto bytes = *(stack.begin());
+        auto bytes = stack.front();
         auto signal = bc::from_little_endian<uint32_t>(bytes.begin(), bytes.end());
 
         if (signal == signal_halt)
@@ -100,7 +102,6 @@ void read_line::run(czmqpp::context* context)
         // Read input:
         char line[1000];
         std::cin.getline(line, sizeof(line));
-
         std::string text(line);
 
         czmqpp::message response;
@@ -109,7 +110,7 @@ void read_line::run(czmqpp::context* context)
     }
 }
 
-czmqpp::socket& read_line::get_socket()
+czmqpp::socket& read_line::socket()
 {
     return socket_;
 }

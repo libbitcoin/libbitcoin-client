@@ -21,6 +21,7 @@
 #define BITCOIN_CLIENT_CLI_HPP
 
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <czmq++/czmqpp.hpp>
@@ -38,11 +39,6 @@ public:
      * Constructor.
      */
     cli();
-
-    /**
-     * Destructor, deletes the connection.
-     */
-    ~cli();
     
     /**
      * The main loop for the example application. This loop can be woken up
