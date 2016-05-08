@@ -110,6 +110,8 @@ int32_t obelisk_dealer::refresh()
         else if (request->second.retries < retries_)
         {
             // Retries are actually resends, not reconnections.
+            // Retry doesn't make sense unless reconnecting.
+
             request->second.retries++;
             request->second.deadline = steady_clock::now() + 
                 milliseconds(timeout_ms_);
