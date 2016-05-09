@@ -68,7 +68,7 @@ static const char hash_satoshi[] = "93e3d754a25f88e33d79f3f9ebc0d1c326c6ceea22a6
 // The private key for this address is sha256("_satoshi"):
 static const char address_satoshi[] = "1PeChFbhxDD9NLbU21DfD55aQBC4ZTR3tE";
 
-#define OBELISK_PROXY_TEST_SETUP \
+#define PROXY_TEST_SETUP \
     static const uint32_t retries = 0; \
     static const uint32_t timeout_ms = 2000; \
     static const auto on_error = [](const code&) {}; \
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_SUITE(proxy_tests)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_history__test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](const history_list&) {};
     proxy.blockchain_fetch_history(on_error, on_reply, payment_address(address_satoshi), test_height);
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_history__test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::transaction&) {};
     proxy.blockchain_fetch_transaction(on_error, on_reply, hash_literal(hash_satoshi));
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_last__height_test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](size_t) {};
     proxy.blockchain_fetch_last_height(on_error, on_reply);
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_last__height_test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_block_header__height_test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::header&) {};
     proxy.blockchain_fetch_block_header(on_error, on_reply, test_height);
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_block_header__height_test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_block_header__hash_test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     auto on_reply = [](const chain::header&) {};
     proxy.blockchain_fetch_block_header(on_error, on_reply, hash_literal(hash_satoshi));
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_block_header__hash_test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__index_test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](size_t, size_t) {};
     proxy.blockchain_fetch_transaction_index(on_error, on_reply, hash_literal(hash_satoshi));
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__index_test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_stealth__test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](const stealth_list&) {};
     const std::vector<uint8_t> raw_prefix{ 0xff, 0xff, 0x00, 0x00 };
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_stealth__test)
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_unconfirmed_transaction__test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::transaction&) {};
     proxy.transaction_pool_fetch_transaction(on_error, on_reply, hash_literal(hash_satoshi));
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_unconfirmed_transaction__test)
 
 BOOST_AUTO_TEST_CASE(proxy__address_fetch_history__test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = [](const history_list&) {};
     proxy.address_fetch_history(on_error, on_reply, payment_address(address_satoshi), test_height);
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(proxy__address_fetch_history__test)
 
 BOOST_AUTO_TEST_CASE(proxy__subscribe__test)
 {
-    OBELISK_PROXY_TEST_SETUP;
+    PROXY_TEST_SETUP;
 
     const auto on_reply = []() {};
     proxy.address_subscribe(on_error, on_reply, payment_address(address_satoshi));
