@@ -20,8 +20,11 @@
 #include <bitcoin/client/obelisk/obelisk_codec.hpp>
 
 #include <chrono>
+#include <memory>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
+#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/obelisk/obelisk_dealer.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -30,32 +33,24 @@ using std::placeholders::_1;
 using namespace std::chrono;
 using namespace bc::chain;
 
-/**
- * Reverses data.
- * Due to an unfortunate historical accident,
- * the obelisk wire format puts address hashes in reverse order.
- */
-template <typename T>
-T reverse(const T& in)
+/// Due to an unfortunate historical accident, the obelisk wire format encodes
+/// address hashes in reverse order.
+template <typename Collection>
+Collection reverse(const Collection& in)
 {
-    T out;
+    Collection out;
     std::reverse_copy(in.begin(), in.end(), out.begin());
     return out;
 }
 
-obelisk_codec::obelisk_codec(
-    std::shared_ptr<message_stream> out,
-    update_handler on_update,
-    unknown_handler on_unknown,
-    period_ms timeout,
-    uint8_t retries)
-  : obelisk_router(out)
+obelisk_codec::obelisk_codec(message_stream& out, unknown_handler on_unknown,
+    uint32_t timeout_ms, uint8_t retries)
+  : obelisk_dealer(out, on_unknown, timeout_ms, retries)
 {
-    set_on_update(std::move(on_update));
-    set_on_unknown(std::move(on_unknown));
-    set_timeout(timeout);
-    set_retries(retries);
 }
+
+// Fetchers.
+//-----------------------------------------------------------------------------
 
 void obelisk_codec::fetch_history(error_handler on_error,
     fetch_history_handler on_reply,
@@ -124,10 +119,9 @@ void obelisk_codec::fetch_transaction_index(error_handler on_error,
 void obelisk_codec::fetch_stealth(error_handler on_error,
     fetch_stealth_handler on_reply, const binary& prefix, uint32_t from_height)
 {
-    // should this be a throw or should there be a return type instead?
     if (prefix.size() > max_uint8)
     {
-        on_error(std::make_error_code(std::errc::bad_address));
+        on_error(error::bad_stream);
         return;
     }
 
@@ -168,6 +162,8 @@ void obelisk_codec::broadcast_transaction(error_handler on_error,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
+// address.fetch_history is first available in sx and deprecated in bs 2.0.
+// address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
 void obelisk_codec::address_fetch_history(error_handler on_error,
     fetch_history_handler on_reply, const wallet::payment_address& address,
     uint32_t from_height)
@@ -186,10 +182,30 @@ void obelisk_codec::address_fetch_history(error_handler on_error,
         std::bind(decode_fetch_history, _1, std::move(on_reply)));
 }
 
+// address.fetch_history2 is first available in bs 3.0.
+// The difference between fetch_history and fetch_history2 is hash reversal.
+void obelisk_codec::address_fetch_history2(error_handler on_error,
+    fetch_history_handler on_reply, const wallet::payment_address& address,
+    uint32_t from_height)
+{
+    const auto data = build_chunk(
+    {
+        to_array(address.version()),
+        address.hash(),
+        to_little_endian<uint32_t>(from_height)
+    });
+
+    send_request("address.fetch_history2", data, std::move(on_error),
+        std::bind(decode_fetch_history, _1, std::move(on_reply)));
+}
+
+// Subscribers.
+//-----------------------------------------------------------------------------
+
 void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
     const wallet::payment_address& address)
 {
-    binary prefix((short_hash_size * byte_bits), address.hash());
+    binary prefix(short_hash_size * byte_bits, address.hash());
 
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
     // [ prefix_bitsize:1 ]
@@ -225,77 +241,8 @@ void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
         std::bind(decode_empty, _1, std::move(on_reply)));
 }
 
-// See below for description of updates data format.
-//enum class subscribe_type : uint8_t
-//{
-//    address = 0,
-//    stealth = 1
-//};
-//
-//void obelisk_codec::subscribe(error_handler on_error,
-//    empty_handler on_reply,
-//    const address_prefix& prefix)
-//{
-//    // BUGBUG: assertion is not good enough here.
-//    BITCOIN_ASSERT(prefix.size() <= 255);
-//
-//    // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
-//    // [ prefix_bitsize:1 ]
-//    // [ prefix_blocks:...  ]
-//    auto data = build_chunk({
-//        to_array(static_cast<uint8_t>(subscribe_type::address)),
-//        to_array(prefix.size()),
-//        prefix.blocks()
-//    });
-//
-//    send_request("address.subscribe", data, std::move(on_error),
-//        std::bind(decode_empty, _1, std::move(on_reply)));
-//}
-
-/**
-See also libbitcoin-server repo subscribe_manager::post_updates() and
-subscribe_manager::post_stealth_updates().
-
-The address result is:
-
-    Response command = "address.update"
-
-    [ version:1 ]
-    [ hash:20 ]
-    [ height:4 ]
-    [ block_hash:32 ]
-
-    struct address_subscribe_result
-    {
-        payment_address address;
-        uint32_t height;
-        hash_digest block_hash;
-    };
-
-When the subscription type is stealth, then the result is:
-
-    Response command = "address.stealth_update"
-
-    [ 32 bit prefix:4 ]
-    [ height:4 ]
-    [ block_hash:32 ]
-    
-    // Currently not used.
-    struct stealth_subscribe_result
-    {
-        typedef byte_array<4> stealth_prefix_bytes;
-        // Protocol will send back 4 bytes of prefix.
-        // See libbitcoin-server repo subscribe_manager::post_stealth_updates()
-        stealth_prefix_bytes prefix;
-        uint32_t height;
-        hash_digest block_hash;
-    };
-
-Subscriptions expire after 10 minutes. Therefore messages with the command
-"address.renew" should be sent periodically to the server. The format
-is the same as for "address.subscribe, and the server will respond
-with a 4 byte error code.
-*/
+// Decoders.
+//-----------------------------------------------------------------------------
 
 bool obelisk_codec::decode_empty(reader& payload, empty_handler& handler)
 {
@@ -383,7 +330,7 @@ bool obelisk_codec::decode_fetch_stealth(reader& payload,
     {
         stealth_row row;
 
-        // The sign byte of the ephmemeral key is fixed (0x02) by convetion.
+        // The sign byte of the ephmemeral key is fixed (0x02) by convention.
         // To recover the key concatenate: [0x02, ephemeral_key_hash]. 
         row.ephemeral_public_key = splice(to_array(ephemeral_public_key_sign),
             payload.read_hash());
@@ -420,6 +367,78 @@ bool obelisk_codec::decode_validate(reader& payload, validate_handler& handler)
     handler(unconfirmed);
     return true;
 }
+
+//// See below for description of updates data format.
+////enum class subscribe_type : uint8_t
+////{
+////    address = 0,
+////    stealth = 1
+////};
+////
+////void obelisk_codec::subscribe(error_handler on_error,
+////    empty_handler on_reply,
+////    const address_prefix& prefix)
+////{
+////    // BUGBUG: assertion is not good enough here.
+////    BITCOIN_ASSERT(prefix.size() <= 255);
+////
+////    // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
+////    // [ prefix_bitsize:1 ]
+////    // [ prefix_blocks:...  ]
+////    auto data = build_chunk({
+////        to_array(static_cast<uint8_t>(subscribe_type::address)),
+////        to_array(prefix.size()),
+////        prefix.blocks()
+////    });
+////
+////    send_request("address.subscribe", data, std::move(on_error),
+////        std::bind(decode_empty, _1, std::move(on_reply)));
+////}
+
+/**
+    See also libbitcoin-server repo subscribe_manager::post_updates() and
+    subscribe_manager::post_stealth_updates().
+
+The address result is:
+
+    Response command = "address.update"
+
+    [ version:1 ]
+    [ hash:20 ]
+    [ height:4 ]
+    [ block_hash:32 ]
+
+    struct address_subscribe_result
+    {
+        payment_address address;
+        uint32_t height;
+        hash_digest block_hash;
+    };
+
+When the subscription type is stealth, then the result is:
+
+    Response command = "address.stealth_update"
+
+    [ 32 bit prefix:4 ]
+    [ height:4 ]
+    [ block_hash:32 ]
+    
+    // Currently not used.
+    struct stealth_subscribe_result
+    {
+        typedef byte_array<4> stealth_prefix_bytes;
+        // Protocol will send back 4 bytes of prefix.
+        // See libbitcoin-server repo subscribe_manager::post_stealth_updates()
+        stealth_prefix_bytes prefix;
+        uint32_t height;
+        hash_digest block_hash;
+    };
+
+    Subscriptions expire after 10 minutes. Therefore messages with the command
+    "address.renew" should be sent periodically to the server. The format
+    is the same as for "address.subscribe, and the server will respond
+    with a 4 byte error code.
+*/
 
 } // namespace client
 } // namespace libbitcoin

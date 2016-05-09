@@ -21,11 +21,11 @@
     <ClCompile Include="..\..\..\..\src\obelisk\obelisk_codec.cpp">
       <Filter>src\obelisk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_router.cpp">
-      <Filter>src\obelisk</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\socket_stream.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_dealer.cpp">
+      <Filter>src\obelisk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,9 +44,6 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_codec.hpp">
       <Filter>include\client\obelisk</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_router.hpp">
-      <Filter>include\client\obelisk</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_types.hpp">
       <Filter>include\client\obelisk</Filter>
     </ClInclude>
@@ -58,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\version.hpp">
       <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_dealer.hpp">
+      <Filter>include\client\obelisk</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

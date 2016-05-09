@@ -20,7 +20,6 @@
 #ifndef BITCOIN_CLIENT_CONNECTION_HPP
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include <memory>
 #include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
@@ -31,13 +30,10 @@
 class connection
 {
 public:
-    connection(czmqpp::socket& socket);
+    connection(czmqpp::socket& socket, uint32_t timeout_ms=2000);
 
-    std::shared_ptr<bc::client::socket_stream> stream;
-    std::shared_ptr<bc::client::obelisk_codec> codec;
-
-    // std::shared_ptr<bc::client::socket_stream> get_stream();
-    // std::shared_ptr<bc::client::obelisk_codec> get_codec();
+    bc::client::socket_stream stream;
+    bc::client::obelisk_codec codec;
 };
 
 #endif

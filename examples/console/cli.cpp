@@ -20,6 +20,7 @@
 #include "cli.hpp"
 
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <czmq++/czmqpp.hpp>
@@ -33,10 +34,6 @@ cli::cli()
   : done_(false),
     pending_request_(false),
     terminal_(context_)
-{
-}
-
-cli::~cli()
 {
 }
 
@@ -66,15 +63,10 @@ void cli::cmd_connect(std::stringstream& args)
 
     czmqpp::socket obelisk_socket(context_, ZMQ_DEALER);
 
-    if (obelisk_socket.connect(server) >= 0)
-    {
-        connection_ = std::make_shared<connection>(obelisk_socket);
-        connection_->codec->set_timeout(std::chrono::seconds(60));
-    }
-    else
-    {
+    if (obelisk_socket.connect(server) < 0)
         std::cout << "error: failed to connect" << std::endl;
-    }
+    else
+        connection_ = std::make_shared<connection>(obelisk_socket, 6000);
 }
 
 void cli::cmd_disconnect(std::stringstream&)
@@ -96,7 +88,7 @@ void cli::cmd_height(std::stringstream&)
         request_done();
     };
     pending_request_ = true;
-    connection_->codec->fetch_last_height(error_handler(), handler);
+    connection_->codec.fetch_last_height(error_handler(), handler);
 }
 
 void cli::cmd_history(std::stringstream& args)
@@ -116,7 +108,7 @@ void cli::cmd_history(std::stringstream& args)
         request_done();
     };
     pending_request_ = true;
-    connection_->codec->address_fetch_history(error_handler(),
+    connection_->codec.address_fetch_history(error_handler(),
         handler, address);
 }
 
@@ -127,30 +119,33 @@ int cli::run()
 
     while (!done_)
     {
-        int delay = -1;
-        czmqpp::poller poller;
-        poller.add(terminal_.get_socket());
+        uint32_t delay = -1;
+        czmqpp::poller poller(terminal_.socket());
 
         if (connection_)
         {
-            poller.add(connection_->stream->get_socket());
-            auto next_wakeup = connection_->codec->wakeup();
-            if (next_wakeup.count())
-                delay = static_cast<int>(next_wakeup.count());
+            poller.add(connection_->stream.socket());
+            delay = connection_->codec.refresh();
         }
 
-        czmqpp::socket which = poller.wait(delay);
+        auto which = poller.wait(delay);
 
         if (poller.terminated())
             break;
 
-        if (!poller.expired())
+        if (poller.expired())
+            continue;
+
+        if (which == terminal_.socket())
         {
-            if (which == terminal_.get_socket())
-                command();
-            else if (which == connection_->stream->get_socket())
-                connection_->stream->signal_response(connection_->codec);
+            command();
+            continue;
         }
+
+        if (which == connection_->stream.socket() && connection_)
+            connection_->stream.read(connection_->codec);
+        else
+            std::cout << "connect before calling" << std::endl;
     }
 
     return 0;
@@ -162,7 +157,7 @@ void cli::command()
     std::string command;
     reader >> command;
 
-    if (command == "exit")              cmd_exit();
+    if      (command == "exit")         cmd_exit();
     else if (command == "help")         cmd_help();
     else if (command == "connect")      cmd_connect(reader);
     else if (command == "disconnect")   cmd_disconnect(reader);

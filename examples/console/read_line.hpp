@@ -21,6 +21,7 @@
 #define BITCOIN_CLIENT_READ_LINE_HPP
 
 #include <string>
+#include <memory>
 #include <thread>
 #include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
@@ -65,13 +66,13 @@ public:
      */
     std::string get_line();
 
-    virtual czmqpp::socket& get_socket();
+    virtual czmqpp::socket& socket();
 
 private:
-    void run(czmqpp::context* context);
+    void run(czmqpp::context& context);
 
     czmqpp::socket socket_;
-    std::thread* thread_;
+    std::shared_ptr<std::thread> thread_;
 };
 
 #endif

@@ -23,56 +23,37 @@
 #include <functional>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
-#include <bitcoin/client/obelisk/obelisk_router.hpp>
+#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/obelisk/obelisk_dealer.hpp>
 #include <bitcoin/client/obelisk/obelisk_types.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-/**
- * Decodes and encodes messages in the obelisk protocol.
- * This class is a pure codec; it does not talk directly to zeromq.
- */
+/// Decodes and encodes messages in the obelisk protocol.
+/// This class is a pure codec; it does not talk directly to zeromq.
 class BCC_API obelisk_codec
-  : public obelisk_router
+  : public obelisk_dealer
 {
-public:
-    /**
-     * Constructor.
-     * @param out a stream to receive outgoing messages created by the codec.
-     * @param on_update function to handle subscription update messages.
-     * @param on_unknown function to handle malformed incoming messages.
-     * @param timeout the call timeout. Defaults to 2 seconds.
-     * @param retries the number of retries to attempt.
-     */
-    obelisk_codec(std::shared_ptr<message_stream> out,
-        update_handler on_update=on_update_nop,
-        unknown_handler on_unknown=on_unknown_nop,
-        period_ms timeout=period_ms(2000),
-        uint8_t retries=0);
+public:   
+    obelisk_codec(message_stream& out, unknown_handler on_unknown,
+        uint32_t timeout_ms, uint8_t retries);
 
     // Message reply handlers:
     typedef std::function<void (const history_list&)>
         fetch_history_handler;
-
     typedef std::function<void (const chain::transaction&)>
         fetch_transaction_handler;
-
     typedef std::function<void (size_t)>
         fetch_last_height_handler;
-
     typedef std::function<void (const chain::header&)>
         fetch_block_header_handler;
-
-    typedef std::function<void (size_t block_height, size_t index)>
+    typedef std::function<void (size_t, size_t)>
         fetch_transaction_index_handler;
-
     typedef std::function<void (const stealth_list&)>
         fetch_stealth_handler;
-
-    typedef std::function<void (const index_list& unconfirmed)>
+    typedef std::function<void (const index_list&)>
         validate_handler;
-
     typedef std::function<void ()> empty_handler;
 
     // Outgoing messages:
@@ -115,7 +96,13 @@ public:
         empty_handler on_reply,
         const chain::transaction& tx);
 
+    // sx and bs 2.0 only (obsolete in bs 3.0).
     void address_fetch_history(error_handler on_error,
+        fetch_history_handler on_reply,
+        const wallet::payment_address& address, uint32_t from_height=0);
+
+    // bs 2.0 and later.
+    void address_fetch_history2(error_handler on_error,
         fetch_history_handler on_reply,
         const wallet::payment_address& address, uint32_t from_height=0);
 

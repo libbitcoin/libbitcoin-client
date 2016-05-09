@@ -21,16 +21,12 @@
 #define LIBBITCOIN_CLIENT_SLEEPER_HPP
 
 #include <chrono>
+#include <cstdint>
 #include <algorithm>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
-
-/**
- * Sentinel value interpreted in sleep timer as infinity.
- */
-BC_CONSTEXPR int period_forever = 0;
 
 /**
  * A sleep timer period in milliseconds.
@@ -59,22 +55,8 @@ public:
      * milliseconds between now and the next time work needs to be done.
      * Returns 0 if the class has no future work to do.
      */
-    virtual period_ms wakeup() = 0;
+    virtual int32_t refresh() = 0;
 };
-
-/**
- * Returns the smaller of two time periods, treating 0 as infinity.
- */
-inline period_ms min_sleep(period_ms a, period_ms b)
-{
-    if (a.count() == period_forever)
-        return b;
-
-    if (b.count() == period_forever)
-        return a;
-
-    return std::min(a, b);
-}
 
 } // namespace client
 } // namespace libbitcoin
