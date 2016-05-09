@@ -49,7 +49,7 @@ dealer::dealer(stream& out, unknown_handler on_unknown_command,
     uint32_t timeout_ms, uint8_t resends)
   : last_request_index_(0),
     resends_(resends),
-    timeout_ms_(std::max(timeout_ms, static_cast<uint32_t>(max_int32))),
+    timeout_ms_(std::min(timeout_ms, static_cast<uint32_t>(max_int32))),
     on_unknown_(on_unknown_command),
     on_update_(on_update_nop),
     on_stealth_update_(on_stealth_update_nop),
