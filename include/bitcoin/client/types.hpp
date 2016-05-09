@@ -17,46 +17,46 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_SLEEPER_HPP
-#define LIBBITCOIN_CLIENT_SLEEPER_HPP
+#ifndef LIBBITCOIN_CLIENT_TYPES_HPP
+#define LIBBITCOIN_CLIENT_TYPES_HPP
 
-#include <chrono>
 #include <cstdint>
-#include <algorithm>
+#include <boost/iostreams/stream.hpp>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-/**
- * A sleep timer period in milliseconds.
- */
-typedef std::chrono::milliseconds period_ms;
-
-/**
- * An interface for objects that need to perform delayed work in a
- * non-blocking manner.
- *
- * Before going to sleep, the program's main loop should call the `wakeup`
- * method on any objects that implement this interface. This method will
- * return the amount of time until the object wants to be woken up again.
- * The main loop should sleep for this long. On the next time around the
- * loop, calling the `wakeup` method will perform the pending work
- * (assuming enough time has elapsed).
- */
-class BCC_API sleeper
+struct BCC_API history_row
 {
-public:
-
-    virtual ~sleeper() {};
-
-    /**
-     * Performs any pending time-based work, and returns the number of
-     * milliseconds between now and the next time work needs to be done.
-     * Returns 0 if the class has no future work to do.
-     */
-    virtual int32_t refresh() = 0;
+    chain::output_point output;
+    size_t output_height;
+    uint64_t value;
+    chain::input_point spend;
+    size_t spend_height;
 };
+
+typedef std::vector<size_t> index_list;
+typedef std::vector<history_row> history_list;
+
+struct BCC_API stealth_row
+{
+    short_hash public_key_hash;
+    hash_digest transaction_hash;
+    ec_compressed ephemeral_public_key;
+};
+
+typedef std::vector<stealth_row> stealth_list;
+
+// See below for description of updates data format.
+enum class subscribe_type : uint8_t
+{
+    address = 0,
+    stealth = 1
+};
+
+typedef boost::iostreams::stream<byte_source<data_chunk>> byte_stream;
 
 } // namespace client
 } // namespace libbitcoin

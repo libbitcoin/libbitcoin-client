@@ -39,8 +39,14 @@ czmqpp::socket& socket_stream::socket()
     return socket_;
 }
 
+// Stream interface, not utilized on this class.
+int32_t socket_stream::refresh()
+{
+    return 0;
+}
+
 // Receieve a message from the socket onto the stream parameter.
-bool socket_stream::read(message_stream& stream)
+bool socket_stream::read(stream& stream)
 {
     czmqpp::message message;
 

@@ -4,28 +4,22 @@
     <Filter Include="src">
       <UniqueIdentifier>{9aa75a48-3a93-45a0-bb15-92f0f3c99147}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\obelisk">
-      <UniqueIdentifier>{e7c9c757-5ac3-4817-97e5-5a1118a5cb68}</UniqueIdentifier>
-    </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{938a1eac-336c-4f05-8f1e-d11a2c32abac}</UniqueIdentifier>
     </Filter>
     <Filter Include="include\client">
       <UniqueIdentifier>{a9affd7a-0980-4b26-bf58-7312df4898a7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include\client\obelisk">
-      <UniqueIdentifier>{289d6920-819e-47f6-b0e4-8f80d3ca0e19}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_codec.cpp">
-      <Filter>src\obelisk</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\socket_stream.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\obelisk\obelisk_dealer.cpp">
-      <Filter>src\obelisk</Filter>
+    <ClCompile Include="..\..\..\..\src\dealer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\proxy.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -38,26 +32,23 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\define.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\message_stream.hpp">
-      <Filter>include\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_codec.hpp">
-      <Filter>include\client\obelisk</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_types.hpp">
-      <Filter>include\client\obelisk</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\sleeper.hpp">
-      <Filter>include\client</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\version.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk\obelisk_dealer.hpp">
-      <Filter>include\client\obelisk</Filter>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\dealer.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\proxy.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\types.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\stream.hpp">
+      <Filter>include\client</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

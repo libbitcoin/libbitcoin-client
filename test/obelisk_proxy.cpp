@@ -25,17 +25,22 @@
 
 using namespace bc;
 using namespace bc::client;
+using namespace bc::wallet;
 
 // Captures an outgoing message so the test can examine it.
-class message_capture
-  : public message_stream
+class stream_fixture
+  : public stream
 {
 public:
     data_stack out;
 
-    virtual bool read(message_stream& stream) override
+    virtual int32_t refresh() override
     {
-        // Not implemented.
+        return 0;
+    }
+
+    virtual bool read(stream& stream) override
+    {
         return false;
     }
 
@@ -63,133 +68,132 @@ static const char hash_satoshi[] = "93e3d754a25f88e33d79f3f9ebc0d1c326c6ceea22a6
 // The private key for this address is sha256("_satoshi"):
 static const char address_satoshi[] = "1PeChFbhxDD9NLbU21DfD55aQBC4ZTR3tE";
 
-#define OBELISK_CODEC_TEST_SETUP \
+#define OBELISK_PROXY_TEST_SETUP \
     static const uint32_t retries = 0; \
     static const uint32_t timeout_ms = 2000; \
     static const auto on_error = [](const code&) {}; \
     static const auto on_unknown = [](const std::string&) {}; \
-    message_capture capture; \
-    obelisk_codec codec(capture, on_unknown, timeout_ms, retries)
+    stream_fixture capture; \
+    proxy proxy(capture, on_unknown, timeout_ms, retries)
 
-BOOST_AUTO_TEST_SUITE(obelisk_codec_tests)
+BOOST_AUTO_TEST_SUITE(proxy_tests)
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_history__test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_history__test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](const history_list&) {};
-    codec.fetch_history(on_error, on_reply,
-        wallet::payment_address(address_satoshi), test_height);
+    proxy.blockchain_fetch_history(on_error, on_reply, payment_address(address_satoshi), test_height);
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_history");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "0035a131e99f240a2314bb0ddb3d81d05663eb5bf878563412");
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_transaction__test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::transaction&) {};
-    codec.fetch_transaction(on_error, on_reply, hash_literal(hash_satoshi));
+    proxy.blockchain_fetch_transaction(on_error, on_reply, hash_literal(hash_satoshi));
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_transaction");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_last__height_test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_last__height_test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](size_t) {};
-    codec.fetch_last_height(on_error, on_reply);
+    proxy.blockchain_fetch_last_height(on_error, on_reply);
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_last_height");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "");
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_block_header__height_test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_block_header__height_test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::header&) {};
-    codec.fetch_block_header(on_error, on_reply, test_height);
+    proxy.blockchain_fetch_block_header(on_error, on_reply, test_height);
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_block_header");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "78563412");
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_block_header__hash_test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_block_header__hash_test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     auto on_reply = [](const chain::header&) {};
-    codec.fetch_block_header(on_error, on_reply, hash_literal(hash_satoshi));
+    proxy.blockchain_fetch_block_header(on_error, on_reply, hash_literal(hash_satoshi));
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_block_header");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_transaction__index_test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__index_test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](size_t, size_t) {};
-    codec.fetch_transaction_index(on_error, on_reply, hash_literal(hash_satoshi));
+    proxy.blockchain_fetch_transaction_index(on_error, on_reply, hash_literal(hash_satoshi));
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_transaction_index");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_stealth__test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_stealth__test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](const stealth_list&) {};
     const std::vector<uint8_t> raw_prefix{ 0xff, 0xff, 0x00, 0x00 };
     const binary prefix(16, raw_prefix);
-    codec.fetch_stealth(on_error, on_reply, prefix, test_height);
+    proxy.blockchain_fetch_stealth(on_error, on_reply, prefix, test_height);
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_stealth");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "10ffff78563412");
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__fetch_unconfirmed_transaction__test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_unconfirmed_transaction__test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::transaction&) {};
-    codec.fetch_unconfirmed_transaction(on_error, on_reply, hash_literal(hash_satoshi));
+    proxy.transaction_pool_fetch_transaction(on_error, on_reply, hash_literal(hash_satoshi));
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "transaction_pool.fetch_transaction");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__address_fetch_history__test)
+BOOST_AUTO_TEST_CASE(proxy__address_fetch_history__test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = [](const history_list&) {};
-    codec.address_fetch_history(on_error, on_reply, wallet::payment_address(address_satoshi), test_height);
+    proxy.address_fetch_history(on_error, on_reply, payment_address(address_satoshi), test_height);
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "address.fetch_history");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "0035a131e99f240a2314bb0ddb3d81d05663eb5bf878563412");
 }
 
-BOOST_AUTO_TEST_CASE(obelisk_codec__subscribe__test)
+BOOST_AUTO_TEST_CASE(proxy__subscribe__test)
 {
-    OBELISK_CODEC_TEST_SETUP;
+    OBELISK_PROXY_TEST_SETUP;
 
     const auto on_reply = []() {};
-    codec.subscribe(on_error, on_reply, wallet::payment_address(address_satoshi));
+    proxy.address_subscribe(on_error, on_reply, payment_address(address_satoshi));
 
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "address.subscribe");

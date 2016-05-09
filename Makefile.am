@@ -35,9 +35,9 @@ lib_LTLIBRARIES = src/libbitcoin-client.la
 src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
 src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 src_libbitcoin_client_la_SOURCES = \
-    src/socket_stream.cpp \
-    src/obelisk/obelisk_codec.cpp \
-    src/obelisk/obelisk_dealer.cpp
+    src/dealer.cpp \
+    src/proxy.cpp \
+    src/socket_stream.cpp
 
 # local: test/libbitcoin_client_test
 #------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} $
 test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
 test_libbitcoin_client_test_SOURCES = \
     test/main.cpp \
-    test/obelisk_codec.cpp
+    test/obelisk_proxy.cpp
 
 endif WITH_TESTS
 
@@ -92,17 +92,13 @@ include_bitcoin_HEADERS = \
 
 include_bitcoin_clientdir = ${includedir}/bitcoin/client
 include_bitcoin_client_HEADERS = \
+    include/bitcoin/client/dealer.hpp \
     include/bitcoin/client/define.hpp \
-    include/bitcoin/client/message_stream.hpp \
-    include/bitcoin/client/sleeper.hpp \
+    include/bitcoin/client/proxy.hpp \
     include/bitcoin/client/socket_stream.hpp \
+    include/bitcoin/client/stream.hpp \
+    include/bitcoin/client/types.hpp \
     include/bitcoin/client/version.hpp
-
-include_bitcoin_client_obeliskdir = ${includedir}/bitcoin/client/obelisk
-include_bitcoin_client_obelisk_HEADERS = \
-    include/bitcoin/client/obelisk/obelisk_codec.hpp \
-    include/bitcoin/client/obelisk/obelisk_dealer.hpp \
-    include/bitcoin/client/obelisk/obelisk_types.hpp
 
 
 # Custom make targets.

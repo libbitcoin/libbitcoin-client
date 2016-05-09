@@ -66,7 +66,7 @@ private:
     /**
      * Obtains a simple error-handling functor object.
      */
-    bc::client::obelisk_codec::error_handler error_handler();
+    bc::client::proxy::error_handler error_handler();
 
     /**
      * Call this to display a new prompt once a request has finished.

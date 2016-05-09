@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/obelisk/obelisk_codec.hpp>
+#include <bitcoin/client/proxy.hpp>
 
 #include <chrono>
 #include <memory>
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/obelisk/obelisk_dealer.hpp>
+#include <bitcoin/client/stream.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -32,6 +32,7 @@ namespace client {
 using std::placeholders::_1;
 using namespace std::chrono;
 using namespace bc::chain;
+using namespace bc::wallet;
 
 /// Due to an unfortunate historical accident, the obelisk wire format encodes
 /// address hashes in reverse order.
@@ -43,18 +44,18 @@ Collection reverse(const Collection& in)
     return out;
 }
 
-obelisk_codec::obelisk_codec(message_stream& out, unknown_handler on_unknown,
-    uint32_t timeout_ms, uint8_t retries)
-  : obelisk_dealer(out, on_unknown, timeout_ms, retries)
+proxy::proxy(stream& out,
+    unknown_handler on_unknown_command, uint32_t timeout_ms, uint8_t resends)
+  : dealer(out, on_unknown_command, timeout_ms, resends)
 {
 }
 
 // Fetchers.
 //-----------------------------------------------------------------------------
 
-void obelisk_codec::fetch_history(error_handler on_error,
-    fetch_history_handler on_reply,
-    const wallet::payment_address& address, uint32_t from_height)
+void proxy::blockchain_fetch_history(error_handler on_error,
+    history_handler on_reply, const payment_address& address,
+    uint32_t from_height)
 {
     // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
     // We un-reverse here to limit confusion downsteam.
@@ -67,57 +68,63 @@ void obelisk_codec::fetch_history(error_handler on_error,
     });
 
     send_request("blockchain.fetch_history", data, std::move(on_error),
-        std::bind(decode_fetch_history, _1, std::move(on_reply)));
+        std::bind(decode_history,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_transaction(error_handler on_error,
-    fetch_transaction_handler on_reply, const hash_digest& tx_hash)
+void proxy::blockchain_fetch_transaction(error_handler on_error,
+    transaction_handler on_reply, const hash_digest& tx_hash)
 {
     const auto data = build_chunk({ tx_hash });
 
     send_request("blockchain.fetch_transaction", data, std::move(on_error),
-        std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
+        std::bind(decode_transaction,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_last_height(error_handler on_error,
-    fetch_last_height_handler on_reply)
+void proxy::blockchain_fetch_last_height(error_handler on_error,
+    height_handler on_reply)
 {
     const data_chunk data;
 
     send_request("blockchain.fetch_last_height", data, std::move(on_error),
-        std::bind(decode_fetch_last_height, _1, std::move(on_reply)));
+        std::bind(decode_height,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_block_header(error_handler on_error,
-    fetch_block_header_handler on_reply, uint32_t height)
+void proxy::blockchain_fetch_block_header(error_handler on_error,
+    block_header_handler on_reply, uint32_t height)
 {
     const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
-        std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
+        std::bind(decode_block_header,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_block_header(error_handler on_error,
-    fetch_block_header_handler on_reply, const hash_digest& block_hash)
+void proxy::blockchain_fetch_block_header(error_handler on_error,
+    block_header_handler on_reply, const hash_digest& block_hash)
 {
     const auto data = build_chunk({ block_hash });
 
     send_request("blockchain.fetch_block_header", data, std::move(on_error),
-        std::bind(decode_fetch_block_header, _1, std::move(on_reply)));
+        std::bind(decode_block_header,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_transaction_index(error_handler on_error,
-    fetch_transaction_index_handler on_reply, const hash_digest& tx_hash)
+void proxy::blockchain_fetch_transaction_index(error_handler on_error,
+    transaction_index_handler on_reply, const hash_digest& tx_hash)
 {
     const auto data = build_chunk({ tx_hash });
 
     send_request("blockchain.fetch_transaction_index", data,
         std::move(on_error),
-        std::bind(decode_fetch_transaction_index, _1, std::move(on_reply)));
+        std::bind(decode_transaction_index,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_stealth(error_handler on_error,
-    fetch_stealth_handler on_reply, const binary& prefix, uint32_t from_height)
+void proxy::blockchain_fetch_stealth(error_handler on_error,
+    stealth_handler on_reply, const binary& prefix, uint32_t from_height)
 {
     if (prefix.size() > max_uint8)
     {
@@ -133,39 +140,43 @@ void obelisk_codec::fetch_stealth(error_handler on_error,
     });
 
     send_request("blockchain.fetch_stealth", data, std::move(on_error),
-        std::bind(decode_fetch_stealth, _1, std::move(on_reply)));
+        std::bind(decode_stealth,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::validate(error_handler on_error, validate_handler on_reply,
-    const chain::transaction& tx)
+void proxy::transaction_pool_validate(error_handler on_error,
+    validate_handler on_reply, const chain::transaction& tx)
 {
     send_request("transaction_pool.validate", tx.to_data(),
         std::move(on_error),
-        std::bind(decode_validate, _1, std::move(on_reply)));
+        std::bind(decode_validate,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::fetch_unconfirmed_transaction(error_handler on_error,
-    fetch_transaction_handler on_reply, const hash_digest& tx_hash)
+void proxy::transaction_pool_fetch_transaction(error_handler on_error,
+    transaction_handler on_reply, const hash_digest& tx_hash)
 {
     const auto data = build_chunk({ tx_hash });
 
     send_request("transaction_pool.fetch_transaction", data,
         std::move(on_error),
-        std::bind(decode_fetch_transaction, _1, std::move(on_reply)));
+        std::bind(decode_transaction,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::broadcast_transaction(error_handler on_error,
+void proxy::protocol_broadcast_transaction(error_handler on_error,
     empty_handler on_reply, const chain::transaction& tx)
 {
     send_request("protocol.broadcast_transaction", tx.to_data(),
         std::move(on_error),
-        std::bind(decode_empty, _1, std::move(on_reply)));
+        std::bind(decode_empty,
+            _1, std::move(on_reply)));
 }
 
 // address.fetch_history is first available in sx and deprecated in bs 2.0.
 // address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
-void obelisk_codec::address_fetch_history(error_handler on_error,
-    fetch_history_handler on_reply, const wallet::payment_address& address,
+void proxy::address_fetch_history(error_handler on_error,
+    history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
     // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
@@ -179,13 +190,14 @@ void obelisk_codec::address_fetch_history(error_handler on_error,
     });
 
     send_request("address.fetch_history", data, std::move(on_error),
-        std::bind(decode_fetch_history, _1, std::move(on_reply)));
+        std::bind(decode_history,
+            _1, std::move(on_reply)));
 }
 
 // address.fetch_history2 is first available in bs 3.0.
 // The difference between fetch_history and fetch_history2 is hash reversal.
-void obelisk_codec::address_fetch_history2(error_handler on_error,
-    fetch_history_handler on_reply, const wallet::payment_address& address,
+void proxy::address_fetch_history2(error_handler on_error,
+    history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
     const auto data = build_chunk(
@@ -196,14 +208,15 @@ void obelisk_codec::address_fetch_history2(error_handler on_error,
     });
 
     send_request("address.fetch_history2", data, std::move(on_error),
-        std::bind(decode_fetch_history, _1, std::move(on_reply)));
+        std::bind(decode_history,
+            _1, std::move(on_reply)));
 }
 
 // Subscribers.
 //-----------------------------------------------------------------------------
 
-void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
-    const wallet::payment_address& address)
+void proxy::address_subscribe(error_handler on_error,
+    empty_handler on_reply, const payment_address& address)
 {
     binary prefix(short_hash_size * byte_bits, address.hash());
 
@@ -218,11 +231,12 @@ void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
     });
 
     send_request("address.subscribe", data, std::move(on_error),
-        std::bind(decode_empty, _1, std::move(on_reply)));
+        std::bind(decode_empty,
+            _1, std::move(on_reply)));
 }
 
-void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
-    subscribe_type discriminator, const binary& prefix)
+void proxy::address_subscribe(error_handler on_error,
+    empty_handler on_reply, subscribe_type discriminator, const binary& prefix)
 {
     if (prefix.size() > max_uint8)
     {
@@ -238,13 +252,14 @@ void obelisk_codec::subscribe(error_handler on_error, empty_handler on_reply,
     });
 
     send_request("address.subscribe", data, std::move(on_error),
-        std::bind(decode_empty, _1, std::move(on_reply)));
+        std::bind(decode_empty,
+            _1, std::move(on_reply)));
 }
 
 // Decoders.
 //-----------------------------------------------------------------------------
 
-bool obelisk_codec::decode_empty(reader& payload, empty_handler& handler)
+bool proxy::decode_empty(reader& payload, empty_handler& handler)
 {
     if (!payload.is_exhausted())
         return false;
@@ -253,8 +268,7 @@ bool obelisk_codec::decode_empty(reader& payload, empty_handler& handler)
     return true;
 }
 
-bool obelisk_codec::decode_fetch_history(reader& payload,
-    fetch_history_handler& handler)
+bool proxy::decode_history(reader& payload, history_handler& handler)
 {
     history_list history;
 
@@ -276,8 +290,8 @@ bool obelisk_codec::decode_fetch_history(reader& payload,
     return true;
 }
 
-bool obelisk_codec::decode_fetch_transaction(reader& payload,
-    fetch_transaction_handler& handler)
+bool proxy::decode_transaction(reader& payload,
+    transaction_handler& handler)
 {
     transaction tx;
     if (!tx.from_data(payload) || !payload.is_exhausted())
@@ -287,8 +301,7 @@ bool obelisk_codec::decode_fetch_transaction(reader& payload,
     return true;
 }
 
-bool obelisk_codec::decode_fetch_last_height(reader& payload,
-    fetch_last_height_handler& handler)
+bool proxy::decode_height(reader& payload, height_handler& handler)
 {
     const auto last_height = payload.read_4_bytes_little_endian();
     if (!payload.is_exhausted())
@@ -298,8 +311,8 @@ bool obelisk_codec::decode_fetch_last_height(reader& payload,
     return true;
 }
 
-bool obelisk_codec::decode_fetch_block_header(reader& payload,
-    fetch_block_header_handler& handler)
+bool proxy::decode_block_header(reader& payload,
+    block_header_handler& handler)
 {
     header header;
     if (!header.from_data(payload, false) || !payload.is_exhausted())
@@ -309,8 +322,8 @@ bool obelisk_codec::decode_fetch_block_header(reader& payload,
     return true;
 }
 
-bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
-    fetch_transaction_index_handler& handler)
+bool proxy::decode_transaction_index(reader& payload,
+    transaction_index_handler& handler)
 {
     const auto block_height = payload.read_4_bytes_little_endian();
     const auto index = payload.read_4_bytes_little_endian();
@@ -321,8 +334,7 @@ bool obelisk_codec::decode_fetch_transaction_index(reader& payload,
     return true;
 }
 
-bool obelisk_codec::decode_fetch_stealth(reader& payload,
-    fetch_stealth_handler& handler)
+bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
 {
     stealth_list results;
 
@@ -352,7 +364,7 @@ bool obelisk_codec::decode_fetch_stealth(reader& payload,
     return true;
 }
 
-bool obelisk_codec::decode_validate(reader& payload, validate_handler& handler)
+bool proxy::decode_validate(reader& payload, validate_handler& handler)
 {
     index_list unconfirmed;
 
@@ -375,9 +387,8 @@ bool obelisk_codec::decode_validate(reader& payload, validate_handler& handler)
 ////    stealth = 1
 ////};
 ////
-////void obelisk_codec::subscribe(error_handler on_error,
-////    empty_handler on_reply,
-////    const address_prefix& prefix)
+////void proxy::subscribe(error_handler on_error,
+////    empty_handler on_reply, const address_prefix& prefix)
 ////{
 ////    // BUGBUG: assertion is not good enough here.
 ////    BITCOIN_ASSERT(prefix.size() <= 255);

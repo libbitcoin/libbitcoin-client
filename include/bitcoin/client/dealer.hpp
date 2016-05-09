@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_DEALER_HPP
-#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_DEALER_HPP
+#ifndef LIBBITCOIN_CLIENT_DEALER_HPP
+#define LIBBITCOIN_CLIENT_DEALER_HPP
 
 #include <chrono>
 #include <cstddef>
@@ -27,16 +27,16 @@
 #include <map>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/sleeper.hpp>
+#include <bitcoin/client/stream.hpp>
 
 namespace libbitcoin {
 namespace client {
 
+// This class is not thread safe.
 /// Matches replies and outgoing messages, accounting for timeouts and retries.
-// This class is a pure codec; it does not talk directly to zeromq.
-class BCC_API obelisk_dealer
-  : public message_stream, public sleeper
+// This class is a pure proxy; it does not talk directly to zeromq.
+class BCC_API dealer
+  : public stream
 {
 public:
     typedef std::function<void(const code&)> error_handler;
@@ -46,10 +46,12 @@ public:
     typedef std::function<void(const wallet::payment_address&, size_t,
         const hash_digest&, const chain::transaction&)> update_handler;
 
-    obelisk_dealer(message_stream& out, unknown_handler on_unknown,
-        uint32_t timeout_ms, uint8_t retries);
+    /// Resend is unrelated to connections.
+    /// Timeout is capped at max_int32 (vs. max_uint3).
+    dealer(stream& out, unknown_handler on_unknown_command,
+        uint32_t timeout_ms, uint8_t resends);
 
-    virtual ~obelisk_dealer();
+    virtual ~dealer();
 
     /// True if there are no outstanding requests.
     bool empty() const;
@@ -61,13 +63,17 @@ public:
     virtual void set_on_update(update_handler on_update);
     virtual void set_on_stealth_update(stealth_update_handler on_update);
 
-    /// message_stream interface:
-    virtual bool read(message_stream& stream) override;
-    virtual void write(const data_stack& data) override;
+    // stream interface.
+    //-------------------------------------------------------------------------
 
-    /// sleeper interface:
     /// Resend any timed out work and return the smallest time remaining.
     virtual int32_t refresh();
+
+    /// Read from this stream onto the specified stream.
+    virtual bool read(stream& stream) override;
+
+    /// Read the spcified data to this stream.
+    virtual void write(const data_stack& data) override;
 
 protected:
     typedef std::chrono::system_clock clock;
@@ -88,7 +94,7 @@ protected:
         obelisk_message message;
         error_handler on_error;
         decoder on_reply;
-        uint32_t retries;
+        uint32_t resends;
         time deadline;
     };
 
@@ -117,13 +123,13 @@ protected:
     void decode_stealth_update(const obelisk_message& message);
 
     uint32_t last_request_index_;
-    const uint8_t retries_;
+    const uint8_t resends_;
     const int32_t timeout_ms_;
     const unknown_handler on_unknown_;
     update_handler on_update_;
     stealth_update_handler on_stealth_update_;
     std::map<uint32_t, pending_request> pending_;
-    message_stream& out_;
+    stream& out_;
 };
 
 } // namespace client

@@ -88,7 +88,7 @@ void cli::cmd_height(std::stringstream&)
         request_done();
     };
     pending_request_ = true;
-    connection_->codec.fetch_last_height(error_handler(), handler);
+    connection_->proxy.blockchain_fetch_last_height(error_handler(), handler);
 }
 
 void cli::cmd_history(std::stringstream& args)
@@ -108,7 +108,7 @@ void cli::cmd_history(std::stringstream& args)
         request_done();
     };
     pending_request_ = true;
-    connection_->codec.address_fetch_history(error_handler(),
+    connection_->proxy.address_fetch_history(error_handler(),
         handler, address);
 }
 
@@ -125,7 +125,7 @@ int cli::run()
         if (connection_)
         {
             poller.add(connection_->stream.socket());
-            delay = connection_->codec.refresh();
+            delay = connection_->proxy.refresh();
         }
 
         auto which = poller.wait(delay);
@@ -143,7 +143,7 @@ int cli::run()
         }
 
         if (which == connection_->stream.socket() && connection_)
-            connection_->stream.read(connection_->codec);
+            connection_->stream.read(connection_->proxy);
         else
             std::cout << "connect before calling" << std::endl;
     }
@@ -171,7 +171,7 @@ void cli::command()
         terminal_.show_prompt();
 }
 
-client::obelisk_codec::error_handler cli::error_handler()
+client::proxy::error_handler cli::error_handler()
 {
     return [this](const std::error_code& ec)
     {

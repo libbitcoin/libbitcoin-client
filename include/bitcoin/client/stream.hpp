@@ -17,40 +17,30 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_OBELISK_OBELISK_TYPES_HPP
-#define LIBBITCOIN_CLIENT_OBELISK_OBELISK_TYPES_HPP
+#ifndef LIBBITCOIN_CLIENT_STREAM_HPP
+#define LIBBITCOIN_CLIENT_STREAM_HPP
 
+#include <cstdint>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-struct BCC_API history_row
+/// A stream of multi-part messages.
+/// This interface breaks the link between zeromq networking and messaging.
+class BCC_API stream
 {
-    chain::output_point output;
-    size_t output_height;
-    uint64_t value;
-    chain::input_point spend;
-    size_t spend_height;
-};
+public:
 
-typedef std::vector<size_t> index_list;
-typedef std::vector<history_row> history_list;
+    /// Resend any timed out work and return the smallest time remaining.
+    virtual int32_t refresh() = 0;
 
-struct BCC_API stealth_row
-{
-    short_hash public_key_hash;
-    hash_digest transaction_hash;
-    ec_compressed ephemeral_public_key;
-};
+    /// Read from this stream onto the specified stream.
+    virtual bool read(stream& stream) = 0;
 
-typedef std::vector<stealth_row> stealth_list;
-
-// See below for description of updates data format.
-enum class subscribe_type : uint8_t
-{
-    address = 0,
-    stealth = 1
+    /// Read the spcified data to this stream.
+    virtual void write(const data_stack& data) = 0;
 };
 
 } // namespace client
