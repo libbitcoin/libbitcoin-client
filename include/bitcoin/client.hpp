@@ -15,13 +15,12 @@
  */
 
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
-#include <bitcoin/client/message_stream.hpp>
-#include <bitcoin/client/sleeper.hpp>
+#include <bitcoin/client/proxy.hpp>
 #include <bitcoin/client/socket_stream.hpp>
+#include <bitcoin/client/stream.hpp>
+#include <bitcoin/client/types.hpp>
 #include <bitcoin/client/version.hpp>
-#include <bitcoin/client/obelisk/obelisk_codec.hpp>
-#include <bitcoin/client/obelisk/obelisk_dealer.hpp>
-#include <bitcoin/client/obelisk/obelisk_types.hpp>
 
 #endif

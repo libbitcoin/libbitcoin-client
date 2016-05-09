@@ -23,7 +23,7 @@
 #include <memory>
 #include <czmq++/czmqpp.hpp>
 #include <bitcoin/client/define.hpp>
-#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/stream.hpp>
 //#include <bitcoin/client/response_stream.hpp>
 //#include <bitcoin/client/request_stream.hpp>
 
@@ -31,15 +31,16 @@ namespace libbitcoin {
 namespace client {
 
 class BCC_API socket_stream
-  : public message_stream ////, public request_stream
+  : public stream
 {
 public:
     socket_stream(czmqpp::socket& socket);
 
     czmqpp::socket& socket();
 
-    // message_stream interface:
-    virtual bool read(message_stream& stream);
+    // stream interface.
+    virtual int32_t refresh();
+    virtual bool read(stream& stream);
     virtual void write(const data_stack& data);
 
 private:

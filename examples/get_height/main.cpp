@@ -62,23 +62,23 @@ int main(int argc, char* argv[])
     };
 
     socket_stream stream(socket);
-    obelisk_codec codec(stream, unknown_handler, 2000, 0);
+    proxy proxy(stream, unknown_handler, 2000, 0);
     czmqpp::poller poller(socket);
 
     // Make the request.
-    codec.fetch_last_height(error_handler, completion_handler);
+    proxy.blockchain_fetch_last_height(error_handler, completion_handler);
 
     // Figure out how much time we have left.
-    auto remainder_ms = codec.refresh();
+    auto remainder_ms = proxy.refresh();
 
     // Wait for the response:
-    while (!codec.empty() && !poller.terminated() && !poller.expired() &&
+    while (!proxy.empty() && !poller.terminated() && !poller.expired() &&
         poller.wait(remainder_ms) == socket)
     {
-        stream.read(codec);
+        stream.read(proxy);
 
         // Update the time remaining.
-        remainder_ms = codec.refresh();
+        remainder_ms = proxy.refresh();
     }
 
     return 0;

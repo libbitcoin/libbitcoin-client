@@ -17,22 +17,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/obelisk/obelisk_dealer.hpp>
+#include <bitcoin/client/dealer.hpp>
 
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <string>
 #include <czmq++/czmqpp.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <bitcoin/bitcoin.hpp>
-#include <bitcoin/client/message_stream.hpp>
+#include <bitcoin/client/stream.hpp>
+#include <bitcoin/client/types.hpp>
 
 namespace libbitcoin {
 namespace client {
 
 using namespace std::chrono;
-using namespace boost::iostreams;
 using namespace bc::chain;
 using namespace bc::wallet;
 
@@ -46,31 +45,29 @@ static const auto on_stealth_update_nop = [](const binary&, size_t,
 {
 };
 
-// This class is not thread safe.
-// Timeout is capped at max_int32 (vs. max_uint3).
-obelisk_dealer::obelisk_dealer(message_stream& out, unknown_handler on_unknown,
-    uint32_t timeout_ms, uint8_t retries)
+dealer::dealer(stream& out, unknown_handler on_unknown_command,
+    uint32_t timeout_ms, uint8_t resends)
   : last_request_index_(0),
-    retries_(retries),
+    resends_(resends),
     timeout_ms_(std::max(timeout_ms, static_cast<uint32_t>(max_int32))),
-    on_unknown_(on_unknown),
+    on_unknown_(on_unknown_command),
     on_update_(on_update_nop),
     on_stealth_update_(on_stealth_update_nop),
     out_(out)
 {
 }
 
-obelisk_dealer::~obelisk_dealer()
+dealer::~dealer()
 {
     clear(error::channel_timeout);
 }
 
-bool obelisk_dealer::empty() const
+bool dealer::empty() const
 {
     return pending_.empty();
 }
 
-void obelisk_dealer::clear(const code& code)
+void dealer::clear(const code& code)
 {
     for (const auto& request: pending_)
         request.second.on_error(code);
@@ -78,20 +75,20 @@ void obelisk_dealer::clear(const code& code)
     pending_.clear();
 }
 
-void obelisk_dealer::set_on_update(update_handler on_update)
+void dealer::set_on_update(update_handler on_update)
 {
     on_update_ = std::move(on_update);
 }
 
-void obelisk_dealer::set_on_stealth_update(stealth_update_handler on_update)
+void dealer::set_on_stealth_update(stealth_update_handler on_update)
 {
     on_stealth_update_ = std::move(on_update);
 }
 
 // Send, kill or ignore pending messages as necessary.
-// Return time to next refresh in milliseconds.
+// Return maximum time before next required refresh in milliseconds.
 // Subscriptions notification handlers are not registered in pending.
-int32_t obelisk_dealer::refresh()
+int32_t dealer::refresh()
 {
     auto interval = timeout_ms_;
 
@@ -107,12 +104,11 @@ int32_t obelisk_dealer::refresh()
             interval = remainder_ms;
             ++request;
         }
-        else if (request->second.retries < retries_)
+        else if (request->second.resends < resends_)
         {
-            // Retries are actually resends, not reconnections.
-            // Retry doesn't make sense unless reconnecting.
+            // Resend doesn't make sense unless reconnecting.
 
-            request->second.retries++;
+            request->second.resends++;
             request->second.deadline = steady_clock::now() + 
                 milliseconds(timeout_ms_);
 
@@ -136,7 +132,7 @@ int32_t obelisk_dealer::refresh()
 }
 
 // Return time to deadline in milliseconds.
-int32_t obelisk_dealer::remaining(const time& deadline)
+int32_t dealer::remaining(const time& deadline)
 {
     // Convert bounds to the larger type of the conversion.
     static constexpr auto maximum = static_cast<int64_t>(max_int32);
@@ -153,8 +149,8 @@ int32_t obelisk_dealer::remaining(const time& deadline)
 }
 
 // Create a mssage with identity and send it via the message stream.
-// This is invoked by derived class message senders, such as the codec.
-void obelisk_dealer::send_request(const std::string& command,
+// This is invoked by derived class message senders, such as the proxy.
+void dealer::send_request(const std::string& command,
     const data_chunk& payload, error_handler on_error, decoder on_reply)
 {
     const auto id = ++last_request_index_;
@@ -162,13 +158,13 @@ void obelisk_dealer::send_request(const std::string& command,
     request.message = obelisk_message{ command, id, payload };
     request.on_error = std::move(on_error);
     request.on_reply = std::move(on_reply);
-    request.retries = 0;
+    request.resends = 0;
     request.deadline = steady_clock::now() + milliseconds(timeout_ms_);
     send(request.message);
 }
 
 // Send or resend an existing message by writing it to the message stream.
-void obelisk_dealer::send(const obelisk_message& message)
+void dealer::send(const obelisk_message& message)
 {
     data_stack data;
     data.push_back(to_chunk(message.command));
@@ -179,14 +175,14 @@ void obelisk_dealer::send(const obelisk_message& message)
     out_.write(data);
 }
 
-// Not implemented on the dealer.
-bool obelisk_dealer::read(message_stream& stream)
+// Stream interface, not utilized on this class.
+bool dealer::read(stream& stream)
 {
     return false;
 }
 
-// This is invoked publicly as message_stream the interface implementation.
-void obelisk_dealer::write(const data_stack& data)
+// stream interface.
+void dealer::write(const data_stack& data)
 {
     // Require exactly three tokens.
     if (data.size() != 3)
@@ -212,7 +208,7 @@ void obelisk_dealer::write(const data_stack& data)
 }
 
 // Handle a message, call from write.
-void obelisk_dealer::receive(const obelisk_message& message)
+void dealer::receive(const obelisk_message& message)
 {
     // Subscription updates are not tracked in pending.
     if (message.command == "address.update")
@@ -239,10 +235,10 @@ void obelisk_dealer::receive(const obelisk_message& message)
     pending_.erase(command);
 }
 
-void obelisk_dealer::decode_reply(const obelisk_message& message,
+void dealer::decode_reply(const obelisk_message& message,
     error_handler& on_error, decoder& on_reply)
 {
-    stream<byte_source<data_chunk>> istream(message.payload);
+    byte_stream istream(message.payload);
     istream_reader source(istream);
     code ec = static_cast<error::error_code_t>(
         source.read_4_bytes_little_endian());
@@ -253,9 +249,9 @@ void obelisk_dealer::decode_reply(const obelisk_message& message,
         on_error(error::bad_stream);
 }
 
-void obelisk_dealer::decode_update(const obelisk_message& message)
+void dealer::decode_update(const obelisk_message& message)
 {
-    stream<byte_source<data_chunk>> istream(message.payload);
+    byte_stream istream(message.payload);
     istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
@@ -275,14 +271,14 @@ void obelisk_dealer::decode_update(const obelisk_message& message)
     on_update_(address, height, block_hash, tx);
 }
 
-void obelisk_dealer::decode_stealth_update(const obelisk_message& message)
+void dealer::decode_stealth_update(const obelisk_message& message)
 {
-    stream<byte_source<data_chunk>> istream(message.payload);
+    byte_stream istream(message.payload);
     istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
-    static constexpr size_t size = 4;
-    binary prefix(size * bc::byte_bits, source.read_bytes<size>());
+    static constexpr size_t prefix_size = 4;
+    binary prefix(prefix_size * byte_bits, source.read_bytes<prefix_size>());
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
     transaction tx;

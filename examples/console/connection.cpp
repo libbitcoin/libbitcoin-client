@@ -44,7 +44,7 @@ static void on_update(const payment_address& address, size_t,
 
 connection::connection(czmqpp::socket& socket, uint32_t timeout_ms)
   : stream(socket),
-    codec(stream, on_unknown, timeout_ms, 0)
+    proxy(stream, on_unknown, timeout_ms, 0)
 {
-    codec.set_on_update(on_update);
+    proxy.set_on_update(on_update);
 }

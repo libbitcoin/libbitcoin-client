@@ -33,7 +33,7 @@ public:
     connection(czmqpp::socket& socket, uint32_t timeout_ms=2000);
 
     bc::client::socket_stream stream;
-    bc::client::obelisk_codec codec;
+    bc::client::proxy proxy;
 };
 
 #endif
