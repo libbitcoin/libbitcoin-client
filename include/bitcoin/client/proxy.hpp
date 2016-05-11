@@ -127,10 +127,8 @@ private:
 
     // Utilities.
     //-------------------------------------------------------------------------
-    static chain::stealth::list expand(
-        const chain::stealth_compact::list& compact);
-    static chain::history::list expand(
-        const chain::history_compact::list& compact);
+    static chain::stealth::list expand(chain::stealth_compact::list& compact);
+    static chain::history::list expand(chain::history_compact::list& compact);
 };
 
 } // namespace client

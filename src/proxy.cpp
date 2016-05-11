@@ -155,13 +155,11 @@ void proxy::blockchain_fetch_stealth(error_handler on_error,
             _1, std::move(on_reply)));
 }
 
+// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
 void proxy::blockchain_fetch_history(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
-    // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
-    // We un-reverse here to limit confusion downsteam.
-
     const auto data = build_chunk(
     {
         to_array(address.version()),
@@ -174,14 +172,12 @@ void proxy::blockchain_fetch_history(error_handler on_error,
             _1, std::move(on_reply)));
 }
 
+// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
 // address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
 void proxy::address_fetch_history(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
-    // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
-    // We un-reverse here to limit confusion downsteam.
-
     const auto data = build_chunk(
     {
         to_array(address.version()),
@@ -328,7 +324,8 @@ bool proxy::decode_validate(reader& payload, validate_handler& handler)
     return true;
 }
 
-stealth::list proxy::expand(const stealth_compact::list& compact)
+// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
+stealth::list proxy::expand(stealth_compact::list& compact)
 {
     // The sign byte of the ephmemeral key is fixed (0x02) by convention.
     static const auto sign = to_array(ephemeral_public_key_sign);
@@ -340,14 +337,15 @@ stealth::list proxy::expand(const stealth_compact::list& compact)
         stealth out;
         out.ephemeral_public_key = splice(sign, in.ephemeral_public_key_hash);
         out.public_key_hash = reverse(in.public_key_hash);
-        out.transaction_hash = in.transaction_hash;
+        out.transaction_hash = std::move(in.transaction_hash);
         result.emplace_back(out);
     }
 
+    compact.clear();
     return result;
 }
 
-// Address hash is reversed here and unreversed in expansion.
+// Address hash is still reversed here, to be unreversed in expansion.
 bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
 {
     chain::stealth_compact::list compact;
@@ -368,55 +366,73 @@ bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
     return true;
 }
 
-history::list proxy::expand(const history_compact::list& compact)
+history::list proxy::expand(history_compact::list& compact)
 {
-    // Temporarily store checksum in the spend height of unspent outputs.
-    static_assert(sizeof(history::spend_height) == sizeof(uint64_t),
-        "spend_height must be large enough to hold a spend_checksum");
-
     history::list result;
 
-    for (const auto& output: compact)
+    // Process and remove all outputs.
+    for (auto output = compact.begin(); output != compact.end();)
     {
-        if (output.kind == point_kind::output)
+        if (output->kind == point_kind::output)
         {
             history row;
-            row.output = output.point;
-            row.output_height = output.height;
-            row.value = output.value;
+            row.output = std::move(output->point);
+            row.output_height = output->height;
+            row.value = output->value;
             row.spend = { null_hash, max_uint32 };
-            row.spend_height = output.point.checksum();
+            row.temporary_checksum = output->point.checksum();
+            result.emplace_back(row);
+            output = compact.erase(output);
+            continue;
+        }
+
+        ++output;
+    }
+
+    // All outputs have been removed, process the spends.
+    for (const auto& spend: compact)
+    {
+        auto found = false;
+
+        // Update outputs with the corresponding spends.
+        for (auto& row: result)
+        {
+            if (row.temporary_checksum == spend.previous_checksum &&
+                row.spend.hash == null_hash)
+            {
+                row.spend = std::move(spend.point);
+                row.spend_height = spend.height;
+                found = true;
+                break;
+            }
+        }
+
+        // This will only happen if the history height cutoff comes between
+        // an output and its spend. In this case we return just the spend.
+        if (!found)
+        {
+            history row;
+            row.output = { null_hash, max_uint32 };
+            row.output_height = max_uint32;
+            row.value = max_uint32;
+            row.spend = std::move(spend.point);
+            row.spend_height = spend.height;
             result.emplace_back(row);
         }
     }
 
-    for (const auto& spend: compact)
-    {
-        if (spend.kind == point_kind::spend)
-        {
-            for (auto& row: result)
-            {
-                if (row.spend_height == spend.previous_checksum &&
-                    row.spend.hash == null_hash)
-                {
-                    row.spend = spend.point;
-                    row.spend_height = spend.height;
-                    BITCOIN_ASSERT(row.value == spend.value);
-                    break;
-                }
-            }
-        }
-    }
+    compact.clear();
 
     // Clear all remaining checksums from unspent rows.
     for (auto& row: result)
         if (row.spend.hash == null_hash)
             row.spend_height = max_uint32;
 
+    // TODO: sort by height and index of output, spend or both in order.
     return result;
 }
 
-// row.value || row.previous_checksum is a union, just read row.value.
+// row.value || row.previous_checksum is a union, we just decode as row.value.
 bool proxy::decode_history(reader& payload, history_handler& handler)
 {
     chain::history_compact::list compact;
@@ -439,6 +455,9 @@ bool proxy::decode_history(reader& payload, history_handler& handler)
 }
 
 // This supports address.fetch_history (which is obsolete as of server v3).
+// In this scenario the server sends to the client a payload that matches the
+// output of decode_history(...), with the exception that spends orphaned by
+// the server's minimum history hieght not included in the payload.
 bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
 {
     chain::history::list expanded;
