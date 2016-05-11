@@ -20,7 +20,6 @@
 #include <bitcoin/client/proxy.hpp>
 #include <bitcoin/client/socket_stream.hpp>
 #include <bitcoin/client/stream.hpp>
-#include <bitcoin/client/types.hpp>
 #include <bitcoin/client/version.hpp>
 
 #endif

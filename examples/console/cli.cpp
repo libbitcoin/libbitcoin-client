@@ -100,7 +100,7 @@ void cli::cmd_history(std::stringstream& args)
     if (!read_address(args, address))
         return;
 
-    auto handler = [this](const client::history_list& history)
+    auto handler = [this](const chain::history::list& history)
     {
         for (auto row: history)
             std::cout << row.value << std::endl;

@@ -83,7 +83,6 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\dealer.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\proxy.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\types.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\socket_stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\version.hpp" />
   </ItemGroup>

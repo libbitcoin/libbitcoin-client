@@ -44,9 +44,6 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\proxy.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\types.hpp">
-      <Filter>include\client</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\stream.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
