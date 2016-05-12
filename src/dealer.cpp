@@ -24,9 +24,9 @@
 #include <cstdint>
 #include <string>
 #include <czmq++/czmqpp.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/stream.hpp>
-#include <bitcoin/client/types.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -34,6 +34,8 @@ namespace client {
 using namespace std::chrono;
 using namespace bc::chain;
 using namespace bc::wallet;
+
+typedef boost::iostreams::stream<byte_source<data_chunk>> byte_stream;
 
 static const auto on_update_nop = [](const payment_address&, size_t,
     const hash_digest&, const transaction&)
@@ -264,6 +266,7 @@ void dealer::decode_update(const obelisk_message& message)
 
     if (!tx.from_data(source) || !source.is_exhausted())
     {
+        // This is incorrect, we need an error handler member.
         on_unknown_(message.command);
         return;
     }
@@ -277,7 +280,7 @@ void dealer::decode_stealth_update(const obelisk_message& message)
     istream_reader source(istream);
 
     // This message does not have an error_code at the beginning.
-    static constexpr size_t prefix_size = 4;
+    static constexpr size_t prefix_size = sizeof(uint32_t);
     binary prefix(prefix_size * byte_bits, source.read_bytes<prefix_size>());
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
@@ -285,6 +288,7 @@ void dealer::decode_stealth_update(const obelisk_message& message)
 
     if (!tx.from_data(source) || !source.is_exhausted())
     {
+        // This is incorrect, we need an error handler member.
         on_unknown_(message.command);
         return;
     }

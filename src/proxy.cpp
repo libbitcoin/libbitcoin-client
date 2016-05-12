@@ -20,6 +20,7 @@
 #include <bitcoin/client/proxy.hpp>
 
 #include <chrono>
+#include <cstdint>
 #include <memory>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
@@ -30,19 +31,9 @@ namespace libbitcoin {
 namespace client {
 
 using std::placeholders::_1;
-using namespace std::chrono;
 using namespace bc::chain;
+using namespace std::chrono;
 using namespace bc::wallet;
-
-/// Due to an unfortunate historical accident, the obelisk wire format encodes
-/// address hashes in reverse order.
-template <typename Collection>
-Collection reverse(const Collection& in)
-{
-    Collection out;
-    std::reverse_copy(in.begin(), in.end(), out.begin());
-    return out;
-}
 
 proxy::proxy(stream& out,
     unknown_handler on_unknown_command, uint32_t timeout_ms, uint8_t resends)
@@ -53,22 +44,32 @@ proxy::proxy(stream& out,
 // Fetchers.
 //-----------------------------------------------------------------------------
 
-void proxy::blockchain_fetch_history(error_handler on_error,
-    history_handler on_reply, const payment_address& address,
-    uint32_t from_height)
+void proxy::protocol_broadcast_transaction(error_handler on_error,
+    empty_handler on_reply, const chain::transaction& tx)
 {
-    // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
-    // We un-reverse here to limit confusion downsteam.
+    send_request("protocol.broadcast_transaction", tx.to_data(),
+        std::move(on_error),
+        std::bind(decode_empty,
+            _1, std::move(on_reply)));
+}
 
-    const auto data = build_chunk(
-    {
-        to_array(address.version()),
-        reverse(address.hash()),
-        to_little_endian<uint32_t>(from_height)
-    });
+void proxy::transaction_pool_validate(error_handler on_error,
+    validate_handler on_reply, const chain::transaction& tx)
+{
+    send_request("transaction_pool.validate", tx.to_data(),
+        std::move(on_error),
+        std::bind(decode_validate,
+            _1, std::move(on_reply)));
+}
 
-    send_request("blockchain.fetch_history", data, std::move(on_error),
-        std::bind(decode_history,
+void proxy::transaction_pool_fetch_transaction(error_handler on_error,
+    transaction_handler on_reply, const hash_digest& tx_hash)
+{
+    const auto data = build_chunk({ tx_hash });
+
+    send_request("transaction_pool.fetch_transaction", data,
+        std::move(on_error),
+        std::bind(decode_transaction,
             _1, std::move(on_reply)));
 }
 
@@ -144,44 +145,11 @@ void proxy::blockchain_fetch_stealth(error_handler on_error,
             _1, std::move(on_reply)));
 }
 
-void proxy::transaction_pool_validate(error_handler on_error,
-    validate_handler on_reply, const chain::transaction& tx)
-{
-    send_request("transaction_pool.validate", tx.to_data(),
-        std::move(on_error),
-        std::bind(decode_validate,
-            _1, std::move(on_reply)));
-}
-
-void proxy::transaction_pool_fetch_transaction(error_handler on_error,
-    transaction_handler on_reply, const hash_digest& tx_hash)
-{
-    const auto data = build_chunk({ tx_hash });
-
-    send_request("transaction_pool.fetch_transaction", data,
-        std::move(on_error),
-        std::bind(decode_transaction,
-            _1, std::move(on_reply)));
-}
-
-void proxy::protocol_broadcast_transaction(error_handler on_error,
-    empty_handler on_reply, const chain::transaction& tx)
-{
-    send_request("protocol.broadcast_transaction", tx.to_data(),
-        std::move(on_error),
-        std::bind(decode_empty,
-            _1, std::move(on_reply)));
-}
-
-// address.fetch_history is first available in sx and deprecated in bs 2.0.
-// address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
-void proxy::address_fetch_history(error_handler on_error,
+// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
+void proxy::blockchain_fetch_history(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
-    // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
-    // We un-reverse here to limit confusion downsteam.
-
     const auto data = build_chunk(
     {
         to_array(address.version()),
@@ -189,12 +157,30 @@ void proxy::address_fetch_history(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
-    send_request("address.fetch_history", data, std::move(on_error),
+    send_request("blockchain.fetch_history", data, std::move(on_error),
         std::bind(decode_history,
             _1, std::move(on_reply)));
 }
 
-// address.fetch_history2 is first available in bs 3.0.
+// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
+// address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
+void proxy::address_fetch_history(error_handler on_error,
+    history_handler on_reply, const payment_address& address,
+    uint32_t from_height)
+{
+    const auto data = build_chunk(
+    {
+        to_array(address.version()),
+        reverse(address.hash()),
+        to_little_endian<uint32_t>(from_height)
+    });
+
+    // address.fetch_history is first available in sx and deprecated in bs 2.0.
+    send_request("address.fetch_history", data, std::move(on_error),
+        std::bind(decode_expanded_history,
+            _1, std::move(on_reply)));
+}
+
 // The difference between fetch_history and fetch_history2 is hash reversal.
 void proxy::address_fetch_history2(error_handler on_error,
     history_handler on_reply, const payment_address& address,
@@ -207,6 +193,7 @@ void proxy::address_fetch_history2(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
+    // address.fetch_history2 is first available in bs 3.0.
     send_request("address.fetch_history2", data, std::move(on_error),
         std::bind(decode_history,
             _1, std::move(on_reply)));
@@ -215,8 +202,9 @@ void proxy::address_fetch_history2(error_handler on_error,
 // Subscribers.
 //-----------------------------------------------------------------------------
 
-void proxy::address_subscribe(error_handler on_error,
-    empty_handler on_reply, const payment_address& address)
+// Ths is a simplified overload for a non-private payment address subscription.
+void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
+    const payment_address& address)
 {
     binary prefix(short_hash_size * byte_bits, address.hash());
 
@@ -235,8 +223,9 @@ void proxy::address_subscribe(error_handler on_error,
             _1, std::move(on_reply)));
 }
 
-void proxy::address_subscribe(error_handler on_error,
-    empty_handler on_reply, subscribe_type discriminator, const binary& prefix)
+// Ths overload supports only a prefix for either stealth or payment address.
+void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
+    subscribe_type discriminator, const binary& prefix)
 {
     if (prefix.size() > max_uint8)
     {
@@ -256,7 +245,7 @@ void proxy::address_subscribe(error_handler on_error,
             _1, std::move(on_reply)));
 }
 
-// Decoders.
+// Response handlers.
 //-----------------------------------------------------------------------------
 
 bool proxy::decode_empty(reader& payload, empty_handler& handler)
@@ -268,30 +257,7 @@ bool proxy::decode_empty(reader& payload, empty_handler& handler)
     return true;
 }
 
-bool proxy::decode_history(reader& payload, history_handler& handler)
-{
-    history_list history;
-
-    while (!payload.is_exhausted())
-    {
-        history_row row;
-        auto success = row.output.from_data(payload);
-        row.output_height = payload.read_4_bytes_little_endian();
-        row.value = payload.read_8_bytes_little_endian();
-        success &= row.spend.from_data(payload);
-        row.spend_height = payload.read_4_bytes_little_endian();
-        history.push_back(row);
-
-        if (!success || !payload)
-            return false;
-    }
-
-    handler(history);
-    return true;
-}
-
-bool proxy::decode_transaction(reader& payload,
-    transaction_handler& handler)
+bool proxy::decode_transaction(reader& payload, transaction_handler& handler)
 {
     transaction tx;
     if (!tx.from_data(payload) || !payload.is_exhausted())
@@ -311,10 +277,9 @@ bool proxy::decode_height(reader& payload, height_handler& handler)
     return true;
 }
 
-bool proxy::decode_block_header(reader& payload,
-    block_header_handler& handler)
+bool proxy::decode_block_header(reader& payload, block_header_handler& handler)
 {
-    header header;
+    chain::header header;
     if (!header.from_data(payload, false) || !payload.is_exhausted())
         return false;
 
@@ -334,44 +299,13 @@ bool proxy::decode_transaction_index(reader& payload,
     return true;
 }
 
-bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
-{
-    stealth_list results;
-
-    while (!payload.is_exhausted())
-    {
-        stealth_row row;
-
-        // The sign byte of the ephmemeral key is fixed (0x02) by convention.
-        // To recover the key concatenate: [0x02, ephemeral_key_hash]. 
-        row.ephemeral_public_key = splice(to_array(ephemeral_public_key_sign),
-            payload.read_hash());
-
-        // This reversal on the wire is an idiosyncracy of the Obelisk protocol.
-        // We un-reverse here to limit confusion downsteam.
-        // See libbitcoin-server COMPAT_fetch_history.
-        const auto address_hash = payload.read_short_hash();
-        row.public_key_hash = reverse(address_hash);
-
-        row.transaction_hash = payload.read_hash();
-        results.push_back(row);
-
-        if (!payload)
-            return false;
-    }
-
-    handler(results);
-    return true;
-}
-
 bool proxy::decode_validate(reader& payload, validate_handler& handler)
 {
-    index_list unconfirmed;
+    point::indexes unconfirmed;
 
     while (!payload.is_exhausted())
     {
         unconfirmed.push_back(payload.read_4_bytes_little_endian());
-
         if (!payload)
             return false;
     }
@@ -380,13 +314,168 @@ bool proxy::decode_validate(reader& payload, validate_handler& handler)
     return true;
 }
 
-//// See below for description of updates data format.
-////enum class subscribe_type : uint8_t
-////{
-////    address = 0,
-////    stealth = 1
-////};
-////
+// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
+stealth::list proxy::expand(stealth_compact::list& compact)
+{
+    // The sign byte of the ephmemeral key is fixed (0x02) by convention.
+    static const auto sign = to_array(ephemeral_public_key_sign);
+
+    stealth::list result;
+
+    for (const auto& in: compact)
+    {
+        stealth out;
+        out.ephemeral_public_key = splice(sign, in.ephemeral_public_key_hash);
+        out.public_key_hash = reverse(in.public_key_hash);
+        out.transaction_hash = std::move(in.transaction_hash);
+        result.emplace_back(out);
+    }
+
+    compact.clear();
+    return result;
+}
+
+// Address hash is still reversed here, to be unreversed in expansion.
+bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
+{
+    chain::stealth_compact::list compact;
+
+    while (!payload.is_exhausted())
+    {
+        chain::stealth_compact row;
+        row.ephemeral_public_key_hash = payload.read_hash();
+        row.public_key_hash = payload.read_short_hash();
+        row.transaction_hash = payload.read_hash();
+        compact.emplace_back(row);
+
+        if (!payload)
+            return false;
+    }
+
+    handler(expand(compact));
+    return true;
+}
+
+history::list proxy::expand(history_compact::list& compact)
+{
+    history::list result;
+
+    // Process and remove all outputs.
+    for (auto output = compact.begin(); output != compact.end();)
+    {
+        if (output->kind == point_kind::output)
+        {
+            history row;
+            row.output = std::move(output->point);
+            row.output_height = output->height;
+            row.value = output->value;
+            row.spend = { null_hash, max_uint32 };
+            row.temporary_checksum = output->point.checksum();
+            result.emplace_back(row);
+            output = compact.erase(output);
+            continue;
+        }
+
+        ++output;
+    }
+
+    // All outputs have been removed, process the spends.
+    for (const auto& spend: compact)
+    {
+        auto found = false;
+
+        // Update outputs with the corresponding spends.
+        for (auto& row: result)
+        {
+            if (row.temporary_checksum == spend.previous_checksum &&
+                row.spend.hash == null_hash)
+            {
+                row.spend = std::move(spend.point);
+                row.spend_height = spend.height;
+                found = true;
+                break;
+            }
+        }
+
+        // This will only happen if the history height cutoff comes between
+        // an output and its spend. In this case we return just the spend.
+        if (!found)
+        {
+            history row;
+            row.output = { null_hash, max_uint32 };
+            row.output_height = max_uint64;
+            row.value = max_uint32;
+            row.spend = std::move(spend.point);
+            row.spend_height = spend.height;
+            result.emplace_back(row);
+        }
+    }
+
+    compact.clear();
+
+    // Clear all remaining checksums from unspent rows.
+    for (auto& row: result)
+        if (row.spend.hash == null_hash)
+            row.spend_height = max_uint64;
+
+    // TODO: sort by height and index of output, spend or both in order.
+    return result;
+}
+
+// row.value || row.previous_checksum is a union, we just decode as row.value.
+bool proxy::decode_history(reader& payload, history_handler& handler)
+{
+    chain::history_compact::list compact;
+
+    while (!payload.is_exhausted())
+    {
+        chain::history_compact row;
+        row.kind = static_cast<point_kind>(payload.read_byte());
+        const auto success = row.point.from_data(payload);
+        row.height = payload.read_4_bytes_little_endian();
+        row.value = payload.read_8_bytes_little_endian();
+        compact.push_back(row);
+
+        if (!success || !payload)
+            return false;
+    }
+
+    handler(expand(compact));
+    return true;
+}
+
+// This supports address.fetch_history (which is obsolete as of server v3).
+// In this scenario the server sends to the client a payload that matches the
+// output of decode_history(...), with the exception that spends orphaned by
+// the server's minimum history hieght not included in the payload.
+bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
+{
+    chain::history::list expanded;
+
+    while (!payload.is_exhausted())
+    {
+        chain::history row;
+        auto success = row.output.from_data(payload);
+
+        // Storing uint32_t height into uint64_t.
+        row.output_height = payload.read_4_bytes_little_endian();
+        row.value = payload.read_8_bytes_little_endian();
+
+        // If there is no spend then input is null_hash/max_uint32/max_uint32.
+        success &= row.spend.from_data(payload);
+
+        // Storing uint32_t height into uint64_t.
+        row.spend_height = payload.read_4_bytes_little_endian();
+        expanded.push_back(row);
+
+        if (!success || !payload)
+            return false;
+    }
+
+    handler(expanded);
+    return true;
+}
+
 ////void proxy::subscribe(error_handler on_error,
 ////    empty_handler on_reply, const address_prefix& prefix)
 ////{
