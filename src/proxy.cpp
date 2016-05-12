@@ -35,16 +35,6 @@ using namespace bc::chain;
 using namespace std::chrono;
 using namespace bc::wallet;
 
-/// Due to an unfortunate historical accident, the obelisk wire format encodes
-/// address hashes in reverse order.
-template <typename Collection>
-Collection reverse(const Collection& in)
-{
-    Collection out;
-    std::reverse_copy(in.begin(), in.end(), out.begin());
-    return out;
-}
-
 proxy::proxy(stream& out,
     unknown_handler on_unknown_command, uint32_t timeout_ms, uint8_t resends)
   : dealer(out, on_unknown_command, timeout_ms, resends)
@@ -413,7 +403,7 @@ history::list proxy::expand(history_compact::list& compact)
         {
             history row;
             row.output = { null_hash, max_uint32 };
-            row.output_height = max_uint32;
+            row.output_height = max_uint64;
             row.value = max_uint32;
             row.spend = std::move(spend.point);
             row.spend_height = spend.height;
@@ -426,7 +416,7 @@ history::list proxy::expand(history_compact::list& compact)
     // Clear all remaining checksums from unspent rows.
     for (auto& row: result)
         if (row.spend.hash == null_hash)
-            row.spend_height = max_uint32;
+            row.spend_height = max_uint64;
 
     // TODO: sort by height and index of output, spend or both in order.
     return result;
@@ -466,12 +456,16 @@ bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
     {
         chain::history row;
         auto success = row.output.from_data(payload);
-        row.output_height = payload.read_8_bytes_little_endian();
+
+        // Storing uint32_t height into uint64_t.
+        row.output_height = payload.read_4_bytes_little_endian();
         row.value = payload.read_8_bytes_little_endian();
 
         // If there is no spend then input is null_hash/max_uint32/max_uint32.
         success &= row.spend.from_data(payload);
-        row.spend_height = payload.read_8_bytes_little_endian();
+
+        // Storing uint32_t height into uint64_t.
+        row.spend_height = payload.read_4_bytes_little_endian();
         expanded.push_back(row);
 
         if (!success || !payload)
