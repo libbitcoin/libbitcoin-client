@@ -32,8 +32,8 @@ doc_DATA = \
 # src/libbitcoin-client.la => ${libdir}
 #------------------------------------------------------------------------------
 lib_LTLIBRARIES = src/libbitcoin-client.la
-src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${czmq___CPPFLAGS}
+src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${czmq___LIBS}
 src_libbitcoin_client_la_SOURCES = \
     src/dealer.cpp \
     src/proxy.cpp \
@@ -46,8 +46,8 @@ if WITH_TESTS
 TESTS = libbitcoin_client_test_runner.sh
 
 check_PROGRAMS = test/libbitcoin_client_test
-test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${czmq___CPPFLAGS}
+test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${czmq___LIBS}
 test_libbitcoin_client_test_SOURCES = \
     test/main.cpp \
     test/proxy.cpp
@@ -59,8 +59,8 @@ endif WITH_TESTS
 if WITH_EXAMPLES
 
 noinst_PROGRAMS = examples/console/console
-examples_console_console_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-examples_console_console_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+examples_console_console_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${czmq___CPPFLAGS}
+examples_console_console_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${czmq___LIBS}
 examples_console_console_SOURCES = \
     examples/console/cli.cpp \
     examples/console/cli.hpp \
@@ -77,8 +77,8 @@ endif WITH_EXAMPLES
 if WITH_EXAMPLES
 
 noinst_PROGRAMS += examples/get_height/get_height
-examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${sodium_CPPFLAGS} ${czmq___CPPFLAGS}
-examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${sodium_LIBS} ${czmq___LIBS}
+examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${czmq___CPPFLAGS}
+examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${czmq___LIBS}
 examples_get_height_get_height_SOURCES = \
     examples/get_height/main.cpp
 
