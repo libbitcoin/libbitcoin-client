@@ -24,23 +24,23 @@
 #include <memory>
 #include <string>
 #include <thread>
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
+using namespace bc::protocol;
 
 uint32_t signal_halt = 0;
 uint32_t signal_continue = 1;
 
 read_line::~read_line()
 {
-    czmqpp::message message;
+    zmq::message message;
     message.append(to_chunk(to_little_endian(signal_halt)));
     message.send(socket_);
     thread_->join();
 }
 
-read_line::read_line(czmqpp::context& context)
+read_line::read_line(zmq::context& context)
   : socket_(context, ZMQ_REQ)
 {
     socket_.bind("inproc://terminal");
@@ -54,7 +54,7 @@ read_line::read_line(czmqpp::context& context)
 void read_line::show_prompt()
 {
     std::cout << "> " << std::flush;
-    czmqpp::message message;
+    zmq::message message;
     message.append(bc::to_chunk(bc::to_little_endian(signal_continue)));
     message.send(socket_);
 }
@@ -62,9 +62,9 @@ void read_line::show_prompt()
 std::string read_line::get_line()
 {
     std::string data;
-    czmqpp::message message;
-    czmqpp::poller poller(socket_);
-    czmqpp::socket which = poller.wait(1);
+    zmq::message message;
+    zmq::poller poller(socket_);
+    zmq::socket which = poller.wait(1);
 
     if (!poller.expired() && !poller.terminated() && (which == socket_))
     {
@@ -78,23 +78,21 @@ std::string read_line::get_line()
     return data;
 }
 
-void read_line::run(czmqpp::context& context)
+void read_line::run(zmq::context& context)
 {
-    czmqpp::socket socket(context, ZMQ_REP);
+    zmq::socket socket(context, ZMQ_REP);
     socket.connect("inproc://terminal");
 
     while (true)
     {
-        czmqpp::message message;
+        zmq::message message;
 
         // Wait for a socket request:
         if (!message.receive(socket))
             break;
 
-        czmqpp::data_stack stack = message.parts();
-
-        auto bytes = stack.front();
-        auto signal = bc::from_little_endian<uint32_t>(bytes.begin(), bytes.end());
+        auto bytes = message.parts().front();
+        auto signal = from_little_endian<uint32_t>(bytes.begin(), bytes.end());
 
         if (signal == signal_halt)
             break;
@@ -104,13 +102,13 @@ void read_line::run(czmqpp::context& context)
         std::cin.getline(line, sizeof(line));
         std::string text(line);
 
-        czmqpp::message response;
-        response.append(czmqpp::data_chunk(text.begin(), text.end()));
+        zmq::message response;
+        response.append({ text.begin(), text.end() });
         response.send(socket);
     }
 }
 
-czmqpp::socket& read_line::socket()
+zmq::socket& read_line::socket()
 {
     return socket_;
 }

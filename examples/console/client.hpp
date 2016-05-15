@@ -17,14 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef BITCOIN_CLIENT_CLI_HPP
-#define BITCOIN_CLIENT_CLI_HPP
+#ifndef BITCOIN_CLIENT_CLIENT_HPP
+#define BITCOIN_CLIENT_CLIENT_HPP
 
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 #include "connection.hpp"
 #include "read_line.hpp"
@@ -32,13 +31,13 @@
 /**
  * Command-line interface for talking to the obelisk server.
  */
-class cli
+class client
 {
 public:
     /**
      * Constructor.
      */
-    cli();
+    client();
     
     /**
      * The main loop for the example application. This loop can be woken up
@@ -74,7 +73,7 @@ private:
     void request_done();
 
     /**
-     * Verifies that a connection exists, and prints an error message otherwise.
+     * Verifies a connection exists, and prints an error message otherwise.
      */
     bool check_connection();
 
@@ -82,9 +81,7 @@ private:
      * Parses a string argument out of the command line, or prints an error 
      * message if there is none.
      */
-    bool read_string(
-        std::stringstream& args,
-        std::string& out,
+    bool read_string(std::stringstream& args, std::string& out,
         const std::string& error_message);
 
     /**
@@ -99,8 +96,8 @@ private:
      */
     bool done_;
     bool pending_request_;
-    czmqpp::context context_;
     read_line terminal_;
+    bc::protocol::zmq::context context_;
     std::shared_ptr<connection> connection_;
 };
 

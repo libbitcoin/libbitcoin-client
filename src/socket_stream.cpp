@@ -19,22 +19,22 @@
  */
 #include <bitcoin/client/socket_stream.hpp>
 
-#include <czmq++/czmqpp.hpp>
-//#include <bitcoin/protocol.hpp>
-
-//using namespace bc::protocol;
+#include <cstdint>
+#include <bitcoin/protocol.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-socket_stream::socket_stream(czmqpp::socket& socket)
+using namespace bc::protocol;
+
+socket_stream::socket_stream(zmq::socket& socket)
   : socket_(socket)
 {
     // Disable czmq signal handling.
     zsys_handler_set(NULL);
 }
 
-czmqpp::socket& socket_stream::socket()
+zmq::socket& socket_stream::socket()
 {
     return socket_;
 }
@@ -48,7 +48,7 @@ int32_t socket_stream::refresh()
 // Receieve a message from the socket onto the stream parameter.
 bool socket_stream::read(stream& stream)
 {
-    czmqpp::message message;
+    zmq::message message;
 
     if (!message.receive(socket_))
         return false;
@@ -82,9 +82,9 @@ bool socket_stream::read(stream& stream)
 // Send a message built from the stack parameter to the socket.
 void socket_stream::write(const data_stack& data)
 {
-    czmqpp::message message;
+    zmq::message message;
 
-    for (const auto& chunk : data)
+    for (const auto& chunk: data)
         message.append(chunk);
 
     message.send(socket_);

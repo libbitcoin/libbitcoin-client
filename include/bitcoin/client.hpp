@@ -15,6 +15,7 @@
  */
 
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/protocol.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/proxy.hpp>

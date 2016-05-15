@@ -19,14 +19,16 @@
  */
 #include "connection.hpp"
 
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <string>
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
 using namespace bc::chain;
 using namespace bc::client;
+using namespace bc::protocol;
 using namespace bc::wallet;
 
 /// Unknown message callback handler.
@@ -42,7 +44,7 @@ static void on_update(const payment_address& address, size_t,
     std::cout << "update:" << address.encoded() << std::endl;
 }
 
-connection::connection(czmqpp::socket& socket, uint32_t timeout_ms)
+connection::connection(zmq::socket& socket, uint32_t timeout_ms)
   : stream(socket),
     proxy(stream, on_unknown, timeout_ms, 0)
 {

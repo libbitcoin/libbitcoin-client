@@ -23,7 +23,6 @@
 #include <string>
 #include <memory>
 #include <thread>
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 /*
@@ -53,7 +52,7 @@ class read_line
 {
 public:
     ~read_line();
-    read_line(czmqpp::context& context);
+    read_line(bc::protocol::zmq::context& context);
 
     /**
      * Displays a command prompt and begins reading a line in the background.
@@ -66,12 +65,12 @@ public:
      */
     std::string get_line();
 
-    virtual czmqpp::socket& socket();
+    virtual bc::protocol::zmq::socket& socket();
 
 private:
-    void run(czmqpp::context& context);
+    void run(bc::protocol::zmq::context& context);
 
-    czmqpp::socket socket_;
+    bc::protocol::zmq::socket socket_;
     std::shared_ptr<std::thread> thread_;
 };
 

@@ -21,22 +21,21 @@
 #define LIBBITCOIN_CLIENT_SOCKET_STREAM_HPP
 
 #include <memory>
-#include <czmq++/czmqpp.hpp>
+#include <bitcoin/protocol.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/stream.hpp>
-//#include <bitcoin/client/response_stream.hpp>
-//#include <bitcoin/client/request_stream.hpp>
 
 namespace libbitcoin {
 namespace client {
 
+/// This is the only class in the client with a direct protocol dependency.
 class BCC_API socket_stream
   : public stream
 {
 public:
-    socket_stream(czmqpp::socket& socket);
+    socket_stream(protocol::zmq::socket& socket);
 
-    czmqpp::socket& socket();
+    protocol::zmq::socket& socket();
 
     // stream interface.
     virtual int32_t refresh();
@@ -44,7 +43,7 @@ public:
     virtual void write(const data_stack& data);
 
 private:
-    czmqpp::socket& socket_;
+    protocol::zmq::socket& socket_;
 };
 
 } // namespace client

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\console\cli.cpp">
-      <Filter>src\console</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\examples\console\connection.cpp">
       <Filter>src\console</Filter>
     </ClCompile>
@@ -30,15 +27,18 @@
     <ClCompile Include="..\..\..\..\examples\get_height\main.cpp">
       <Filter>src\get_height</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\examples\console\client.cpp">
+      <Filter>src\console</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\examples\console\read_line.hpp">
       <Filter>src\console</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\examples\console\cli.hpp">
+    <ClInclude Include="..\..\..\..\examples\console\connection.hpp">
       <Filter>src\console</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\examples\console\connection.hpp">
+    <ClInclude Include="..\..\..\..\examples\console\client.hpp">
       <Filter>src\console</Filter>
     </ClInclude>
   </ItemGroup>
