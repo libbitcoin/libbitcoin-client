@@ -199,6 +199,39 @@ void proxy::address_fetch_history2(error_handler on_error,
             _1, std::move(on_reply)));
 }
 
+void proxy::address_fetch_unspent_outputs(error_handler on_error,
+    points_info_handler on_reply, const wallet::payment_address& address,
+    const uint64_t satoshi, const wallet::select_outputs::algorithm algorithm)
+{
+    static constexpr uint32_t from_height = 0;
+
+    const auto data = build_chunk(
+    {
+        to_array(address.version()),
+        address.hash(),
+        to_little_endian<uint32_t>(from_height)
+    });
+
+    history_handler parse_history = [on_reply, satoshi, algorithm](
+        const chain::history::list& rows)
+    {
+        chain::output_info::list unspent;
+        for(auto& row : rows)
+            if (row.spend.hash == null_hash)
+                unspent.push_back({row.output, row.value});
+
+        chain::points_info selected_utxos;
+        wallet::select_outputs::select(
+            selected_utxos, unspent, satoshi, algorithm);
+
+        on_reply(selected_utxos);
+    };
+
+    send_request("address.fetch_history2", data, std::move(on_error),
+        std::bind(decode_history,
+            _1, std::move(parse_history)));
+}
+
 // Subscribers.
 //-----------------------------------------------------------------------------
 
