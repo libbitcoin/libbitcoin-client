@@ -20,7 +20,6 @@
 #ifndef BITCOIN_CLIENT_CONNECTION_HPP
 #define BITCOIN_CLIENT_CONNECTION_HPP
 
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 /**
@@ -30,7 +29,7 @@
 class connection
 {
 public:
-    connection(czmqpp::socket& socket, uint32_t timeout_ms=2000);
+    connection(bc::protocol::zmq::socket& socket, uint32_t timeout_ms=2000);
 
     bc::client::socket_stream stream;
     bc::client::proxy proxy;

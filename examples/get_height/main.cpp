@@ -19,14 +19,14 @@
  */
 #include <iostream>
 #include <memory>
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
 using namespace bc::client;
+using namespace bc::protocol;
 
 /**
- * A minimalist example that connects to a server and fetches height.
+ * A minimal example that connects to a server and fetches height.
  */
 int main(int argc, char* argv[])
 {
@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
     }
 
     // Set up the server connection.
-    czmqpp::context context;
-    czmqpp::socket socket(context, ZMQ_DEALER);
+    zmq::context context;
+    zmq::socket socket(context, ZMQ_DEALER);
 
     if (socket.connect(argv[1]) < 0)
     {
@@ -61,17 +61,15 @@ int main(int argc, char* argv[])
         std::cout << "height: " << height << std::endl;
     };
 
+    // Make the request.
     socket_stream stream(socket);
     proxy proxy(stream, unknown_handler, 2000, 0);
-    czmqpp::poller poller(socket);
-
-    // Make the request.
     proxy.blockchain_fetch_last_height(error_handler, completion_handler);
 
-    // Figure out how much time we have left.
-    auto remainder_ms = proxy.refresh();
 
-    // Wait for the response:
+    // Wait for the response.
+    zmq::poller poller(socket);
+    auto remainder_ms = proxy.refresh();
     while (!proxy.empty() && !poller.terminated() && !poller.expired() &&
         poller.wait(remainder_ms) == socket)
     {

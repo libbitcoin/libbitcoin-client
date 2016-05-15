@@ -17,32 +17,34 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "cli.hpp"
+#include "client.hpp"
 
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
-#include <czmq++/czmqpp.hpp>
 #include <bitcoin/client.hpp>
 #include "connection.hpp"
 #include "read_line.hpp"
 
-using namespace bc;
+using namespace bc::chain;
+using namespace bc::client;
+using namespace bc::protocol;
+using namespace bc::wallet;
 
-cli::cli()
+client::client()
   : done_(false),
     pending_request_(false),
     terminal_(context_)
 {
 }
 
-void cli::cmd_exit()
+void client::cmd_exit()
 {
     done_ = true;
 }
 
-void cli::cmd_help()
+void client::cmd_help()
 {
     std::cout << "commands:" << std::endl;
     std::cout << "  exit              - leave the program" << std::endl;
@@ -53,7 +55,7 @@ void cli::cmd_help()
     std::cout << "  history <address> - get an address' history" << std::endl;
 }
 
-void cli::cmd_connect(std::stringstream& args)
+void client::cmd_connect(std::stringstream& args)
 {
     std::string server;
     if (!read_string(args, server, "error: no server given"))
@@ -61,15 +63,15 @@ void cli::cmd_connect(std::stringstream& args)
 
     std::cout << "connecting to " << server << std::endl;
 
-    czmqpp::socket obelisk_socket(context_, ZMQ_DEALER);
+    zmq::socket socket(context_, ZMQ_DEALER);
 
-    if (obelisk_socket.connect(server) < 0)
+    if (socket.connect(server) < 0)
         std::cout << "error: failed to connect" << std::endl;
     else
-        connection_ = std::make_shared<connection>(obelisk_socket, 6000);
+        connection_ = std::make_shared<connection>(socket, 6000);
 }
 
-void cli::cmd_disconnect(std::stringstream&)
+void client::cmd_disconnect(std::stringstream&)
 {
     if (!check_connection())
         return;
@@ -77,7 +79,7 @@ void cli::cmd_disconnect(std::stringstream&)
     connection_.reset();
 }
 
-void cli::cmd_height(std::stringstream&)
+void client::cmd_height(std::stringstream&)
 {
     if (!check_connection())
         return;
@@ -87,32 +89,34 @@ void cli::cmd_height(std::stringstream&)
         std::cout << "height: " << height << std::endl;
         request_done();
     };
+
     pending_request_ = true;
     connection_->proxy.blockchain_fetch_last_height(error_handler(), handler);
 }
 
-void cli::cmd_history(std::stringstream& args)
+void client::cmd_history(std::stringstream& args)
 {
     if (!check_connection())
         return;
 
-    bc::wallet::payment_address address;
+    payment_address address;
     if (!read_address(args, address))
         return;
 
-    auto handler = [this](const chain::history::list& history)
+    auto handler = [this](const history::list& history)
     {
-        for (auto row: history)
+        for (const auto& row: history)
             std::cout << row.value << std::endl;
 
         request_done();
     };
+
     pending_request_ = true;
     connection_->proxy.address_fetch_history(error_handler(),
         handler, address);
 }
 
-int cli::run()
+int client::run()
 {
     std::cout << "type \"help\" for instructions" << std::endl;
     terminal_.show_prompt();
@@ -120,7 +124,7 @@ int cli::run()
     while (!done_)
     {
         uint32_t delay = -1;
-        czmqpp::poller poller(terminal_.socket());
+        zmq::poller poller(terminal_.socket());
 
         if (connection_)
         {
@@ -151,7 +155,7 @@ int cli::run()
     return 0;
 }
 
-void cli::command()
+void client::command()
 {
     std::stringstream reader(terminal_.get_line());
     std::string command;
@@ -171,7 +175,7 @@ void cli::command()
         terminal_.show_prompt();
 }
 
-client::proxy::error_handler cli::error_handler()
+proxy::error_handler client::error_handler()
 {
     return [this](const std::error_code& ec)
     {
@@ -180,13 +184,13 @@ client::proxy::error_handler cli::error_handler()
     };
 }
 
-void cli::request_done()
+void client::request_done()
 {
     pending_request_ = false;
     terminal_.show_prompt();
 }
 
-bool cli::check_connection()
+bool client::check_connection()
 {
     if (!connection_)
     {
@@ -197,7 +201,7 @@ bool cli::check_connection()
     return true;
 }
 
-bool cli::read_string(std::stringstream& args, std::string& out,
+bool client::read_string(std::stringstream& args, std::string& out,
     const std::string& error_message)
 {
     args >> out;
@@ -210,14 +214,13 @@ bool cli::read_string(std::stringstream& args, std::string& out,
     return true;
 }
 
-bool cli::read_address(std::stringstream& args,
-    bc::wallet::payment_address& out)
+bool client::read_address(std::stringstream& args, payment_address& out)
 {
     std::string address;
     if (!read_string(args, address, "error: no address given"))
         return false;
 
-    bc::wallet::payment_address payment(address);
+    payment_address payment(address);
     if (!payment)
     {
         std::cout << "error: invalid address " << address << std::endl;

@@ -23,7 +23,6 @@
 #include <chrono>
 #include <cstdint>
 #include <string>
-#include <czmq++/czmqpp.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/stream.hpp>
