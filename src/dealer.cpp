@@ -107,8 +107,8 @@ int32_t dealer::refresh()
         }
         else if (request->second.resends < resends_)
         {
-            // Resend doesn't make sense unless reconnecting.
-
+            // Resend is helpful in the case where the server is overloaded.
+            // A zmq router drops messages as it reaches the high water mark.
             request->second.resends++;
             request->second.deadline = steady_clock::now() + 
                 milliseconds(timeout_ms_);
