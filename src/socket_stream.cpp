@@ -30,8 +30,6 @@ using namespace bc::protocol;
 socket_stream::socket_stream(zmq::socket& socket)
   : socket_(socket)
 {
-    // Disable czmq signal handling.
-    zsys_handler_set(NULL);
 }
 
 zmq::socket& socket_stream::socket()
