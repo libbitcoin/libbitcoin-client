@@ -46,16 +46,18 @@ static const auto on_stealth_update_nop = [](const binary&, size_t,
 {
 };
 
-static inline uint32_t capped_at_max_in32(uint32_t value)
+static int32_t unsigned_to_signed(uint32_t value)
 {
-    return std::min(value, static_cast<uint32_t>(max_int32));
+    const auto maximum_unsigned = static_cast<uint32_t>(max_int32);
+    const auto capped_signed = std::min(value, maximum_unsigned);
+    return static_cast<int32_t>(capped_signed);
 }
 
 dealer::dealer(stream& out, unknown_handler on_unknown_command,
     uint32_t timeout_microseconds, uint8_t resends)
   : last_request_index_(0),
     resends_(resends),
-    timeout_microseconds_(capped_at_max_in32(timeout_microseconds)),
+    timeout_microseconds_(unsigned_to_signed(timeout_microseconds)),
     on_unknown_(on_unknown_command),
     on_update_(on_update_nop),
     on_stealth_update_(on_stealth_update_nop),
