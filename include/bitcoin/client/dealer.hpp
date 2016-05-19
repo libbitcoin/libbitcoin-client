@@ -47,9 +47,9 @@ public:
         const hash_digest&, const chain::transaction&)> update_handler;
 
     /// Resend is unrelated to connections.
-    /// Timeout is capped at max_int32 (vs. max_uint3).
+    /// Timeout is capped at max_int32 (vs. max_uint32).
     dealer(stream& out, unknown_handler on_unknown_command,
-        uint32_t timeout_microseconds, uint8_t resends);
+        uint32_t timeout_milliseconds, uint8_t resends);
 
     virtual ~dealer();
 
@@ -98,7 +98,7 @@ protected:
         time deadline;
     };
 
-    // Calculate the number of microseconds remaining in the deadline.
+    // Calculate the number of milliseconds remaining in the deadline.
     static int32_t remaining(const time& deadline);
 
     // send_request->send
@@ -124,7 +124,7 @@ protected:
 
     uint32_t last_request_index_;
     const uint8_t resends_;
-    const int32_t timeout_microseconds_;
+    const int32_t timeout_milliseconds_;
     const unknown_handler on_unknown_;
     update_handler on_update_;
     stealth_update_handler on_stealth_update_;

@@ -38,7 +38,7 @@ public:
     /// Resend is unrelated to connections.
     /// Timeout is capped at max_int32 (vs. max_uint32).
     proxy(stream& out, unknown_handler on_unknown_command,
-        uint32_t timeout_microseconds, uint8_t resends);
+        uint32_t timeout_milliseconds, uint8_t resends);
 
     // Fetch handler types.
     //-------------------------------------------------------------------------
