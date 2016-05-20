@@ -35,7 +35,7 @@ uint32_t signal_continue = 1;
 read_line::~read_line()
 {
     zmq::message message;
-    message.append(to_chunk(to_little_endian(signal_halt)));
+    message.enqueue_little_endian(signal_halt);
     message.send(socket_);
     thread_->join();
 }
@@ -55,7 +55,7 @@ void read_line::show_prompt()
 {
     std::cout << "> " << std::flush;
     zmq::message message;
-    message.append(bc::to_chunk(bc::to_little_endian(signal_continue)));
+    message.enqueue_little_endian(signal_continue);
     message.send(socket_);
 }
 
@@ -68,7 +68,7 @@ std::string read_line::get_line()
 
     if (id == socket_.id() && !poller.expired() && !poller.terminated())
         if (message.receive(socket_))
-            return message.text();
+            return message.dequeue_text();
 
     return{};
 }
@@ -80,17 +80,14 @@ void read_line::run(zmq::context& context)
 
     while (true)
     {
+        uint32_t signal;
         zmq::message message;
 
-        // Wait for a socket request:
-        if (!message.receive(socket))
+        if (!message.receive(socket) || !message.dequeue(signal) ||
+            signal == signal_halt)
+        {
             break;
-
-        auto bytes = message.parts().front();
-        auto signal = from_little_endian<uint32_t>(bytes.begin(), bytes.end());
-
-        if (signal == signal_halt)
-            break;
+        }
 
         // Read input:
         char line[1000];
@@ -98,7 +95,7 @@ void read_line::run(zmq::context& context)
         std::string text(line);
 
         zmq::message response;
-        response.append({ text.begin(), text.end() });
+        response.enqueue(text);
         response.send(socket);
     }
 }
