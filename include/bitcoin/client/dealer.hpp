@@ -72,7 +72,7 @@ public:
     /// Read from this stream onto the specified stream.
     virtual bool read(stream& stream) override;
 
-    /// Read the spcified data to this stream.
+    /// Write the specified data to this stream.
     virtual void write(const data_stack& data) override;
 
 protected:
