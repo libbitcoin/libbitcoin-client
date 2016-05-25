@@ -63,9 +63,9 @@ void client::cmd_connect(std::stringstream& args)
 
     std::cout << "connecting to " << server << std::endl;
 
-    zmq::socket socket(context_, ZMQ_DEALER);
+    zmq::socket socket(context_, zmq::socket::role::dealer);
 
-    if (socket.connect(server) < 0)
+    if (!socket.connect(server))
         std::cout << "error: failed to connect" << std::endl;
     else
         connection_ = std::make_shared<connection>(socket, 6000);
@@ -120,11 +120,13 @@ int client::run()
 {
     std::cout << "type \"help\" for instructions" << std::endl;
     terminal_.show_prompt();
+    const auto terminal_socket_id = terminal_.socket().id();
 
     while (!done_)
     {
         uint32_t delay = -1;
-        zmq::poller poller(terminal_.socket());
+        zmq::poller poller;
+        poller.add(terminal_.socket());
 
         if (connection_)
         {
@@ -132,7 +134,7 @@ int client::run()
             delay = connection_->proxy.refresh();
         }
 
-        auto which = poller.wait(delay);
+        const auto id = poller.wait(delay);
 
         if (poller.terminated())
             break;
@@ -140,13 +142,13 @@ int client::run()
         if (poller.expired())
             continue;
 
-        if (which == terminal_.socket())
+        if (id == terminal_socket_id)
         {
             command();
             continue;
         }
 
-        if (which == connection_->stream.socket() && connection_)
+        if (id == connection_->stream.socket().id() && connection_)
             connection_->stream.read(connection_->proxy);
         else
             std::cout << "connect before calling" << std::endl;

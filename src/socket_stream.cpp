@@ -30,8 +30,6 @@ using namespace bc::protocol;
 socket_stream::socket_stream(zmq::socket& socket)
   : socket_(socket)
 {
-    // Disable czmq signal handling.
-    zsys_handler_set(NULL);
 }
 
 zmq::socket& socket_stream::socket()
@@ -45,15 +43,21 @@ int32_t socket_stream::refresh()
     return 0;
 }
 
-// Receieve a message from the socket onto the stream parameter.
+// TODO: optimize by passing the internal type of the message object.
+// Receieve a message from this socket onto the stream parameter.
 bool socket_stream::read(stream& stream)
 {
+    data_stack data;
     zmq::message message;
 
     if (!message.receive(socket_))
         return false;
 
-    stream.write(message.parts());
+    // Copy the message to a data stack.
+    while (!message.empty())
+        data.push_back(message.dequeue_data());
+
+    stream.write(data);
     return true;
 }
 
@@ -79,13 +83,15 @@ bool socket_stream::read(stream& stream)
 ////    return false;
 ////}
 
-// Send a message built from the stack parameter to the socket.
+// TODO: optimize by passing the internal type of the message object.
+// Send a message built from the stack parameter to this socket.
 void socket_stream::write(const data_stack& data)
 {
     zmq::message message;
 
+    // Copy the data stack to a message.
     for (const auto& chunk: data)
-        message.append(chunk);
+        message.enqueue(chunk);
 
     message.send(socket_);
 }

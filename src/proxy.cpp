@@ -35,9 +35,9 @@ using namespace bc::chain;
 using namespace std::chrono;
 using namespace bc::wallet;
 
-proxy::proxy(stream& out,
-    unknown_handler on_unknown_command, uint32_t timeout_ms, uint8_t resends)
-  : dealer(out, on_unknown_command, timeout_ms, resends)
+proxy::proxy(stream& out, unknown_handler on_unknown_command,
+    uint32_t timeout_milliseconds, uint8_t resends)
+  : dealer(out, on_unknown_command, timeout_milliseconds, resends)
 {
 }
 

@@ -47,9 +47,9 @@ public:
         const hash_digest&, const chain::transaction&)> update_handler;
 
     /// Resend is unrelated to connections.
-    /// Timeout is capped at max_int32 (vs. max_uint3).
+    /// Timeout is capped at max_int32 (vs. max_uint32).
     dealer(stream& out, unknown_handler on_unknown_command,
-        uint32_t timeout_ms, uint8_t resends);
+        uint32_t timeout_milliseconds, uint8_t resends);
 
     virtual ~dealer();
 
@@ -72,7 +72,7 @@ public:
     /// Read from this stream onto the specified stream.
     virtual bool read(stream& stream) override;
 
-    /// Read the spcified data to this stream.
+    /// Write the specified data to this stream.
     virtual void write(const data_stack& data) override;
 
 protected:
@@ -124,7 +124,7 @@ protected:
 
     uint32_t last_request_index_;
     const uint8_t resends_;
-    const int32_t timeout_ms_;
+    const int32_t timeout_milliseconds_;
     const unknown_handler on_unknown_;
     update_handler on_update_;
     stealth_update_handler on_stealth_update_;

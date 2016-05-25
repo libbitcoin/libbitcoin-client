@@ -46,11 +46,18 @@ static const auto on_stealth_update_nop = [](const binary&, size_t,
 {
 };
 
+static int32_t unsigned_to_signed(uint32_t value)
+{
+    const auto maximum_unsigned = static_cast<uint32_t>(max_int32);
+    const auto capped_signed = std::min(value, maximum_unsigned);
+    return static_cast<int32_t>(capped_signed);
+}
+
 dealer::dealer(stream& out, unknown_handler on_unknown_command,
-    uint32_t timeout_ms, uint8_t resends)
+    uint32_t timeout_milliseconds, uint8_t resends)
   : last_request_index_(0),
     resends_(resends),
-    timeout_ms_(std::min(timeout_ms, static_cast<uint32_t>(max_int32))),
+    timeout_milliseconds_(unsigned_to_signed(timeout_milliseconds)),
     on_unknown_(on_unknown_command),
     on_update_(on_update_nop),
     on_stealth_update_(on_stealth_update_nop),
@@ -91,30 +98,30 @@ void dealer::set_on_stealth_update(stealth_update_handler on_update)
 // Subscriptions notification handlers are not registered in pending.
 int32_t dealer::refresh()
 {
-    auto interval = timeout_ms_;
+    auto interval = timeout_milliseconds_;
 
     // Use explicit iteration to allow for erase in loop.
     auto request = pending_.begin();
     while (request != pending_.end())
     {
-        const auto remainder_ms = remaining(request->second.deadline);
+        const auto milliseconds_remain = remaining(request->second.deadline);
 
-        if (remainder_ms > 0)
+        if (milliseconds_remain > 0)
         {
             // Not timed out, go to sleep for no more than remaining time.
-            interval = remainder_ms;
+            interval = milliseconds_remain;
             ++request;
         }
         else if (request->second.resends < resends_)
         {
-            // Resend doesn't make sense unless reconnecting.
-
+            // Resend is helpful in the case where the server is overloaded.
+            // A zmq router drops messages as it reaches the high water mark.
             request->second.resends++;
             request->second.deadline = steady_clock::now() + 
-                milliseconds(timeout_ms_);
+                microseconds(timeout_milliseconds_);
 
             // Timed out and not done, go to sleep for no more than timeout.
-            interval = std::min(interval, timeout_ms_);
+            interval = std::min(interval, timeout_milliseconds_);
 
             // Resend the request message due to response timeout.
             send(request->second.message);
@@ -154,13 +161,14 @@ int32_t dealer::remaining(const time& deadline)
 void dealer::send_request(const std::string& command,
     const data_chunk& payload, error_handler on_error, decoder on_reply)
 {
+    const auto now = steady_clock::now();
     const auto id = ++last_request_index_;
     auto& request = pending_[id];
     request.message = obelisk_message{ command, id, payload };
     request.on_error = std::move(on_error);
     request.on_reply = std::move(on_reply);
     request.resends = 0;
-    request.deadline = steady_clock::now() + milliseconds(timeout_ms_);
+    request.deadline = now + milliseconds(timeout_milliseconds_);
     send(request.message);
 }
 

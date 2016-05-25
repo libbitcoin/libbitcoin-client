@@ -38,9 +38,9 @@ int main(int argc, char* argv[])
 
     // Set up the server connection.
     zmq::context context;
-    zmq::socket socket(context, ZMQ_DEALER);
+    zmq::socket socket(context, zmq::socket::role::dealer);
 
-    if (socket.connect(argv[1]) < 0)
+    if (!socket.connect(argv[1]))
     {
         std::cerr << "Cannot connect to " << argv[1] << std::endl;
         return 1;
@@ -66,17 +66,19 @@ int main(int argc, char* argv[])
     proxy proxy(stream, unknown_handler, 2000, 0);
     proxy.blockchain_fetch_last_height(error_handler, completion_handler);
 
-
     // Wait for the response.
-    zmq::poller poller(socket);
-    auto remainder_ms = proxy.refresh();
+    zmq::poller poller;
+    poller.add(socket);
+    const auto socket_id = socket.id();
+    auto delay = proxy.refresh();
+
     while (!proxy.empty() && !poller.terminated() && !poller.expired() &&
-        poller.wait(remainder_ms) == socket)
+        poller.wait(delay) == socket_id)
     {
         stream.read(proxy);
 
         // Update the time remaining.
-        remainder_ms = proxy.refresh();
+        delay = proxy.refresh();
     }
 
     return 0;
