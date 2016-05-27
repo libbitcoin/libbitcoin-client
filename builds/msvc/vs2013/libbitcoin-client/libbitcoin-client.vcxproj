@@ -69,6 +69,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\dealer.cpp" />
+    <ClCompile Include="..\..\..\..\src\obelisk_client.cpp" />
     <ClCompile Include="..\..\..\..\src\proxy.cpp" />
     <ClCompile Include="..\..\..\..\src\socket_stream.cpp" />
   </ItemGroup>
@@ -80,6 +81,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\bitcoin\client.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\define.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_client.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\dealer.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\proxy.hpp" />

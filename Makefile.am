@@ -36,6 +36,7 @@ src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${bi
 src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
 src_libbitcoin_client_la_SOURCES = \
     src/dealer.cpp \
+    src/obelisk_client.cpp \
     src/proxy.cpp \
     src/socket_stream.cpp
 
@@ -94,6 +95,7 @@ include_bitcoin_clientdir = ${includedir}/bitcoin/client
 include_bitcoin_client_HEADERS = \
     include/bitcoin/client/dealer.hpp \
     include/bitcoin/client/define.hpp \
+    include/bitcoin/client/obelisk_client.hpp \
     include/bitcoin/client/proxy.hpp \
     include/bitcoin/client/socket_stream.hpp \
     include/bitcoin/client/stream.hpp \
