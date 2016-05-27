@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     zmq::context context;
     zmq::socket socket(context, zmq::socket::role::dealer);
 
-    if (!socket.connect(argv[1]))
+    if (!socket.connect({ argv[1] }))
     {
         std::cerr << "Cannot connect to " << argv[1] << std::endl;
         return 1;
