@@ -21,6 +21,9 @@
     <ClCompile Include="..\..\..\..\src\proxy.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\obelisk_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -45,6 +48,9 @@
       <Filter>include\client</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\stream.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_client.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
   </ItemGroup>
