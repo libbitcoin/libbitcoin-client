@@ -101,8 +101,7 @@ void obelisk_client::wait()
     poller.add(socket_);
     auto delay = refresh();
 
-    while (!empty() && !poller.terminated() && !poller.expired() &&
-        poller.wait(delay) == socket_.id())
+    while (!empty() && poller.wait(delay).contains(socket_.id()))
     {
         stream_.read(*this);
         delay = refresh();
@@ -121,8 +120,7 @@ void obelisk_client::monitor(uint32_t timeout_seconds)
     poller.add(socket_);
     auto delay = remaining(deadline);
 
-    while (!poller.terminated() && !poller.expired() &&
-        poller.wait(delay) == socket_.id())
+    while (poller.wait(delay).contains(socket_.id()))
     {
         stream_.read(*this);
         delay = remaining(deadline);

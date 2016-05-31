@@ -134,7 +134,7 @@ int client::run()
             delay = connection_->proxy.refresh();
         }
 
-        const auto id = poller.wait(delay);
+        const auto ids = poller.wait(delay);
 
         if (poller.terminated())
             break;
@@ -142,13 +142,13 @@ int client::run()
         if (poller.expired())
             continue;
 
-        if (id == terminal_socket_id)
+        if (ids.contains(terminal_socket_id))
         {
             command();
             continue;
         }
 
-        if (id == connection_->stream.socket().id() && connection_)
+        if (ids.contains(connection_->stream.socket().id()) && connection_)
             connection_->stream.read(connection_->proxy);
         else
             std::cout << "connect before calling" << std::endl;
