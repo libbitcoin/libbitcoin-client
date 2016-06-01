@@ -61,25 +61,20 @@ int main(int argc, char* argv[])
         std::cout << "height: " << height << std::endl;
     };
 
-    // Make the request.
     socket_stream stream(socket);
+
+    // Wait 2 seconds for the connection, with no failure retries.
     proxy proxy(stream, unknown_handler, 2000, 0);
+
+    // Make the request.
     proxy.blockchain_fetch_last_height(error_handler, completion_handler);
 
-    // Wait for the response.
     zmq::poller poller;
     poller.add(socket);
-    const auto socket_id = socket.id();
-    auto delay = proxy.refresh();
 
-    while (!proxy.empty() && !poller.terminated() && !poller.expired() &&
-        poller.wait(delay) == socket_id)
-    {
+    // Wait 1 second for the response.
+    if (poller.wait(1000).contains(socket.id()))
         stream.read(proxy);
-
-        // Update the time remaining.
-        delay = proxy.refresh();
-    }
 
     return 0;
 }
