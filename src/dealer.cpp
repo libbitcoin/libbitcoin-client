@@ -176,6 +176,13 @@ void dealer::send_request(const std::string& command,
 void dealer::send(const obelisk_message& message)
 {
     data_stack data;
+
+    // BUGBUG:
+    // A delimiter frame is required for a DEALER socket (currently in use).
+    // A REQ socket adds this automatically (to the same effect).
+    // Previous server versions cannot accomodate this (ROUTER improper).
+    data.push_back({});
+
     data.push_back(to_chunk(message.command));
     data.push_back(to_chunk(to_little_endian(message.id)));
     data.push_back(message.payload);
