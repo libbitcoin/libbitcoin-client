@@ -61,14 +61,15 @@ void read_line::show_prompt()
 
 std::string read_line::get_line()
 {
-    zmq::message message;
     zmq::poller poller;
     poller.add(socket_);
-    const auto id = poller.wait(1);
 
-    if (id == socket_.id() && !poller.expired() && !poller.terminated())
+    if (poller.wait().contains(socket_.id()))
+    {
+        zmq::message message;
         if (message.receive(socket_))
             return message.dequeue_text();
+    }
 
     return{};
 }

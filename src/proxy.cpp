@@ -221,8 +221,8 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
                 unspent.push_back({row.output, row.value});
 
         chain::points_info selected_utxos;
-        wallet::select_outputs::select(
-            selected_utxos, unspent, satoshi, algorithm);
+        wallet::select_outputs::select(selected_utxos, unspent, satoshi,
+            algorithm);
 
         on_reply(selected_utxos);
     };

@@ -56,7 +56,7 @@ public:
     /// True if there are no outstanding requests.
     bool empty() const;
 
-    /// CLear all handlers with the specified error code.
+    /// Clear all handlers with the specified error code.
     void clear(const code& code);
 
     /// Accessors.
