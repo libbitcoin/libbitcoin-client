@@ -27,6 +27,13 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/stream.hpp>
 
+// A REQ socket always adds a delimiter.
+// Server v1/v2 expect no delimiter and therefore will fail REQ clients.
+// A delimiter frame is optional for a DEALER socket (v1/v2/v3 clients).
+// In v3 we don't add the delimiter but the v3 server allows it.
+// By v4 client we can always send the delimiter (expecting v3+ server).
+#undef USE_ADDRESS_DELIMITER
+
 namespace libbitcoin {
 namespace client {
 
@@ -177,16 +184,15 @@ void dealer::send(const obelisk_message& message)
 {
     data_stack data;
 
-    // BUGBUG:
-    // A delimiter frame is required for a DEALER socket (currently in use).
-    // A REQ socket adds this automatically (to the same effect).
-    // Previous server versions cannot accomodate this (ROUTER improper).
+#ifdef USE_ADDRESS_DELIMITER
     data.push_back({});
+#endif
 
     data.push_back(to_chunk(message.command));
     data.push_back(to_chunk(to_little_endian(message.id)));
     data.push_back(message.payload);
 
+    // BUGBUG: we are losing error state here, prevents fast fail.
     // This creates a message and sends it on the socket.
     out_.write(data);
 }
@@ -200,12 +206,18 @@ bool dealer::read(stream& stream)
 // stream interface.
 void dealer::write(const data_stack& data)
 {
-    // Require exactly three tokens.
-    if (data.size() != 3)
+    // BUGBUG: we are losing error state here, prevents fast fail.
+    if (data.size() < 3 || data.size() > 4)
         return;
 
-    auto it = data.begin();
     obelisk_message message;
+    auto it = data.begin();
+
+    // See note in send().
+    // Forward compatibility with a future server would send the delimiter.
+    // Strip the delimiter if the server includes it.
+    if (data.size() == 4)
+        ++it;
 
     // Copy the first token into command.
     message.command = std::string(it->begin(), it->end());
