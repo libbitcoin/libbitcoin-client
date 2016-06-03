@@ -19,6 +19,7 @@
  */
 #include <bitcoin/client/obelisk_client.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <thread>
@@ -42,6 +43,7 @@ static uint32_t to_milliseconds(uint16_t seconds)
 static const auto on_unknown = [](const std::string&){};
 
 // Retries is overloaded as configuration for resends as well.
+// Timeout is capped at ~ 25 days by signed/millsecond conversions.
 obelisk_client::obelisk_client(uint16_t timeout_seconds, uint8_t retries)
   : socket_(context_, zmq::socket::role::dealer),
     stream_(socket_),
