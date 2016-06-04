@@ -65,7 +65,7 @@ void client::cmd_connect(std::stringstream& args)
 
     zmq::socket socket(context_, zmq::socket::role::dealer);
 
-    if (!socket.connect(server))
+    if (socket.connect(server) != bc::error::success)
         std::cout << "error: failed to connect" << std::endl;
     else
         connection_ = std::make_shared<connection>(socket, 6000);

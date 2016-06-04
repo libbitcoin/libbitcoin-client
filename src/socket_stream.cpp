@@ -50,42 +50,33 @@ bool socket_stream::read(stream& stream)
     data_stack data;
     zmq::message message;
 
-    if (!message.receive(socket_))
+    if (message.receive(socket_) != error::success)
         return false;
 
     // Copy the message to a data stack.
     while (!message.empty())
         data.push_back(message.dequeue_data());
 
-    stream.write(data);
-    return true;
+    return stream.write(data);
 }
 
 ////bool socket_stream::read(std::shared_ptr<response_stream> stream)
 ////{
-////    if (stream)
-////    {
-////        response_message message;
+////    if (!stream)
+////        return false;
 ////
-////        if (message.receive(socket_))
-////        {
-////            std::shared_ptr<bc::protocol::response> response = 
-////            message.get_response();
+////    response_message message;
 ////
-////            if (response)
-////            {
-////                stream->write(response);
-////                return true;
-////            }
-////        }
-////    }
+////    if (message.receive(socket_) != error::success)
+////        return false;
 ////
-////    return false;
+////    auto response = message.get_response();
+////    return response && (stream->write(response) == error::success);
 ////}
 
 // TODO: optimize by passing the internal type of the message object.
 // Send a message built from the stack parameter to this socket.
-void socket_stream::write(const data_stack& data)
+bool socket_stream::write(const data_stack& data)
 {
     zmq::message message;
 
@@ -93,17 +84,17 @@ void socket_stream::write(const data_stack& data)
     for (const auto& chunk: data)
         message.enqueue(chunk);
 
-    message.send(socket_);
+    return message.send(socket_) == error::success;
 }
 
-////void socket_stream::write(const std::shared_ptr<request>& request)
+////bool socket_stream::write(const std::shared_ptr<request>& request)
 ////{
-////    if (request)
-////    {
-////        request_message message;
-////        message.set_request(request);
-////        message.send(socket_);
-////    }
+////    if (!request)
+////        return false;
+////
+////    request_message message;
+////    message.set_request(request);
+////    return message.send(socket_) == error::success;
 ////}
 
 } // namespace client

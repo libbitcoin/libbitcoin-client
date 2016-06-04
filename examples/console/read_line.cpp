@@ -19,6 +19,7 @@
  */
 #include "read_line.hpp"
 
+#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -36,14 +37,16 @@ read_line::~read_line()
 {
     zmq::message message;
     message.enqueue_little_endian(signal_halt);
-    message.send(socket_);
+    const auto ec = message.send(socket_);
+    assert(!ec);
     thread_->join();
 }
 
 read_line::read_line(zmq::context& context)
   : socket_(context, zmq::socket::role::requester)
 {
-    socket_.bind({ "inproc://terminal" });
+    const auto ec = socket_.bind({ "inproc://terminal" });
+    assert(!ec);
 
     // The thread must be constructed after the socket is already bound.
     thread_ = std::make_shared<std::thread>(
@@ -56,7 +59,8 @@ void read_line::show_prompt()
     std::cout << "> " << std::flush;
     zmq::message message;
     message.enqueue_little_endian(signal_continue);
-    message.send(socket_);
+    const auto ec = message.send(socket_);
+    assert(!ec);
 }
 
 std::string read_line::get_line()
@@ -67,8 +71,9 @@ std::string read_line::get_line()
     if (poller.wait().contains(socket_.id()))
     {
         zmq::message message;
-        if (message.receive(socket_))
-            return message.dequeue_text();
+        auto ec = message.receive(socket_);
+        assert(!ec);
+        return message.dequeue_text();
     }
 
     return{};
@@ -77,18 +82,18 @@ std::string read_line::get_line()
 void read_line::run(zmq::context& context)
 {
     zmq::socket socket(context, zmq::socket::role::replier);
-    socket.connect({ "inproc://terminal" });
+    auto ec = socket.connect({ "inproc://terminal" });
+    assert(!ec);
 
     while (true)
     {
         uint32_t signal;
         zmq::message message;
+        ec = message.receive(socket);
+        assert(!ec);
 
-        if (!message.receive(socket) || !message.dequeue(signal) ||
-            signal == signal_halt)
-        {
+        if (!message.dequeue(signal) || signal == signal_halt)
             break;
-        }
 
         // Read input:
         char line[1000];
@@ -97,7 +102,8 @@ void read_line::run(zmq::context& context)
 
         zmq::message response;
         response.enqueue(text);
-        response.send(socket);
+        ec = response.send(socket);
+        assert(!ec);
     }
 }
 
