@@ -73,7 +73,7 @@ public:
     virtual bool read(stream& stream) override;
 
     /// Write the specified data to this stream.
-    virtual void write(const data_stack& data) override;
+    virtual bool write(const data_stack& data) override;
 
 protected:
     typedef std::chrono::system_clock clock;
@@ -102,13 +102,13 @@ protected:
     static int32_t remaining(const time& deadline);
 
     // send_request->send
-    void send(const obelisk_message& message);
+    bool send(const obelisk_message& message);
 
     // write->receive->decode_reply
-    void receive(const obelisk_message& message);
+    bool receive(const obelisk_message& message);
 
     // Sends an outgoing request, and adds handlers to pending request table.
-    void send_request(const std::string& command, const data_chunk& payload,
+    bool send_request(const std::string& command, const data_chunk& payload,
         error_handler on_error, decoder on_reply);
 
     // Decodes an incoming message, invoking the error and/or reply handler.

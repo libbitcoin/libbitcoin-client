@@ -165,7 +165,7 @@ int32_t dealer::remaining(const time& deadline)
 
 // Create a mssage with identity and send it via the message stream.
 // This is invoked by derived class message senders, such as the proxy.
-void dealer::send_request(const std::string& command,
+bool dealer::send_request(const std::string& command,
     const data_chunk& payload, error_handler on_error, decoder on_reply)
 {
     const auto now = steady_clock::now();
@@ -176,11 +176,11 @@ void dealer::send_request(const std::string& command,
     request.on_reply = std::move(on_reply);
     request.resends = 0;
     request.deadline = now + milliseconds(timeout_milliseconds_);
-    send(request.message);
+    return send(request.message);
 }
 
 // Send or resend an existing message by writing it to the message stream.
-void dealer::send(const obelisk_message& message)
+bool dealer::send(const obelisk_message& message)
 {
     data_stack data;
 
@@ -192,9 +192,8 @@ void dealer::send(const obelisk_message& message)
     data.push_back(to_chunk(to_little_endian(message.id)));
     data.push_back(message.payload);
 
-    // BUGBUG: we are losing error state here, prevents fast fail.
     // This creates a message and sends it on the socket.
-    out_.write(data);
+    return out_.write(data);
 }
 
 // Stream interface, not utilized on this class.
@@ -204,11 +203,10 @@ bool dealer::read(stream& stream)
 }
 
 // stream interface.
-void dealer::write(const data_stack& data)
+bool dealer::write(const data_stack& data)
 {
-    // BUGBUG: we are losing error state here, prevents fast fail.
     if (data.size() < 3 || data.size() > 4)
-        return;
+        return false;
 
     obelisk_message message;
     auto it = data.begin();
@@ -232,35 +230,36 @@ void dealer::write(const data_stack& data)
         message.payload = *(++it);
     }
 
-    receive(message);
+    return receive(message);
 }
 
 // Handle a message, call from write.
-void dealer::receive(const obelisk_message& message)
+bool dealer::receive(const obelisk_message& message)
 {
     // Subscription updates are not tracked in pending.
     if (message.command == "address.update")
     {
         decode_update(message);
-        return;
+        return true;
     }
 
     // Subscription updates are not tracked in pending.
     if (message.command == "address.stealth_update")
     {
         decode_stealth_update(message);
-        return;
+        return true;
     }
 
     const auto command = pending_.find(message.id);
     if (command == pending_.end())
     {
         on_unknown_(message.command);
-        return;
+        return false;
     }
 
     decode_reply(message, command->second.on_error, command->second.on_reply);
     pending_.erase(command);
+    return true;
 }
 
 void dealer::decode_reply(const obelisk_message& message,

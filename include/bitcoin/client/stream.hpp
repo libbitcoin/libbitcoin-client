@@ -40,7 +40,7 @@ public:
     virtual bool read(stream& stream) = 0;
 
     /// Write the specified data to this stream.
-    virtual void write(const data_stack& data) = 0;
+    virtual bool write(const data_stack& data) = 0;
 };
 
 } // namespace client

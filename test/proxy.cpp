@@ -44,9 +44,10 @@ public:
         return false;
     }
 
-    virtual void write(const data_stack& data) override
+    virtual bool write(const data_stack& data) override
     {
         out = data;
+        return true;
     }
 };
 

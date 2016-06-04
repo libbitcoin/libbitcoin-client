@@ -40,7 +40,7 @@ public:
     // stream interface.
     virtual int32_t refresh();
     virtual bool read(stream& stream);
-    virtual void write(const data_stack& data);
+    virtual bool write(const data_stack& data);
 
 private:
     protocol::zmq::socket& socket_;
