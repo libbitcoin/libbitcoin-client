@@ -37,7 +37,7 @@ read_line::~read_line()
 {
     zmq::message message;
     message.enqueue_little_endian(signal_halt);
-    const auto ec = message.send(socket_);
+    const auto ec = socket_.send(message);
     assert(!ec);
     thread_->join();
 }
@@ -59,7 +59,7 @@ void read_line::show_prompt()
     std::cout << "> " << std::flush;
     zmq::message message;
     message.enqueue_little_endian(signal_continue);
-    const auto ec = message.send(socket_);
+    const auto ec = socket_.send(message);
     assert(!ec);
 }
 
@@ -71,7 +71,7 @@ std::string read_line::get_line()
     if (poller.wait().contains(socket_.id()))
     {
         zmq::message message;
-        auto ec = message.receive(socket_);
+        auto ec = socket_.receive(message);
         assert(!ec);
         return message.dequeue_text();
     }
@@ -89,7 +89,7 @@ void read_line::run(zmq::context& context)
     {
         uint32_t signal;
         zmq::message message;
-        ec = message.receive(socket);
+        ec = socket.receive(message);
         assert(!ec);
 
         if (!message.dequeue(signal) || signal == signal_halt)
@@ -102,7 +102,7 @@ void read_line::run(zmq::context& context)
 
         zmq::message response;
         response.enqueue(text);
-        ec = response.send(socket);
+        ec = socket.send(response);
         assert(!ec);
     }
 }
