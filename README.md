@@ -6,7 +6,7 @@
 
 *Bitcoin Client Query Library*
 
-Note that you need g++ 4.8 or higher. For this reason Ubuntu 12.04 and older are not supported. Make sure you have installed [libbitcoin-protocol](https://github.com/libbitcoin/libbitcoin-protocol) beforehand according to its build instructions.
+Make sure you have installed [libbitcoin-protocol](https://github.com/libbitcoin/libbitcoin-protocol) beforehand according to its build instructions.
 
 ```sh
 $ ./autogen.sh
