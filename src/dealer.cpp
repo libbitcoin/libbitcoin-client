@@ -163,7 +163,7 @@ int32_t dealer::remaining(const time& deadline)
     return static_cast<int32_t>(bounded);
 }
 
-// Create a mssage with identity and send it via the message stream.
+// Create a message with identity and send it via the message stream.
 // This is invoked by derived class message senders, such as the proxy.
 bool dealer::send_request(const std::string& command,
     const data_chunk& payload, error_handler on_error, decoder on_reply)
