@@ -76,7 +76,6 @@ public:
     virtual bool write(const data_stack& data) override;
 
 protected:
-    typedef std::chrono::system_clock clock;
     typedef std::chrono::steady_clock::time_point time;
 
     // Decodes a message and calls the appropriate callback.
