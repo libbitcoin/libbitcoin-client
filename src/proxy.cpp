@@ -246,7 +246,7 @@ void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
     // [ prefix_blocks:...  ]
     const auto data = build_chunk(
     {
-        to_array(static_cast<uint8_t>(subscribe_type::address)),
+        to_array(static_cast<uint8_t>(subscribe_type::payment)),
         to_array(static_cast<uint8_t>(prefix.size())),
         prefix.blocks()
     });
@@ -508,70 +508,6 @@ bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
     handler(expanded);
     return true;
 }
-
-////void proxy::subscribe(error_handler on_error,
-////    empty_handler on_reply, const address_prefix& prefix)
-////{
-////    // BUGBUG: assertion is not good enough here.
-////    BITCOIN_ASSERT(prefix.size() <= 255);
-////
-////    // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
-////    // [ prefix_bitsize:1 ]
-////    // [ prefix_blocks:...  ]
-////    auto data = build_chunk({
-////        to_array(static_cast<uint8_t>(subscribe_type::address)),
-////        to_array(prefix.size()),
-////        prefix.blocks()
-////    });
-////
-////    send_request("address.subscribe", data, std::move(on_error),
-////        std::bind(decode_empty, _1, std::move(on_reply)));
-////}
-
-/**
-    See also libbitcoin-server repo subscribe_manager::post_updates() and
-    subscribe_manager::post_stealth_updates().
-
-The address result is:
-
-    Response command = "address.update"
-
-    [ version:1 ]
-    [ hash:20 ]
-    [ height:4 ]
-    [ block_hash:32 ]
-
-    struct address_subscribe_result
-    {
-        payment_address address;
-        uint32_t height;
-        hash_digest block_hash;
-    };
-
-When the subscription type is stealth, then the result is:
-
-    Response command = "address.stealth_update"
-
-    [ 32 bit prefix:4 ]
-    [ height:4 ]
-    [ block_hash:32 ]
-    
-    // Currently not used.
-    struct stealth_subscribe_result
-    {
-        typedef byte_array<4> stealth_prefix_bytes;
-        // Protocol will send back 4 bytes of prefix.
-        // See libbitcoin-server repo subscribe_manager::post_stealth_updates()
-        stealth_prefix_bytes prefix;
-        uint32_t height;
-        hash_digest block_hash;
-    };
-
-    Subscriptions expire after 10 minutes. Therefore messages with the command
-    "address.renew" should be sent periodically to the server. The format
-    is the same as for "address.subscribe, and the server will respond
-    with a 4 byte error code.
-*/
 
 } // namespace client
 } // namespace libbitcoin

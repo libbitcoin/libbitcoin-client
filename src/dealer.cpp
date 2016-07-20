@@ -239,7 +239,7 @@ bool dealer::receive(const obelisk_message& message)
     // Subscription updates are not tracked in pending.
     if (message.command == "address.update")
     {
-        decode_update(message);
+        decode_payment_update(message);
         return true;
     }
 
@@ -276,7 +276,7 @@ void dealer::decode_reply(const obelisk_message& message,
         on_error(error::bad_stream);
 }
 
-void dealer::decode_update(const obelisk_message& message)
+void dealer::decode_payment_update(const obelisk_message& message)
 {
     byte_stream istream(message.payload);
     istream_reader source(istream);
