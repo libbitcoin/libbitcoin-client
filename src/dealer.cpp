@@ -37,7 +37,6 @@
 namespace libbitcoin {
 namespace client {
 
-using namespace std::chrono;
 using namespace bc::chain;
 using namespace bc::wallet;
 
@@ -124,8 +123,8 @@ int32_t dealer::refresh()
             // Resend is helpful in the case where the server is overloaded.
             // A zmq router drops messages as it reaches the high water mark.
             request->second.resends++;
-            request->second.deadline = steady_clock::now() + 
-                microseconds(timeout_milliseconds_);
+            request->second.deadline = asio::steady_clock::now() + 
+                asio::milliseconds(timeout_milliseconds_);
 
             // Timed out and not done, go to sleep for no more than timeout.
             interval = std::min(interval, timeout_milliseconds_);
@@ -147,15 +146,16 @@ int32_t dealer::refresh()
 }
 
 // Return time to deadline in milliseconds.
-int32_t dealer::remaining(const time& deadline)
+int32_t dealer::remaining(const asio::time_point& deadline)
 {
     // Convert bounds to the larger type of the conversion.
     static constexpr auto maximum = static_cast<int64_t>(max_int32);
     static constexpr auto minimum = static_cast<int64_t>(min_int32);
 
     // Get the remaining time in milliseconds (may be negative).
-    const auto remainder = deadline - steady_clock::now();
-    const auto count = duration_cast<milliseconds>(remainder).count();
+    const auto remainder = deadline - asio::steady_clock::now();
+    const auto count = std::chrono::duration_cast<asio::milliseconds>(
+        remainder).count();
 
     // Prevent overflow and underflow in the conversion to int32.
     const auto capped = std::min(count, maximum);
@@ -168,14 +168,14 @@ int32_t dealer::remaining(const time& deadline)
 bool dealer::send_request(const std::string& command,
     const data_chunk& payload, error_handler on_error, decoder on_reply)
 {
-    const auto now = steady_clock::now();
+    const auto now = asio::steady_clock::now();
     const auto id = ++last_request_index_;
     auto& request = pending_[id];
     request.message = obelisk_message{ command, id, payload };
     request.on_error = std::move(on_error);
     request.on_reply = std::move(on_reply);
     request.resends = 0;
-    request.deadline = now + milliseconds(timeout_milliseconds_);
+    request.deadline = now + asio::milliseconds(timeout_milliseconds_);
     return send(request.message);
 }
 
