@@ -20,7 +20,6 @@
 #ifndef LIBBITCOIN_CLIENT_DEALER_HPP
 #define LIBBITCOIN_CLIENT_DEALER_HPP
 
-#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -76,9 +75,6 @@ public:
     virtual bool write(const data_stack& data) override;
 
 protected:
-    typedef std::chrono::system_clock clock;
-    typedef std::chrono::steady_clock::time_point time;
-
     // Decodes a message and calls the appropriate callback.
     typedef std::function<bool(reader& payload)> decoder;
 
@@ -95,11 +91,11 @@ protected:
         error_handler on_error;
         decoder on_reply;
         uint32_t resends;
-        time deadline;
+        asio::time_point deadline;
     };
 
     // Calculate the number of milliseconds remaining in the deadline.
-    static int32_t remaining(const time& deadline);
+    static int32_t remaining(const asio::time_point& deadline);
 
     // send_request->send
     bool send(const obelisk_message& message);

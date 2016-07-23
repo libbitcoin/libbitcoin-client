@@ -19,7 +19,6 @@
  */
 #include <bitcoin/client/proxy.hpp>
 
-#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <bitcoin/bitcoin.hpp>
@@ -32,7 +31,6 @@ namespace client {
 
 using std::placeholders::_1;
 using namespace bc::chain;
-using namespace std::chrono;
 using namespace bc::wallet;
 
 proxy::proxy(stream& out, unknown_handler on_unknown_command,

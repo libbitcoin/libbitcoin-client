@@ -20,7 +20,6 @@
 #include <bitcoin/client/obelisk_client.hpp>
 
 #include <algorithm>
-#include <chrono>
 #include <cstdint>
 #include <thread>
 #include <bitcoin/protocol.hpp>
@@ -28,7 +27,6 @@
 using namespace bc;
 using namespace bc::config;
 using namespace bc::protocol;
-using namespace std::chrono;
 using namespace std::this_thread;
 
 namespace libbitcoin {
@@ -73,7 +71,7 @@ bool obelisk_client::connect(const endpoint& address)
             return true;
 
         // Arbitrary delay between connection attempts.
-        sleep_for(milliseconds(100));
+        sleep_for(asio::milliseconds(100));
     }
 
     return false;
@@ -116,7 +114,8 @@ void obelisk_client::wait()
 // Used by watch-* commands, fires registered update or unknown handlers.
 void obelisk_client::monitor(uint32_t timeout_seconds)
 {
-    const auto deadline = steady_clock::now() + seconds(timeout_seconds);
+    const auto deadline = asio::steady_clock::now() +
+        asio::seconds(timeout_seconds);
 
     zmq::poller poller;
     poller.add(socket_);
