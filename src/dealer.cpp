@@ -91,12 +91,12 @@ void dealer::clear(const code& code)
 
 void dealer::set_on_update(update_handler on_update)
 {
-    on_update_ = std::move(on_update);
+    on_update_ = on_update;
 }
 
 void dealer::set_on_stealth_update(stealth_update_handler on_update)
 {
-    on_stealth_update_ = std::move(on_update);
+    on_stealth_update_ = on_update;
 }
 
 // Send, kill or ignore pending messages as necessary.
@@ -172,8 +172,8 @@ bool dealer::send_request(const std::string& command,
     const auto id = ++last_request_index_;
     auto& request = pending_[id];
     request.message = obelisk_message{ command, id, payload };
-    request.on_error = std::move(on_error);
-    request.on_reply = std::move(on_reply);
+    request.on_error = on_error;
+    request.on_reply = on_reply;
     request.resends = 0;
     request.deadline = now + asio::milliseconds(timeout_milliseconds_);
     return send(request.message);

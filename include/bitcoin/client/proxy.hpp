@@ -111,7 +111,7 @@ public:
         const wallet::payment_address& address);
 
     void address_subscribe(error_handler on_error, empty_handler on_reply,
-        chain::subscribe_type discriminator, const binary& prefix);
+        chain::subscribe_type type, const binary& prefix);
 
 private:
 

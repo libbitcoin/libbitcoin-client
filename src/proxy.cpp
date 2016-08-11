@@ -46,18 +46,18 @@ void proxy::protocol_broadcast_transaction(error_handler on_error,
     empty_handler on_reply, const chain::transaction& tx)
 {
     send_request("protocol.broadcast_transaction", tx.to_data(),
-        std::move(on_error),
+        on_error,
         std::bind(decode_empty,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::transaction_pool_validate(error_handler on_error,
     validate_handler on_reply, const chain::transaction& tx)
 {
     send_request("transaction_pool.validate", tx.to_data(),
-        std::move(on_error),
+        on_error,
         std::bind(decode_validate,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::transaction_pool_fetch_transaction(error_handler on_error,
@@ -66,9 +66,9 @@ void proxy::transaction_pool_fetch_transaction(error_handler on_error,
     const auto data = build_chunk({ tx_hash });
 
     send_request("transaction_pool.fetch_transaction", data,
-        std::move(on_error),
+        on_error,
         std::bind(decode_transaction,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::blockchain_fetch_transaction(error_handler on_error,
@@ -76,9 +76,9 @@ void proxy::blockchain_fetch_transaction(error_handler on_error,
 {
     const auto data = build_chunk({ tx_hash });
 
-    send_request("blockchain.fetch_transaction", data, std::move(on_error),
+    send_request("blockchain.fetch_transaction", data, on_error,
         std::bind(decode_transaction,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::blockchain_fetch_last_height(error_handler on_error,
@@ -86,9 +86,9 @@ void proxy::blockchain_fetch_last_height(error_handler on_error,
 {
     const data_chunk data;
 
-    send_request("blockchain.fetch_last_height", data, std::move(on_error),
+    send_request("blockchain.fetch_last_height", data, on_error,
         std::bind(decode_height,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::blockchain_fetch_block_header(error_handler on_error,
@@ -96,9 +96,9 @@ void proxy::blockchain_fetch_block_header(error_handler on_error,
 {
     const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
 
-    send_request("blockchain.fetch_block_header", data, std::move(on_error),
+    send_request("blockchain.fetch_block_header", data, on_error,
         std::bind(decode_block_header,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::blockchain_fetch_block_header(error_handler on_error,
@@ -106,9 +106,9 @@ void proxy::blockchain_fetch_block_header(error_handler on_error,
 {
     const auto data = build_chunk({ block_hash });
 
-    send_request("blockchain.fetch_block_header", data, std::move(on_error),
+    send_request("blockchain.fetch_block_header", data, on_error,
         std::bind(decode_block_header,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::blockchain_fetch_transaction_index(error_handler on_error,
@@ -117,9 +117,9 @@ void proxy::blockchain_fetch_transaction_index(error_handler on_error,
     const auto data = build_chunk({ tx_hash });
 
     send_request("blockchain.fetch_transaction_index", data,
-        std::move(on_error),
+        on_error,
         std::bind(decode_transaction_index,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::blockchain_fetch_stealth(error_handler on_error,
@@ -138,9 +138,9 @@ void proxy::blockchain_fetch_stealth(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
-    send_request("blockchain.fetch_stealth", data, std::move(on_error),
+    send_request("blockchain.fetch_stealth", data, on_error,
         std::bind(decode_stealth,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 // Address hash reversal is an idiosyncracy of the original Obelisk protocol.
@@ -155,9 +155,9 @@ void proxy::blockchain_fetch_history(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
-    send_request("blockchain.fetch_history", data, std::move(on_error),
+    send_request("blockchain.fetch_history", data, on_error,
         std::bind(decode_history,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 // Address hash reversal is an idiosyncracy of the original Obelisk protocol.
@@ -174,9 +174,9 @@ void proxy::address_fetch_history(error_handler on_error,
     });
 
     // address.fetch_history is first available in sx and deprecated in bs 2.0.
-    send_request("address.fetch_history", data, std::move(on_error),
+    send_request("address.fetch_history", data, on_error,
         std::bind(decode_expanded_history,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 // The difference between fetch_history and fetch_history2 is hash reversal.
@@ -192,9 +192,9 @@ void proxy::address_fetch_history2(error_handler on_error,
     });
 
     // address.fetch_history2 is first available in bs 3.0.
-    send_request("address.fetch_history2", data, std::move(on_error),
+    send_request("address.fetch_history2", data, on_error,
         std::bind(decode_history,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 void proxy::address_fetch_unspent_outputs(error_handler on_error,
@@ -225,7 +225,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
         on_reply(selected_utxos);
     };
 
-    send_request("address.fetch_history2", data, std::move(on_error),
+    send_request("address.fetch_history2", data, on_error,
         std::bind(decode_history,
             _1, std::move(parse_history)));
 }
@@ -237,6 +237,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
 void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
     const payment_address& address)
 {
+    // 20 * 8 = 160 bits.
     binary prefix(short_hash_size * byte_bits, address.hash());
 
     // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
@@ -249,16 +250,22 @@ void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
         prefix.blocks()
     });
 
-    send_request("address.subscribe", data, std::move(on_error),
+    send_request("address.subscribe", data, on_error,
         std::bind(decode_empty,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 // Ths overload supports only a prefix for either stealth or payment address.
 void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
-    subscribe_type discriminator, const binary& prefix)
+    subscribe_type type, const binary& prefix)
 {
-    if (prefix.size() > max_uint8)
+    static constexpr auto address_bits = short_hash_size * byte_bits;
+    static constexpr auto stealth_bits = sizeof(uint32_t) * byte_bits;
+
+    const auto bit_length = prefix.size();
+
+    if ((type == subscribe_type::payment && bit_length > address_bits) ||
+        (type == subscribe_type::stealth && bit_length > stealth_bits))
     {
         on_error(error::bad_stream);
         return;
@@ -266,14 +273,14 @@ void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
 
     const auto data = build_chunk(
     {
-        to_array(static_cast<uint8_t>(discriminator)),
-        to_array(static_cast<uint8_t>(prefix.size())),
+        to_array(static_cast<uint8_t>(type)),
+        to_array(static_cast<uint8_t>(bit_length)),
         prefix.blocks()
     });
 
-    send_request("address.subscribe", data, std::move(on_error),
+    send_request("address.subscribe", data, on_error,
         std::bind(decode_empty,
-            _1, std::move(on_reply)));
+            _1, on_reply));
 }
 
 // Response handlers.
@@ -358,7 +365,7 @@ stealth::list proxy::expand(stealth_compact::list& compact)
         stealth out;
         out.ephemeral_public_key = splice(sign, in.ephemeral_public_key_hash);
         out.public_key_hash = reverse(in.public_key_hash);
-        out.transaction_hash = std::move(in.transaction_hash);
+        out.transaction_hash = in.transaction_hash;
         result.emplace_back(out);
     }
 
@@ -397,7 +404,7 @@ history::list proxy::expand(history_compact::list& compact)
         if (output->kind == point_kind::output)
         {
             history row;
-            row.output = std::move(output->point);
+            row.output = output->point;
             row.output_height = output->height;
             row.value = output->value;
             row.spend = { null_hash, max_uint32 };
@@ -421,7 +428,7 @@ history::list proxy::expand(history_compact::list& compact)
             if (row.temporary_checksum == spend.previous_checksum &&
                 row.spend.hash == null_hash)
             {
-                row.spend = std::move(spend.point);
+                row.spend = spend.point;
                 row.spend_height = spend.height;
                 found = true;
                 break;
@@ -436,7 +443,7 @@ history::list proxy::expand(history_compact::list& compact)
             row.output = { null_hash, max_uint32 };
             row.output_height = max_uint64;
             row.value = max_uint32;
-            row.spend = std::move(spend.point);
+            row.spend = spend.point;
             row.spend_height = spend.height;
             result.emplace_back(row);
         }
