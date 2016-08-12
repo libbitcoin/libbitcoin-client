@@ -442,7 +442,7 @@ history::list proxy::expand(history_compact::list& compact)
             history row;
             row.output = { null_hash, max_uint32 };
             row.output_height = max_uint64;
-            row.value = max_uint32;
+            row.value = max_uint64;
             row.spend = spend.point;
             row.spend_height = spend.height;
             result.emplace_back(row);
