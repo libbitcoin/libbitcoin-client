@@ -148,10 +148,12 @@ void proxy::blockchain_fetch_history(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
+    auto hash = address.hash();
+    std::reverse(hash.begin(), hash.end());
     const auto data = build_chunk(
     {
         to_array(address.version()),
-        reverse(address.hash()),
+        hash,
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -166,10 +168,12 @@ void proxy::address_fetch_history(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
+    auto hash = address.hash();
+    std::reverse(hash.begin(), hash.end());
     const auto data = build_chunk(
     {
         to_array(address.version()),
-        reverse(address.hash()),
+        hash,
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -364,7 +368,8 @@ stealth::list proxy::expand(stealth_compact::list& compact)
     {
         stealth out;
         out.ephemeral_public_key = splice(sign, in.ephemeral_public_key_hash);
-        out.public_key_hash = reverse(in.public_key_hash);
+        out.public_key_hash = in.public_key_hash;
+        std::reverse(out.public_key_hash.begin(), out.public_key_hash.end());
         out.transaction_hash = in.transaction_hash;
         result.emplace_back(out);
     }
