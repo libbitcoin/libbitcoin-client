@@ -53,7 +53,6 @@ public:
     typedef std::function<void(const chain::point::indexes&)> validate_handler;
     typedef std::function<void(const chain::points_info&)> points_info_handler;
 
-
     // Fetchers.
     //-------------------------------------------------------------------------
 
