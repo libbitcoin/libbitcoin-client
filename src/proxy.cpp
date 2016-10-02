@@ -219,7 +219,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
     {
         chain::output_info::list unspent;
         for(auto& row : rows)
-            if (row.spend.hash == null_hash)
+            if (row.spend.hash() == null_hash)
                 unspent.push_back({row.output, row.value});
 
         chain::points_info selected_utxos;
@@ -431,7 +431,7 @@ history::list proxy::expand(history_compact::list& compact)
         for (auto& row: result)
         {
             if (row.temporary_checksum == spend.previous_checksum &&
-                row.spend.hash == null_hash)
+                row.spend.hash() == null_hash)
             {
                 row.spend = spend.point;
                 row.spend_height = spend.height;
@@ -445,7 +445,7 @@ history::list proxy::expand(history_compact::list& compact)
         if (!found)
         {
             history row;
-            row.output = { null_hash, max_uint32 };
+            row.output = output_point{ null_hash, max_uint32 };
             row.output_height = max_uint64;
             row.value = max_uint64;
             row.spend = spend.point;
@@ -458,7 +458,7 @@ history::list proxy::expand(history_compact::list& compact)
 
     // Clear all remaining checksums from unspent rows.
     for (auto& row: result)
-        if (row.spend.hash == null_hash)
+        if (row.spend.hash() == null_hash)
             row.spend_height = max_uint64;
 
     // TODO: sort by height and index of output, spend or both in order.
