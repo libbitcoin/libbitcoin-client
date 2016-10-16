@@ -306,7 +306,7 @@ void dealer::decode_stealth_update(const obelisk_message& message)
 
     // This message does not have an error_code at the beginning.
     static constexpr size_t prefix_size = sizeof(uint32_t);
-    binary prefix(prefix_size * byte_bits, source.read_bytes<prefix_size>());
+    binary prefix(prefix_size * byte_bits, source.read_forward<prefix_size>());
     const auto height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
     transaction tx;
