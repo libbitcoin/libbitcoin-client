@@ -35,7 +35,8 @@ using namespace bc::wallet;
 client::client()
   : done_(false),
     pending_request_(false),
-    terminal_(context_)
+    terminal_(context_),
+    socket_(context_, zmq::socket::role::dealer)
 {
 }
 
@@ -63,12 +64,10 @@ void client::cmd_connect(std::stringstream& args)
 
     std::cout << "connecting to " << server << std::endl;
 
-    zmq::socket socket(context_, zmq::socket::role::dealer);
-
-    if (socket.connect(server) != bc::error::success)
+    if (socket_.connect(server) != bc::error::success)
         std::cout << "error: failed to connect" << std::endl;
     else
-        connection_ = std::make_shared<connection>(socket, 6000);
+        connection_ = std::make_shared<connection>(socket_, 6000);
 }
 
 void client::cmd_disconnect(std::stringstream&)

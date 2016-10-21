@@ -98,6 +98,7 @@ private:
     bool pending_request_;
     bc::protocol::zmq::context context_;
     read_line terminal_;
+    bc::protocol::zmq::socket socket_;
     std::shared_ptr<connection> connection_;
 };
 
