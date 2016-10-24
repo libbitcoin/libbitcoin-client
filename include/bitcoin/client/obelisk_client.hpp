@@ -35,6 +35,7 @@ struct BCC_API connection_type
     uint8_t retries;
     uint16_t timeout_seconds;
     config::endpoint server;
+    config::authority socks;
     config::sodium server_public_key;
     config::sodium client_private_key;
 };
@@ -50,13 +51,14 @@ public:
     /// Construct an instance of the client using the specified parameters.
     obelisk_client(uint16_t timeout_seconds, uint8_t retries);
 
-    /// Connect to the specified endpoint.
-    virtual bool connect(const config::endpoint& address);
-
     /// Connect to the specified endpoint using the provided keys.
     virtual bool connect(const config::endpoint& address,
-        const bc::config::sodium& server_public_key,
-        const bc::config::sodium& client_private_key);
+        const config::authority& socks_proxy,
+        const config::sodium& server_public_key,
+        const config::sodium& client_private_key);
+
+    /// Connect to the specified endpoint.
+    virtual bool connect(const config::endpoint& address);
 
     /// Connect to the specified endpoint using the provided channel config.
     virtual bool connect(const connection_type& channel);
