@@ -57,8 +57,30 @@ obelisk_client::obelisk_client(const connection_type& channel)
 
 bool obelisk_client::connect(const connection_type& channel)
 {
-    return connect(channel.server, channel.server_public_key,
+    return connect(channel.server, channel.socks, channel.server_public_key,
         channel.client_private_key);
+}
+
+bool obelisk_client::connect(const endpoint& address,
+    const authority& socks_proxy, const sodium& server_public_key,
+    const sodium& client_private_key)
+{
+    // Only apply the client (and server) key if server key is configured.
+    if (server_public_key)
+    {
+        if (!socket_.set_curve_client(server_public_key))
+            return false;
+
+        // Generates arbitrary client keys if private key is not configured.
+        if (!socket_.set_certificate({ client_private_key }))
+            return false;
+    }
+
+    // Ignore the setting if socks.port is zero (invalid).
+    if (!socket_.set_socks_proxy(socks_proxy))
+        return false;
+
+    return connect(address);
 }
 
 bool obelisk_client::connect(const endpoint& address)
@@ -75,23 +97,6 @@ bool obelisk_client::connect(const endpoint& address)
     }
 
     return false;
-}
-
-bool obelisk_client::connect(const endpoint& address,
-    const sodium& server_public_key, const sodium& client_private_key)
-{
-    // Only apply the client (and server) key if server key is configured.
-    if (server_public_key)
-    {
-        if (!socket_.set_curve_client(server_public_key))
-            return false;
-
-        // Generates arbitrary client keys if private key is not configured.
-        if (!socket_.set_certificate({ client_private_key }))
-            return false;
-    }
-
-    return connect(address);
 }
 
 // Used by fetch-* commands, fires reply, unknown or error handlers.
