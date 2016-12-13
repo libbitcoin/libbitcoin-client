@@ -217,8 +217,8 @@ BOOST_AUTO_TEST_CASE(proxy__subscribe__test)
 
     HANDLE_ROUTING_FRAMES(capture.out);
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
-    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "address.subscribe");
-    BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "00a0f85beb6356d0813ddb0dbb14230a249fe931a135");
+    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "address.subscribe2");
+    BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "a0f85beb6356d0813ddb0dbb14230a249fe931a135");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
