@@ -241,48 +241,42 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
 void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
     const payment_address& address)
 {
-    // 20 * 8 = 160 bits.
-    binary prefix(short_hash_size * byte_bits, address.hash());
-
-    // [ type:1 ] (0 = address prefix, 1 = stealth prefix)
-    // [ prefix_bitsize:1 ]
-    // [ prefix_blocks:...  ]
-    const auto data = build_chunk(
-    {
-        to_array(static_cast<uint8_t>(subscribe_type::payment)),
-        to_array(static_cast<uint8_t>(prefix.size())),
-        prefix.blocks()
-    });
-
-    send_request("address.subscribe", data, on_error,
-        std::bind(decode_empty,
-            _1, on_reply));
+    static constexpr auto address_bits = short_hash_size * byte_bits;
+    const auto prefix = binary(address_bits, address.hash());
+    address_subscribe(on_error, on_reply, prefix);
 }
 
-// Ths overload supports only a prefix for either stealth or payment address.
+// Ths overload supports a prefix for either stealth or payment address.
 void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
-    subscribe_type type, const binary& prefix)
+    const binary& prefix)
 {
+    // 20 * 8 = 160 bits.
     static constexpr auto address_bits = short_hash_size * byte_bits;
+
+    // 4 * 8 = 32 bits.
     static constexpr auto stealth_bits = sizeof(uint32_t) * byte_bits;
+    static_assert(stealth_bits <= address_bits, "unexpected bit length");
 
     const auto bit_length = prefix.size();
 
-    if ((type == subscribe_type::payment && bit_length > address_bits) ||
-        (type == subscribe_type::stealth && bit_length > stealth_bits))
+    if (bit_length > address_bits /*&& bit_length > stealth_bits*/)
     {
         on_error(error::bad_stream);
         return;
     }
 
+    //*********************
+    // v3 server only
+    //*********************
+    // [ prefix_bitsize:1 ]
+    // [ prefix_blocks:...]
     const auto data = build_chunk(
     {
-        to_array(static_cast<uint8_t>(type)),
         to_array(static_cast<uint8_t>(bit_length)),
         prefix.blocks()
     });
 
-    send_request("address.subscribe", data, on_error,
+    send_request("address.subscribe2", data, on_error,
         std::bind(decode_empty,
             _1, on_reply));
 }
