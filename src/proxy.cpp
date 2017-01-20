@@ -45,8 +45,7 @@ proxy::proxy(stream& out, unknown_handler on_unknown_command,
 void proxy::protocol_broadcast_transaction(error_handler on_error,
     empty_handler on_reply, const chain::transaction& tx)
 {
-    send_request("protocol.broadcast_transaction", tx.to_data(),
-        on_error,
+    send_request("protocol.broadcast_transaction", tx.to_data(), on_error,
         std::bind(decode_empty,
             _1, on_reply));
 }
@@ -54,8 +53,7 @@ void proxy::protocol_broadcast_transaction(error_handler on_error,
 void proxy::transaction_pool_validate(error_handler on_error,
     validate_handler on_reply, const chain::transaction& tx)
 {
-    send_request("transaction_pool.validate2", tx.to_data(),
-        on_error,
+    send_request("transaction_pool.validate2", tx.to_data(), on_error,
         std::bind(decode_validate,
             _1, on_reply));
 }
@@ -65,8 +63,7 @@ void proxy::transaction_pool_fetch_transaction(error_handler on_error,
 {
     const auto data = build_chunk({ tx_hash });
 
-    send_request("transaction_pool.fetch_transaction", data,
-        on_error,
+    send_request("transaction_pool.fetch_transaction", data, on_error,
         std::bind(decode_transaction,
             _1, on_reply));
 }
@@ -116,8 +113,7 @@ void proxy::blockchain_fetch_transaction_index(error_handler on_error,
 {
     const auto data = build_chunk({ tx_hash });
 
-    send_request("blockchain.fetch_transaction_index", data,
-        on_error,
+    send_request("blockchain.fetch_transaction_index", data, on_error,
         std::bind(decode_transaction_index,
             _1, on_reply));
 }
@@ -218,7 +214,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
         const chain::history::list& rows)
     {
         chain::output_info::list unspent;
-        for(auto& row : rows)
+        for(auto& row: rows)
             if (row.spend.hash() == null_hash)
                 unspent.push_back({row.output, row.value});
 
