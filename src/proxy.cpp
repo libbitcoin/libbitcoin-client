@@ -349,7 +349,7 @@ bool proxy::decode_validate(reader& payload, validate_handler& handler)
 stealth::list proxy::expand(stealth_compact::list& compact)
 {
     // The sign byte of the ephmemeral key is fixed (0x02) by convention.
-    static const auto sign = to_array(ephemeral_public_key_sign);
+    static const auto sign = to_array(ec_even_sign);
 
     stealth::list result;
 
