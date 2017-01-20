@@ -46,11 +46,11 @@ public:
     typedef std::function<void()> empty_handler;
     typedef std::function<void(size_t)> height_handler;
     typedef std::function<void(size_t, size_t)> transaction_index_handler;
+    typedef std::function<void(const code&)> validate_handler;
     typedef std::function<void(const chain::header&)> block_header_handler;
     typedef std::function<void(const chain::history::list&)> history_handler;
     typedef std::function<void(const chain::stealth::list&)> stealth_handler;
     typedef std::function<void(const chain::transaction&)> transaction_handler;
-    typedef std::function<void(const chain::point::indexes&)> validate_handler;
     typedef std::function<void(const chain::points_info&)> points_info_handler;
 
     // Fetchers.

@@ -54,7 +54,7 @@ void proxy::protocol_broadcast_transaction(error_handler on_error,
 void proxy::transaction_pool_validate(error_handler on_error,
     validate_handler on_reply, const chain::transaction& tx)
 {
-    send_request("transaction_pool.validate", tx.to_data(),
+    send_request("transaction_pool.validate2", tx.to_data(),
         on_error,
         std::bind(decode_validate,
             _1, on_reply));
@@ -337,16 +337,11 @@ bool proxy::decode_transaction_index(reader& payload,
 
 bool proxy::decode_validate(reader& payload, validate_handler& handler)
 {
-    point::indexes unconfirmed;
+    const code ec = payload.read_error_code();
+    if (!payload.is_exhausted())
+        return false;
 
-    while (!payload.is_exhausted())
-    {
-        unconfirmed.push_back(payload.read_4_bytes_little_endian());
-        if (!payload)
-            return false;
-    }
-
-    handler(unconfirmed);
+    handler(ec);
     return true;
 }
 

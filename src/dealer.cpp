@@ -267,9 +267,8 @@ void dealer::decode_reply(const obelisk_message& message,
 {
     byte_stream istream(message.payload);
     istream_reader source(istream);
-    code ec = static_cast<error::error_code_t>(
-        source.read_4_bytes_little_endian());
 
+    const auto ec = source.read_error_code();
     if (ec)
         on_error(ec);
     else if (!on_reply(source))
