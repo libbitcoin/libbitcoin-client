@@ -481,7 +481,7 @@ bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
         row.value = payload.read_8_bytes_little_endian();
 
         // If there is no spend then input is null_hash/max_uint32/max_uint32.
-        success &= row.spend.from_data(payload);
+        success = success && row.spend.from_data(payload);
 
         // Storing uint32_t height into uint64_t.
         row.spend_height = payload.read_4_bytes_little_endian();
