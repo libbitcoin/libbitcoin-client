@@ -43,10 +43,9 @@ public:
     // Fetch handler types.
     //-------------------------------------------------------------------------
 
-    typedef std::function<void()> empty_handler;
     typedef std::function<void(size_t)> height_handler;
+    typedef std::function<void(const code&)> result_handler;
     typedef std::function<void(size_t, size_t)> transaction_index_handler;
-    typedef std::function<void(const code&)> validate_handler;
     typedef std::function<void(const chain::header&)> block_header_handler;
     typedef std::function<void(const chain::history::list&)> history_handler;
     typedef std::function<void(const chain::stealth::list&)> stealth_handler;
@@ -56,11 +55,11 @@ public:
     // Fetchers.
     //-------------------------------------------------------------------------
 
-    void protocol_broadcast_transaction(error_handler on_error,
-        empty_handler on_reply, const chain::transaction& tx);
+    void transaction_pool_broadcast(error_handler on_error,
+        result_handler on_reply, const chain::transaction& tx);
 
     void transaction_pool_validate(error_handler on_error,
-        validate_handler on_reply, const chain::transaction& tx);
+        result_handler on_reply, const chain::transaction& tx);
 
     void transaction_pool_fetch_transaction(error_handler on_error,
         transaction_handler on_reply, const hash_digest& tx_hash);
@@ -88,15 +87,15 @@ public:
         history_handler on_reply, const wallet::payment_address& address,
         uint32_t from_height = 0);
 
-    /// sx and bs 2.0 only (obsolete in bs 3.0).
-    void address_fetch_history(error_handler on_error,
-        history_handler on_reply, const wallet::payment_address& address,
-        uint32_t from_height=0);
+    /////// sx and bs 2.0 only (obsolete in bs 3.0).
+    ////void address_fetch_history(error_handler on_error,
+    ////    history_handler on_reply, const wallet::payment_address& address,
+    ////    uint32_t from_height=0);
 
-    /// bs 2.0 and later.
-    void address_fetch_history2(error_handler on_error,
-        history_handler on_reply, const wallet::payment_address& address,
-        uint32_t from_height=0);
+    /////// bs 2.0 and later.
+    ////void address_fetch_history2(error_handler on_error,
+    ////    history_handler on_reply, const wallet::payment_address& address,
+    ////    uint32_t from_height=0);
 
     void address_fetch_unspent_outputs(error_handler on_error,
         points_info_handler on_reply, const wallet::payment_address& address,
@@ -106,17 +105,17 @@ public:
     // Subscribers.
     //-------------------------------------------------------------------------
 
-    void address_subscribe(error_handler on_error, empty_handler on_reply,
+    void address_subscribe(error_handler on_error, result_handler on_reply,
         const wallet::payment_address& address);
 
-    void address_subscribe(error_handler on_error, empty_handler on_reply,
+    void address_subscribe(error_handler on_error, result_handler on_reply,
         const binary& prefix);
 
 private:
 
     // Response handlers.
     //-------------------------------------------------------------------------
-    static bool decode_empty(reader& payload, empty_handler& handler);
+    static bool decode_empty(reader& payload, result_handler& handler);
     static bool decode_transaction(reader& payload,
         transaction_handler& handler);
     static bool decode_height(reader& payload, height_handler& handler);
@@ -124,7 +123,6 @@ private:
         block_header_handler& handler);
     static bool decode_transaction_index(reader& payload,
         transaction_index_handler& handler);
-    static bool decode_validate(reader& payload, validate_handler& handler);
     static bool decode_stealth(reader& payload, stealth_handler& handler);
     static bool decode_history(reader& payload, history_handler& handler);
     static bool decode_expanded_history(reader& payload,

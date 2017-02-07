@@ -42,19 +42,19 @@ proxy::proxy(stream& out, unknown_handler on_unknown_command,
 // Fetchers.
 //-----------------------------------------------------------------------------
 
-void proxy::protocol_broadcast_transaction(error_handler on_error,
-    empty_handler on_reply, const chain::transaction& tx)
+void proxy::transaction_pool_broadcast(error_handler on_error,
+    result_handler on_reply, const chain::transaction& tx)
 {
-    send_request("protocol.broadcast_transaction", tx.to_data(), on_error,
+    send_request("transaction_pool.broadcast", tx.to_data(), on_error,
         std::bind(decode_empty,
             _1, on_reply));
 }
 
 void proxy::transaction_pool_validate(error_handler on_error,
-    validate_handler on_reply, const chain::transaction& tx)
+    result_handler on_reply, const chain::transaction& tx)
 {
     send_request("transaction_pool.validate2", tx.to_data(), on_error,
-        std::bind(decode_validate,
+        std::bind(decode_empty,
             _1, on_reply));
 }
 
@@ -158,44 +158,44 @@ void proxy::blockchain_fetch_history(error_handler on_error,
             _1, on_reply));
 }
 
-// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
-// address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
-void proxy::address_fetch_history(error_handler on_error,
-    history_handler on_reply, const payment_address& address,
-    uint32_t from_height)
-{
-    auto hash = address.hash();
-    std::reverse(hash.begin(), hash.end());
-    const auto data = build_chunk(
-    {
-        to_array(address.version()),
-        hash,
-        to_little_endian<uint32_t>(from_height)
-    });
+////// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
+////// address.fetch_history is obsoleted in bs 3.0 (use address.fetch_history2).
+////void proxy::address_fetch_history(error_handler on_error,
+////    history_handler on_reply, const payment_address& address,
+////    uint32_t from_height)
+////{
+////    auto hash = address.hash();
+////    std::reverse(hash.begin(), hash.end());
+////    const auto data = build_chunk(
+////    {
+////        to_array(address.version()),
+////        hash,
+////        to_little_endian<uint32_t>(from_height)
+////    });
+////
+////    // address.fetch_history is first available in sx and deprecated in bs 2.0.
+////    send_request("address.fetch_history", data, on_error,
+////        std::bind(decode_expanded_history,
+////            _1, on_reply));
+////}
 
-    // address.fetch_history is first available in sx and deprecated in bs 2.0.
-    send_request("address.fetch_history", data, on_error,
-        std::bind(decode_expanded_history,
-            _1, on_reply));
-}
-
-// The difference between fetch_history and fetch_history2 is hash reversal.
-void proxy::address_fetch_history2(error_handler on_error,
-    history_handler on_reply, const payment_address& address,
-    uint32_t from_height)
-{
-    const auto data = build_chunk(
-    {
-        to_array(address.version()),
-        address.hash(),
-        to_little_endian<uint32_t>(from_height)
-    });
-
-    // address.fetch_history2 is first available in bs 3.0.
-    send_request("address.fetch_history2", data, on_error,
-        std::bind(decode_history,
-            _1, on_reply));
-}
+////// The difference between fetch_history and fetch_history2 is hash reversal.
+////void proxy::address_fetch_history2(error_handler on_error,
+////    history_handler on_reply, const payment_address& address,
+////    uint32_t from_height)
+////{
+////    const auto data = build_chunk(
+////    {
+////        to_array(address.version()),
+////        address.hash(),
+////        to_little_endian<uint32_t>(from_height)
+////    });
+////
+////    // address.fetch_history2 is first available in bs 3.0.
+////    send_request("address.fetch_history2", data, on_error,
+////        std::bind(decode_history,
+////            _1, on_reply));
+////}
 
 void proxy::address_fetch_unspent_outputs(error_handler on_error,
     points_info_handler on_reply, const wallet::payment_address& address,
@@ -234,7 +234,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
 //-----------------------------------------------------------------------------
 
 // Ths is a simplified overload for a non-private payment address subscription.
-void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
+void proxy::address_subscribe(error_handler on_error, result_handler on_reply,
     const payment_address& address)
 {
     static constexpr auto address_bits = short_hash_size * byte_bits;
@@ -243,7 +243,7 @@ void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
 }
 
 // Ths overload supports a prefix for either stealth or payment address.
-void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
+void proxy::address_subscribe(error_handler on_error, result_handler on_reply,
     const binary& prefix)
 {
     // 20 * 8 = 160 bits.
@@ -280,12 +280,13 @@ void proxy::address_subscribe(error_handler on_error, empty_handler on_reply,
 // Response handlers.
 //-----------------------------------------------------------------------------
 
-bool proxy::decode_empty(reader& payload, empty_handler& handler)
+bool proxy::decode_empty(reader& payload, result_handler& handler)
 {
+    const code ec = payload.read_error_code();
     if (!payload.is_exhausted())
         return false;
 
-    handler();
+    handler(ec);
     return true;
 }
 
@@ -328,16 +329,6 @@ bool proxy::decode_transaction_index(reader& payload,
         return false;
 
     handler(block_height, index);
-    return true;
-}
-
-bool proxy::decode_validate(reader& payload, validate_handler& handler)
-{
-    const code ec = payload.read_error_code();
-    if (!payload.is_exhausted())
-        return false;
-
-    handler(ec);
     return true;
 }
 
@@ -490,7 +481,7 @@ bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
         row.value = payload.read_8_bytes_little_endian();
 
         // If there is no spend then input is null_hash/max_uint32/max_uint32.
-        success &= row.spend.from_data(payload);
+        success = success && row.spend.from_data(payload);
 
         // Storing uint32_t height into uint64_t.
         row.spend_height = payload.read_4_bytes_little_endian();
