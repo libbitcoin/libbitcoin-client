@@ -11,7 +11,7 @@
 AC_PREREQ([2.65])
 
 # Process command-line arguments and perform initialization and verification.
-AC_INIT([libbitcoin-client], [2.2.0], [mienkphi@gmail.com])
+AC_INIT([libbitcoin-client], [2.3.0], [mienkphi@gmail.com])
 
 # Do compilation tests.
 AC_LANG(C++)
