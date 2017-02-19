@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_history__test)
     HANDLE_ROUTING_FRAMES(capture.out);
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_history");
-    BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "0035a131e99f240a2314bb0ddb3d81d05663eb5bf878563412");
+    BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "00f85beb6356d0813ddb0dbb14230a249fe931a13578563412");
 }
 
 BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__test)
