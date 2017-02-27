@@ -143,12 +143,10 @@ void proxy::blockchain_fetch_history(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
-    auto hash = address.hash();
-    std::reverse(hash.begin(), hash.end());
     const auto data = build_chunk(
     {
         to_array(address.version()),
-        hash,
+        address.hash(),
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -224,7 +222,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
         on_reply(selected_utxos);
     };
 
-    send_request("address.fetch_history2", data, on_error,
+    send_request("blockchain.fetch_history", data, on_error,
         std::bind(decode_history,
             _1, std::move(parse_history)));
 }
