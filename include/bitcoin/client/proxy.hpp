@@ -57,11 +57,17 @@ public:
     void transaction_pool_broadcast(error_handler on_error,
         result_handler on_reply, const chain::transaction& tx);
 
-    void transaction_pool_validate(error_handler on_error,
+    void transaction_pool_validate2(error_handler on_error,
         result_handler on_reply, const chain::transaction& tx);
 
     void transaction_pool_fetch_transaction(error_handler on_error,
         transaction_handler on_reply, const hash_digest& tx_hash);
+
+    void blockchain_broadcast(error_handler on_error,
+        result_handler on_reply, const chain::block& block);
+
+    void blockchain_validate(error_handler on_error,
+        result_handler on_reply, const chain::block& block);
 
     void blockchain_fetch_transaction(error_handler on_error,
         transaction_handler on_reply, const hash_digest& tx_hash);
@@ -82,16 +88,11 @@ public:
         stealth_handler on_reply, const binary& prefix,
         uint32_t from_height=0);
 
-    void blockchain_fetch_history(error_handler on_error,
+    void blockchain_fetch_history2(error_handler on_error,
         history_handler on_reply, const wallet::payment_address& address,
         uint32_t from_height = 0);
 
-    /////// sx and bs 2.0 only (obsolete in bs 3.0).
-    ////void address_fetch_history(error_handler on_error,
-    ////    history_handler on_reply, const wallet::payment_address& address,
-    ////    uint32_t from_height=0);
-
-    /////// bs 2.0 and later.
+    /////// bs 2.0 and later (planned, currently unindexed on server).
     ////void address_fetch_history2(error_handler on_error,
     ////    history_handler on_reply, const wallet::payment_address& address,
     ////    uint32_t from_height=0);
@@ -107,7 +108,7 @@ public:
     void address_subscribe(error_handler on_error, result_handler on_reply,
         const wallet::payment_address& address);
 
-    void address_subscribe(error_handler on_error, result_handler on_reply,
+    void address_subscribe2(error_handler on_error, result_handler on_reply,
         const binary& prefix);
 
 private:
@@ -124,8 +125,8 @@ private:
         transaction_index_handler& handler);
     static bool decode_stealth(reader& payload, stealth_handler& handler);
     static bool decode_history(reader& payload, history_handler& handler);
-    static bool decode_expanded_history(reader& payload,
-        history_handler& handler);
+    ////static bool decode_expanded_history(reader& payload,
+    ////    history_handler& handler);
 
     // Utilities.
     //-------------------------------------------------------------------------
