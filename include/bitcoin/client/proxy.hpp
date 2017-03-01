@@ -99,8 +99,7 @@ public:
 
     void address_fetch_unspent_outputs(error_handler on_error,
         points_info_handler on_reply, const wallet::payment_address& address,
-        const uint64_t satoshi,
-        const wallet::select_outputs::algorithm algorithm);
+        uint64_t satoshi, wallet::select_outputs::algorithm algorithm);
 
     // Subscribers.
     //-------------------------------------------------------------------------
