@@ -190,7 +190,7 @@ void proxy::blockchain_fetch_history2(error_handler on_error,
 ////}
 
 void proxy::address_fetch_unspent_outputs(error_handler on_error,
-    points_info_handler on_reply, const payment_address& address,
+    points_value_handler on_reply, const payment_address& address,
     uint64_t satoshi, select_outputs::algorithm algorithm)
 {
     static constexpr uint32_t from_height = 0;
@@ -205,13 +205,15 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
     history_handler select_from_history = [on_reply, satoshi, algorithm](
         const history::list& rows)
     {
-        output_info::list unspent;
+        points_value unspent;
+        unspent.points.reserve(rows.size());
 
         for (auto& row: rows)
-            if (row.spend.hash() == null_hash)
-                unspent.push_back({ row.output, row.value });
+            if (row.spend.is_null())
+                unspent.points.emplace_back(row.output, row.value);
 
-        points_info selected;
+        unspent.points.shrink_to_fit();
+        points_value selected;
         select_outputs::select(selected, unspent, satoshi, algorithm);
         on_reply(selected);
     };

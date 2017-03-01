@@ -49,7 +49,7 @@ public:
     typedef std::function<void(const chain::history::list&)> history_handler;
     typedef std::function<void(const chain::stealth::list&)> stealth_handler;
     typedef std::function<void(const chain::transaction&)> transaction_handler;
-    typedef std::function<void(const chain::points_info&)> points_info_handler;
+    typedef std::function<void(const chain::points_value&)> points_value_handler;
 
     // Fetchers.
     //-------------------------------------------------------------------------
@@ -98,7 +98,7 @@ public:
     ////    uint32_t from_height=0);
 
     void address_fetch_unspent_outputs(error_handler on_error,
-        points_info_handler on_reply, const wallet::payment_address& address,
+        points_value_handler on_reply, const wallet::payment_address& address,
         uint64_t satoshi, wallet::select_outputs::algorithm algorithm);
 
     // Subscribers.
