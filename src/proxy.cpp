@@ -190,8 +190,8 @@ void proxy::blockchain_fetch_history2(error_handler on_error,
 ////}
 
 void proxy::address_fetch_unspent_outputs(error_handler on_error,
-    points_info_handler on_reply, const wallet::payment_address& address,
-    uint64_t satoshi, wallet::select_outputs::algorithm algorithm)
+    points_info_handler on_reply, const payment_address& address,
+    uint64_t satoshi, select_outputs::algorithm algorithm)
 {
     static constexpr uint32_t from_height = 0;
 
@@ -202,24 +202,23 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
-    history_handler parse_history = [on_reply, satoshi, algorithm](
-        const chain::history::list& rows)
+    history_handler select_from_history = [on_reply, satoshi, algorithm](
+        const history::list& rows)
     {
-        chain::output_info::list unspent;
-        for(auto& row: rows)
+        output_info::list unspent;
+
+        for (auto& row: rows)
             if (row.spend.hash() == null_hash)
-                unspent.push_back({row.output, row.value});
+                unspent.push_back({ row.output, row.value });
 
-        chain::points_info selected_utxos;
-        wallet::select_outputs::select(selected_utxos, unspent, satoshi,
-            algorithm);
-
-        on_reply(selected_utxos);
+        points_info selected;
+        select_outputs::select(selected, unspent, satoshi, algorithm);
+        on_reply(selected);
     };
 
     send_request("blockchain.fetch_history2", data, on_error,
         std::bind(decode_history,
-            _1, std::move(parse_history)));
+            _1, std::move(select_from_history)));
 }
 
 // Subscribers.
