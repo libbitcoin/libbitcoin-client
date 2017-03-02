@@ -379,7 +379,7 @@ history::list proxy::expand(history_compact::list& compact)
             row.output = output->point;
             row.output_height = output->height;
             row.value = output->value;
-            row.spend = { null_hash, max_uint32 };
+            row.spend = input_point{ null_hash, point::null_index };
             row.temporary_checksum = output->point.checksum();
             result.emplace_back(row);
             output = compact.erase(output);
@@ -398,7 +398,7 @@ history::list proxy::expand(history_compact::list& compact)
         for (auto& row: result)
         {
             if (row.temporary_checksum == spend.previous_checksum &&
-                row.spend.hash() == null_hash)
+                row.spend.is_null())
             {
                 row.spend = spend.point;
                 row.spend_height = spend.height;
@@ -412,7 +412,7 @@ history::list proxy::expand(history_compact::list& compact)
         if (!found)
         {
             history row;
-            row.output = output_point{ null_hash, max_uint32 };
+            row.output = output_point{ null_hash, point::null_index };
             row.output_height = max_uint64;
             row.value = max_uint64;
             row.spend = spend.point;
@@ -425,7 +425,7 @@ history::list proxy::expand(history_compact::list& compact)
 
     // Clear all remaining checksums from unspent rows.
     for (auto& row: result)
-        if (row.spend.hash() == null_hash)
+        if (row.spend.is_null())
             row.spend_height = max_uint64;
 
     // TODO: sort by height and index of output, spend or both in order.
