@@ -172,24 +172,6 @@ void proxy::blockchain_fetch_history2(error_handler on_error,
             _1, on_reply));
 }
 
-////// The difference between fetch_history and fetch_history2 is hash reversal.
-////void proxy::address_fetch_history2(error_handler on_error,
-////    history_handler on_reply, const payment_address& address,
-////    uint32_t from_height)
-////{
-////    const auto data = build_chunk(
-////    {
-////        to_array(address.version()),
-////        address.hash(),
-////        to_little_endian<uint32_t>(from_height)
-////    });
-////
-////    // address.fetch_history2 is first available in bs 3.0.
-////    send_request("address.fetch_history2", data, on_error,
-////        std::bind(decode_history,
-////            _1, on_reply));
-////}
-
 void proxy::blockchain_fetch_unspent_outputs(error_handler on_error,
     points_value_handler on_reply, const payment_address& address,
     uint64_t satoshi, select_outputs::algorithm algorithm)
@@ -477,38 +459,6 @@ bool proxy::decode_history(reader& payload, history_handler& handler)
     handler(expand(compact));
     return true;
 }
-
-////// This supports address.fetch_history (which is obsolete as of server v3).
-////// In this scenario the server sends to the client a payload that matches the
-////// output of decode_history(...), with the exception that spends orphaned by
-////// the server's minimum history hieght not included in the payload.
-////bool proxy::decode_expanded_history(reader& payload, history_handler& handler)
-////{
-////    chain::history::list expanded;
-////
-////    while (!payload.is_exhausted())
-////    {
-////        chain::history row;
-////        auto success = row.output.from_data(payload);
-////
-////        // Storing uint32_t height into uint64_t.
-////        row.output_height = payload.read_4_bytes_little_endian();
-////        row.value = payload.read_8_bytes_little_endian();
-////
-////        // If there is no spend then input is null_hash/max_uint32/max_uint32.
-////        success = success && row.spend.from_data(payload);
-////
-////        // Storing uint32_t height into uint64_t.
-////        row.spend_height = payload.read_4_bytes_little_endian();
-////        expanded.push_back(row);
-////
-////        if (!success || !payload)
-////            return false;
-////    }
-////
-////    handler(expanded);
-////    return true;
-////}
 
 } // namespace client
 } // namespace libbitcoin

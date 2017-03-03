@@ -92,11 +92,6 @@ public:
         history_handler on_reply, const wallet::payment_address& address,
         uint32_t from_height = 0);
 
-    /////// bs 2.0 and later (planned, currently unindexed on server).
-    ////void address_fetch_history2(error_handler on_error,
-    ////    history_handler on_reply, const wallet::payment_address& address,
-    ////    uint32_t from_height=0);
-
     void blockchain_fetch_unspent_outputs(error_handler on_error,
         points_value_handler on_reply, const wallet::payment_address& address,
         uint64_t satoshi, wallet::select_outputs::algorithm algorithm);
@@ -124,8 +119,6 @@ private:
         transaction_index_handler& handler);
     static bool decode_stealth(reader& payload, stealth_handler& handler);
     static bool decode_history(reader& payload, history_handler& handler);
-    ////static bool decode_expanded_history(reader& payload,
-    ////    history_handler& handler);
 
     // Utilities.
     //-------------------------------------------------------------------------
