@@ -49,7 +49,7 @@ public:
     typedef std::function<void(const chain::history::list&)> history_handler;
     typedef std::function<void(const chain::stealth::list&)> stealth_handler;
     typedef std::function<void(const chain::transaction&)> transaction_handler;
-    typedef std::function<void(const chain::points_info&)> points_info_handler;
+    typedef std::function<void(const chain::points_value&)> points_value_handler;
 
     // Fetchers.
     //-------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public:
     void blockchain_fetch_transaction_index(error_handler on_error,
         transaction_index_handler on_reply, const hash_digest& tx_hash);
 
-    void blockchain_fetch_stealth(error_handler on_error,
+    void blockchain_fetch_stealth2(error_handler on_error,
         stealth_handler on_reply, const binary& prefix,
         uint32_t from_height=0);
 
@@ -92,15 +92,9 @@ public:
         history_handler on_reply, const wallet::payment_address& address,
         uint32_t from_height = 0);
 
-    /////// bs 2.0 and later (planned, currently unindexed on server).
-    ////void address_fetch_history2(error_handler on_error,
-    ////    history_handler on_reply, const wallet::payment_address& address,
-    ////    uint32_t from_height=0);
-
-    void address_fetch_unspent_outputs(error_handler on_error,
-        points_info_handler on_reply, const wallet::payment_address& address,
-        const uint64_t satoshi,
-        const wallet::select_outputs::algorithm algorithm);
+    void blockchain_fetch_unspent_outputs(error_handler on_error,
+        points_value_handler on_reply, const wallet::payment_address& address,
+        uint64_t satoshi, wallet::select_outputs::algorithm algorithm);
 
     // Subscribers.
     //-------------------------------------------------------------------------
@@ -125,8 +119,6 @@ private:
         transaction_index_handler& handler);
     static bool decode_stealth(reader& payload, stealth_handler& handler);
     static bool decode_history(reader& payload, history_handler& handler);
-    ////static bool decode_expanded_history(reader& payload,
-    ////    history_handler& handler);
 
     // Utilities.
     //-------------------------------------------------------------------------
