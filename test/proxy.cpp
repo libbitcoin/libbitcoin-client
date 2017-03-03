@@ -166,18 +166,18 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__index_test)
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
-BOOST_AUTO_TEST_CASE(proxy__fetch_stealth__test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_stealth2__test)
 {
     PROXY_TEST_SETUP;
 
     const auto on_reply = [](const chain::stealth::list&) {};
     const std::vector<uint8_t> raw_prefix{ 0xff, 0xff, 0x00, 0x00 };
     const binary prefix(16, raw_prefix);
-    proxy.blockchain_fetch_stealth(on_error, on_reply, prefix, test_height);
+    proxy.blockchain_fetch_stealth2(on_error, on_reply, prefix, test_height);
 
     HANDLE_ROUTING_FRAMES(capture.out);
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
-    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_stealth");
+    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_stealth2");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "10ffff78563412");
 }
 

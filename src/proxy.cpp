@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <utility>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
@@ -133,7 +134,7 @@ void proxy::blockchain_fetch_transaction_index(error_handler on_error,
             _1, on_reply));
 }
 
-void proxy::blockchain_fetch_stealth(error_handler on_error,
+void proxy::blockchain_fetch_stealth2(error_handler on_error,
     stealth_handler on_reply, const binary& prefix, uint32_t from_height)
 {
     if (prefix.size() > max_uint8)
@@ -149,7 +150,7 @@ void proxy::blockchain_fetch_stealth(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
-    send_request("blockchain.fetch_stealth", data, on_error,
+    send_request("blockchain.fetch_stealth2", data, on_error,
         std::bind(decode_stealth,
             _1, on_reply));
 }
@@ -189,7 +190,7 @@ void proxy::blockchain_fetch_history2(error_handler on_error,
 ////            _1, on_reply));
 ////}
 
-void proxy::address_fetch_unspent_outputs(error_handler on_error,
+void proxy::blockchain_fetch_unspent_outputs(error_handler on_error,
     points_value_handler on_reply, const payment_address& address,
     uint64_t satoshi, select_outputs::algorithm algorithm)
 {
@@ -208,7 +209,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
         points_value unspent;
         unspent.points.reserve(rows.size());
 
-        for (auto& row: rows)
+        for (const auto& row: rows)
             if (row.spend.is_null())
                 unspent.points.emplace_back(row.output, row.value);
 
@@ -323,7 +324,6 @@ bool proxy::decode_transaction_index(reader& payload,
     return true;
 }
 
-// Address hash reversal is an idiosyncracy of the original Obelisk protocol.
 stealth::list proxy::expand(stealth_compact::list& compact)
 {
     // The sign byte of the ephmemeral key is fixed (0x02) by convention.
@@ -335,10 +335,9 @@ stealth::list proxy::expand(stealth_compact::list& compact)
     {
         stealth out;
         out.ephemeral_public_key = splice(sign, in.ephemeral_public_key_hash);
-        out.public_key_hash = in.public_key_hash;
-        std::reverse(out.public_key_hash.begin(), out.public_key_hash.end());
-        out.transaction_hash = in.transaction_hash;
-        result.emplace_back(out);
+        out.public_key_hash = std::move(in.public_key_hash);
+        out.transaction_hash = std::move(in.transaction_hash);
+        result.emplace_back(std::move(out));
     }
 
     compact.clear();
@@ -356,7 +355,7 @@ bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
         row.ephemeral_public_key_hash = payload.read_hash();
         row.public_key_hash = payload.read_short_hash();
         row.transaction_hash = payload.read_hash();
-        compact.emplace_back(row);
+        compact.emplace_back(std::move(row));
 
         if (!payload)
             return false;
@@ -369,6 +368,7 @@ bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
 history::list proxy::expand(history_compact::list& compact)
 {
     history::list result;
+    result.reserve(compact.size());
 
     // Process and remove all outputs.
     for (auto output = compact.begin(); output != compact.end();)
@@ -376,52 +376,76 @@ history::list proxy::expand(history_compact::list& compact)
         if (output->kind == point_kind::output)
         {
             history row;
-            row.output = output->point;
+
+            // Move the output to the result.
+            row.output = std::move(output->point);
             row.output_height = output->height;
             row.value = output->value;
+
+            // Initialize the spend to null.
             row.spend = input_point{ null_hash, point::null_index };
-            row.temporary_checksum = output->point.checksum();
-            result.emplace_back(row);
+            row.temporary_checksum = row.output.checksum();
+
+            // Store the result and erase the output.
+            result.emplace_back(std::move(row));
             output = compact.erase(output);
             continue;
         }
 
+        // Skip the spend.
         ++output;
     }
 
+    // TODO: reduce to output set with distinct checksums, as a fault signal.
+    ////std::sort(result.begin(), result.end());
+    ////result.erase(std::unique(result.begin(), result.end()), result.end());
+
     // All outputs have been removed, process the spends.
-    for (const auto& spend: compact)
+    for (auto& spend: compact)
     {
         auto found = false;
 
         // Update outputs with the corresponding spends.
+        // This relies on the lucky avoidance of checksum hash collisions :<.
+        // Ordering is insufficient since the server may write concurrently.
         for (auto& row: result)
         {
-            if (row.temporary_checksum == spend.previous_checksum &&
-                row.spend.is_null())
+            // The temporary_checksum is a union with spend_height, so we must
+            // guard against reading temporary_checksum unless spend is null.
+            if (row.spend.is_null() &&
+                row.temporary_checksum == spend.previous_checksum)
             {
-                row.spend = spend.point;
+                // Move the spend to the row of its correlated output.
+                row.spend = std::move(spend.point);
                 row.spend_height = spend.height;
+
                 found = true;
                 break;
             }
         }
 
-        // This will only happen if the history height cutoff comes between
-        // an output and its spend. In this case we return just the spend.
+        // This will only happen if the history height cutoff comes between an 
+        // output and its spend. In this case we return just the spend.
+        // This is not strictly sufficient because of checksum hash collisions,
+        // So this miscorrelation must be discarded as a fault signal.
         if (!found)
         {
             history row;
+
+            // Initialize the output to null.
             row.output = output_point{ null_hash, point::null_index };
             row.output_height = max_uint64;
             row.value = max_uint64;
-            row.spend = spend.point;
+
+            // Move the spend to the row.
+            row.spend = std::move(spend.point);
             row.spend_height = spend.height;
-            result.emplace_back(row);
+            result.emplace_back(std::move(row));
         }
     }
 
     compact.clear();
+    result.shrink_to_fit();
 
     // Clear all remaining checksums from unspent rows.
     for (auto& row: result)
@@ -444,7 +468,7 @@ bool proxy::decode_history(reader& payload, history_handler& handler)
         const auto success = row.point.from_data(payload);
         row.height = payload.read_4_bytes_little_endian();
         row.value = payload.read_8_bytes_little_endian();
-        compact.push_back(row);
+        compact.emplace_back(std::move(row));
 
         if (!success || !payload)
             return false;
