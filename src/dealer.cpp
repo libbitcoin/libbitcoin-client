@@ -236,16 +236,9 @@ bool dealer::write(const data_stack& data)
 bool dealer::receive(const obelisk_message& message)
 {
     // Subscription updates are not tracked in pending.
-    if (message.command == "address.update")
+    if (message.command == "address.update2")
     {
         decode_payment_update(message);
-        return true;
-    }
-
-    // Subscription updates are not tracked in pending.
-    if (message.command == "address.stealth_update")
-    {
-        decode_stealth_update(message);
         return true;
     }
 
@@ -295,28 +288,6 @@ void dealer::decode_payment_update(const obelisk_message& message)
     }
 
     on_update_(address, height, block_hash, tx);
-}
-
-void dealer::decode_stealth_update(const obelisk_message& message)
-{
-    byte_stream istream(message.payload);
-    istream_reader source(istream);
-
-    // This message does not have an error_code at the beginning.
-    static constexpr size_t prefix_size = sizeof(uint32_t);
-    binary prefix(prefix_size * byte_bits, source.read_forward<prefix_size>());
-    const auto height = source.read_4_bytes_little_endian();
-    const auto block_hash = source.read_hash();
-    transaction tx;
-
-    if (!tx.from_data(source) || !source.is_exhausted())
-    {
-        // This is incorrect, we need an error handler member.
-        on_unknown_(message.command);
-        return;
-    }
-
-    on_stealth_update_(prefix, height, block_hash, tx);
 }
 
 } // namespace client

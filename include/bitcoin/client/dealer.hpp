@@ -111,11 +111,8 @@ protected:
     void decode_reply(const obelisk_message& message, error_handler& on_error,
         decoder& on_reply);
 
-    // Payment address notification update.
+    // Payment/stealth address notification update.
     void decode_payment_update(const obelisk_message& message);
-
-    // Stealth address notification update.
-    void decode_stealth_update(const obelisk_message& message);
 
     uint32_t last_request_index_;
     const uint8_t resends_;
