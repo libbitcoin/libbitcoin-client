@@ -41,12 +41,7 @@ using namespace bc::wallet;
 
 typedef boost::iostreams::stream<byte_source<data_chunk>> byte_stream;
 
-static const auto on_update_nop = [](const payment_address&, size_t,
-    const hash_digest&, const transaction&)
-{
-};
-
-static const auto on_stealth_update_nop = [](const binary&, size_t,
+static const auto on_update_nop = [](const code&, uint16_t, size_t,
     const hash_digest&, const transaction&)
 {
 };
@@ -65,7 +60,6 @@ dealer::dealer(stream& out, unknown_handler on_unknown_command,
     timeout_milliseconds_(unsigned_to_signed(timeout_milliseconds)),
     on_unknown_(on_unknown_command),
     on_update_(on_update_nop),
-    on_stealth_update_(on_stealth_update_nop),
     out_(out)
 {
 }
@@ -91,11 +85,6 @@ void dealer::clear(const code& code)
 void dealer::set_on_update(update_handler on_update)
 {
     on_update_ = on_update;
-}
-
-void dealer::set_on_stealth_update(stealth_update_handler on_update)
-{
-    on_stealth_update_ = on_update;
 }
 
 // Send, kill or ignore pending messages as necessary.
@@ -225,7 +214,7 @@ bool dealer::write(const data_stack& data)
         // Copy the second token into id.
         message.id = from_little_endian_unsafe<uint32_t>(it->begin());
 
-        // Copy the third token into id.
+        // Copy the third token into payload.
         message.payload = *(++it);
     }
 
@@ -272,11 +261,22 @@ void dealer::decode_payment_update(const obelisk_message& message)
     byte_stream istream(message.payload);
     istream_reader source(istream);
 
-    // This message does not have an error_code at the beginning.
-    const auto version_byte = source.read_byte();
-    const auto address_hash = source.read_short_hash();
-    const payment_address address(address_hash, version_byte);
-    const auto height = source.read_4_bytes_little_endian();
+    // [ code:4 ]        <- if this is nonzero then rest is empty.
+    // [ sequence:2 ]    <- if out of order there was a lost message.
+    // [ height:4 ]      <- zero for unconfirmed.
+    // [ block_hash:32 ] <- null_hash for unconfirmed.
+    // [ tx:... ]
+
+    const auto ec = source.read_error_code();
+
+    if (ec)
+    {
+        on_update_(ec, 0, 0, null_hash, {});
+        return;
+    }
+
+    const auto sequence = source.read_2_bytes_little_endian();
+    const size_t height = source.read_4_bytes_little_endian();
     const auto block_hash = source.read_hash();
     transaction tx;
 
@@ -287,7 +287,7 @@ void dealer::decode_payment_update(const obelisk_message& message)
         return;
     }
 
-    on_update_(address, height, block_hash, tx);
+    on_update_(error::success, sequence, height, block_hash, tx);
 }
 
 } // namespace client

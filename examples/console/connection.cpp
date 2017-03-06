@@ -36,11 +36,11 @@ static void on_unknown(const std::string& command)
     std::cout << "unknown message:" << command << std::endl;
 }
 
-/// Update message callback handler.
-static void on_update(const payment_address& address, size_t,
+/// Update message default callback handler.
+static void on_update(const code&, uint16_t sequence, size_t,
     const hash_digest&, const transaction&)
 {
-    std::cout << "update:" << address.encoded() << std::endl;
+    std::cout << "address update:" << sequence << std::endl;
 }
 
 connection::connection(zmq::socket& socket, uint32_t timeout_ms)

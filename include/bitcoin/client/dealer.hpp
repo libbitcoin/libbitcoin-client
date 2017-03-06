@@ -39,9 +39,7 @@ class BCC_API dealer
 public:
     typedef std::function<void(const code&)> error_handler;
     typedef std::function<void(const std::string&)> unknown_handler;
-    typedef std::function<void(const binary&, size_t, const hash_digest&,
-        const chain::transaction&)> stealth_update_handler;
-    typedef std::function<void(const wallet::payment_address&, size_t,
+    typedef std::function<void(const code&, uint16_t, size_t,
         const hash_digest&, const chain::transaction&)> update_handler;
 
     /// Resend is unrelated to connections.
@@ -59,7 +57,6 @@ public:
 
     /// Accessors.
     virtual void set_on_update(update_handler on_update);
-    virtual void set_on_stealth_update(stealth_update_handler on_update);
 
     // stream interface.
     //-------------------------------------------------------------------------
@@ -119,7 +116,6 @@ protected:
     const int32_t timeout_milliseconds_;
     const unknown_handler on_unknown_;
     update_handler on_update_;
-    stealth_update_handler on_stealth_update_;
     std::map<uint32_t, pending_request> pending_;
     stream& out_;
 };
