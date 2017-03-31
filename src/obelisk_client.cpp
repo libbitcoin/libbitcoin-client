@@ -76,7 +76,7 @@ bool obelisk_client::connect(const endpoint& address,
     }
 
     // Ignore the setting if socks.port is zero (invalid).
-    if (!socket_.set_socks_proxy(socks_proxy))
+    if (socks_proxy && !socket_.set_socks_proxy(socks_proxy))
         return false;
 
     return connect(address);
