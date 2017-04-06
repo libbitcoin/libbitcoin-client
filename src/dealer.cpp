@@ -42,7 +42,7 @@ using namespace bc::wallet;
 typedef boost::iostreams::stream<byte_source<data_chunk>> byte_stream;
 
 static const auto on_update_nop = [](const code&, uint16_t, size_t,
-    const hash_digest&, const transaction&)
+    const hash_digest&)
 {
 };
 
@@ -225,9 +225,12 @@ bool dealer::write(const data_stack& data)
 bool dealer::receive(const obelisk_message& message)
 {
     // Subscription updates are not tracked in pending.
-    if (message.command == "address.update2")
+    if (message.command == "notification.address" ||
+        message.command == "notification.stealth")
     {
-        decode_payment_update(message);
+
+        // Currently these message formats are the same.
+        decode_update(message);
         return true;
     }
 
@@ -256,38 +259,37 @@ void dealer::decode_reply(const obelisk_message& message,
         on_error(error::bad_stream);
 }
 
-void dealer::decode_payment_update(const obelisk_message& message)
+void dealer::decode_update(const obelisk_message& message)
 {
     byte_stream istream(message.payload);
     istream_reader source(istream);
 
-    // [ code:4 ]        <- if this is nonzero then rest is empty.
-    // [ sequence:2 ]    <- if out of order there was a lost message.
-    // [ height:4 ]      <- zero for unconfirmed.
-    // [ block_hash:32 ] <- null_hash for unconfirmed.
-    // [ tx:... ]
+    // [ code:4 ]     <- if this is nonzero then rest may be empty.
+    // [ sequence:2 ] <- if out of order there was a lost message.
+    // [ height:4 ]   <- 0 for unconfirmed or error tx (cannot notify genesis).
+    // [ tx_hash:32 ] <- may be null_hash on errors.
 
     const auto ec = source.read_error_code();
 
     if (ec)
     {
-        on_update_(ec, 0, 0, null_hash, {});
+        on_update_(ec, 0, 0, {});
         return;
     }
 
     const auto sequence = source.read_2_bytes_little_endian();
     const size_t height = source.read_4_bytes_little_endian();
-    const auto block_hash = source.read_hash();
-    transaction tx;
+    const auto tx_hash = source.read_hash();
 
-    if (!tx.from_data(source) || !source.is_exhausted())
+    if (!source.is_exhausted())
     {
         // This is incorrect, we need an error handler member.
         on_unknown_(message.command);
         return;
     }
 
-    on_update_(error::success, sequence, height, block_hash, tx);
+    // Caller must differentiate type of update if subscribed to multiple.
+    on_update_(ec, sequence, height, tx_hash);
 }
 
 } // namespace client

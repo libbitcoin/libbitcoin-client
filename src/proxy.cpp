@@ -137,7 +137,10 @@ void proxy::blockchain_fetch_transaction_index(error_handler on_error,
 void proxy::blockchain_fetch_stealth2(error_handler on_error,
     stealth_handler on_reply, const binary& prefix, uint32_t from_height)
 {
-    if (prefix.size() > max_uint8)
+    const auto bits = prefix.size();
+
+    if (bits < stealth_address::min_filter_bits || 
+        bits > stealth_address::max_filter_bits)
     {
         on_error(error::bad_stream);
         return;
@@ -155,19 +158,20 @@ void proxy::blockchain_fetch_stealth2(error_handler on_error,
             _1, on_reply));
 }
 
+// blockchain.fetch_history3 (v3.1) does not accept a version byte.
+// blockchain.fetch_history2 (v3.0) ignored version and is obsoleted in v3.1.
 // blockchain.fetch_history (v1/v2) used hash reversal and is obsoleted in v3.
-void proxy::blockchain_fetch_history2(error_handler on_error,
+void proxy::blockchain_fetch_history3(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
     const auto data = build_chunk(
     {
-        to_array(address.version()),
         address.hash(),
         to_little_endian<uint32_t>(from_height)
     });
 
-    send_request("blockchain.fetch_history2", data, on_error,
+    send_request("blockchain.fetch_history3", data, on_error,
         std::bind(decode_history,
             _1, on_reply));
 }
@@ -180,7 +184,6 @@ void proxy::blockchain_fetch_unspent_outputs(error_handler on_error,
 
     const auto data = build_chunk(
     {
-        to_array(address.version()),
         address.hash(),
         to_little_endian<uint32_t>(from_height)
     });
@@ -201,7 +204,7 @@ void proxy::blockchain_fetch_unspent_outputs(error_handler on_error,
         on_reply(selected);
     };
 
-    send_request("blockchain.fetch_history2", data, on_error,
+    send_request("blockchain.fetch_history3", data, on_error,
         std::bind(decode_history,
             _1, std::move(select_from_history)));
 }
@@ -211,28 +214,25 @@ void proxy::blockchain_fetch_unspent_outputs(error_handler on_error,
 
 // address.subscribe is obsolete, but can pass through to address.subscribe2.
 // Ths is a simplified overload for a non-private payment address subscription.
-void proxy::address_subscribe(error_handler on_error, result_handler on_reply,
-    const payment_address& address)
+void proxy::subscribe_address(error_handler on_error, result_handler on_reply,
+    const short_hash& address_hash)
 {
-    static constexpr auto address_bits = short_hash_size * byte_bits;
-    const auto prefix = binary(address_bits, address.hash());
-    address_subscribe2(on_error, on_reply, prefix);
+    // [ address_hash:20 ]
+    const auto data = build_chunk({ address_hash });
+
+    send_request("subscribe.address", data, on_error,
+        std::bind(decode_empty,
+            _1, on_reply));
 }
 
 // Ths overload supports a prefix for either stealth or payment address.
-void proxy::address_subscribe2(error_handler on_error, result_handler on_reply,
-    const binary& prefix)
+void proxy::subscribe_stealth(error_handler on_error, result_handler on_reply,
+    const binary& stealth_prefix)
 {
-    // 20 * 8 = 160 bits.
-    static constexpr auto address_bits = short_hash_size * byte_bits;
+    const auto bits = stealth_prefix.size();
 
-    // 4 * 8 = 32 bits.
-    static constexpr auto stealth_bits = sizeof(uint32_t) * byte_bits;
-    static_assert(stealth_bits <= address_bits, "unexpected bit length");
-
-    const auto bit_length = prefix.size();
-
-    if (bit_length > address_bits /*&& bit_length > stealth_bits*/)
+    if (bits < stealth_address::min_filter_bits ||
+        bits > stealth_address::max_filter_bits)
     {
         on_error(error::bad_stream);
         return;
@@ -242,11 +242,11 @@ void proxy::address_subscribe2(error_handler on_error, result_handler on_reply,
     // [ prefix_blocks:...]
     const auto data = build_chunk(
     {
-        to_array(static_cast<uint8_t>(bit_length)),
-        prefix.blocks()
+        to_array(static_cast<uint8_t>(bits)),
+        stealth_prefix.blocks()
     });
 
-    send_request("address.subscribe2", data, on_error,
+    send_request("subscribe.stealth", data, on_error,
         std::bind(decode_empty,
             _1, on_reply));
 }
