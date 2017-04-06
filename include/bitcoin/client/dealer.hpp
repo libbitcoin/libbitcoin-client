@@ -40,7 +40,7 @@ public:
     typedef std::function<void(const code&)> error_handler;
     typedef std::function<void(const std::string&)> unknown_handler;
     typedef std::function<void(const code&, uint16_t, size_t,
-        const hash_digest&, const chain::transaction&)> update_handler;
+        const hash_digest&)> update_handler;
 
     /// Resend is unrelated to connections.
     /// Timeout is capped at max_int32 (vs. max_uint32).
@@ -108,8 +108,8 @@ protected:
     void decode_reply(const obelisk_message& message, error_handler& on_error,
         decoder& on_reply);
 
-    // Payment/stealth address notification update.
-    void decode_payment_update(const obelisk_message& message);
+    // Payment address or stealth prefix notification update.
+    void decode_update(const obelisk_message& message);
 
     uint32_t last_request_index_;
     const uint8_t resends_;
