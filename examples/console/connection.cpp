@@ -38,7 +38,7 @@ static void on_unknown(const std::string& command)
 
 /// Update message default callback handler.
 static void on_update(const code&, uint16_t sequence, size_t,
-    const hash_digest&, const transaction&)
+    const hash_digest&)
 {
     std::cout << "address update:" << sequence << std::endl;
 }
