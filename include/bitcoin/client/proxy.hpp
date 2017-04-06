@@ -88,7 +88,7 @@ public:
         stealth_handler on_reply, const binary& prefix,
         uint32_t from_height=0);
 
-    void blockchain_fetch_history2(error_handler on_error,
+    void blockchain_fetch_history3(error_handler on_error,
         history_handler on_reply, const wallet::payment_address& address,
         uint32_t from_height = 0);
 
@@ -99,11 +99,11 @@ public:
     // Subscribers.
     //-------------------------------------------------------------------------
 
-    void address_subscribe(error_handler on_error, result_handler on_reply,
-        const wallet::payment_address& address);
+    void subscribe_address(error_handler on_error, result_handler on_reply,
+        const short_hash& address_hash);
 
-    void address_subscribe2(error_handler on_error, result_handler on_reply,
-        const binary& prefix);
+    void subscribe_stealth(error_handler on_error, result_handler on_reply,
+        const binary& stealth_prefix);
 
 private:
 
