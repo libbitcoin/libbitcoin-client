@@ -39,6 +39,15 @@ static uint32_t to_milliseconds(uint16_t seconds)
 
 static const auto on_unknown = [](const std::string&){};
 
+// TODO: eliminate the stream, using server model.
+// TODO: eliminate dual return handlers in favor of always return code.
+// The client is a DEALER so that it can receive asynchronous replies.
+// A REQ client could only process queries, not subscriptions.
+
+// TODO: the client should broker requests from multiple requesters.
+// TODO: IOW it should connect as reqs=>router->dealer->(server router).
+// TODO: this eliminates the hack client::dealer implementation.
+
 // Retries is overloaded as configuration for resends as well.
 // Timeout is capped at ~ 25 days by signed/millsecond conversions.
 obelisk_client::obelisk_client(uint16_t timeout_seconds, uint8_t retries)
