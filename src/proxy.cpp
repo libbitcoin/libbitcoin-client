@@ -24,12 +24,14 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
+#include <bitcoin/client/history.hpp>
+#include <bitcoin/client/stealth.hpp>
 #include <bitcoin/client/stream.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-using std::placeholders::_1;
+using namespace std::placeholders;
 using namespace bc::chain;
 using namespace bc::wallet;
 

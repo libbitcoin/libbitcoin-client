@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_history3__test)
 {
     PROXY_TEST_SETUP;
 
-    const auto on_reply = [](const chain::history::list&) {};
+    const auto on_reply = [](const history::list&) {};
     proxy.blockchain_fetch_history3(on_error, on_reply, payment_address(address_satoshi), test_height);
 
     HANDLE_ROUTING_FRAMES(capture.out);
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_stealth2__test)
 {
     PROXY_TEST_SETUP;
 
-    const auto on_reply = [](const chain::stealth::list&) {};
+    const auto on_reply = [](const stealth::list&) {};
     const std::vector<uint8_t> raw_prefix{ 0xff, 0xff, 0x00, 0x00 };
     const binary prefix(16, raw_prefix);
     proxy.blockchain_fetch_stealth2(on_error, on_reply, prefix, test_height);

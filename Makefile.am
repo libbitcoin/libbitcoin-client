@@ -95,9 +95,11 @@ include_bitcoin_clientdir = ${includedir}/bitcoin/client
 include_bitcoin_client_HEADERS = \
     include/bitcoin/client/dealer.hpp \
     include/bitcoin/client/define.hpp \
+    include/bitcoin/client/history.hpp \
     include/bitcoin/client/obelisk_client.hpp \
     include/bitcoin/client/proxy.hpp \
     include/bitcoin/client/socket_stream.hpp \
+    include/bitcoin/client/stealth.hpp \
     include/bitcoin/client/stream.hpp \
     include/bitcoin/client/version.hpp
 
