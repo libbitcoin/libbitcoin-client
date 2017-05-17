@@ -19,6 +19,7 @@
 #ifndef LIBBITCOIN_CLIENT_HISTORY_HPP
 #define LIBBITCOIN_CLIENT_HISTORY_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>
 
@@ -27,14 +28,13 @@ namespace client {
 
 /// This structure is used between client and API callers in v3.
 /// This structure models the client-server protocol in v1/v2.
-/// The height values here are 64 bit, but 32 bits on the wire.
 struct BCC_API history
 {
     typedef std::vector<history> list;
 
     /// If there is no output this is null_hash:max.
     chain::output_point output;
-    uint64_t output_height;
+    size_t output_height;
 
     /// The satoshi value of the output.
     uint64_t value;
@@ -45,7 +45,7 @@ struct BCC_API history
     union
     {
         /// The height of the spend or max if no spend.
-        uint64_t spend_height;
+        size_t spend_height;
 
         /// During expansion this value temporarily doubles as a checksum.
         uint64_t temporary_checksum;

@@ -125,8 +125,8 @@ private:
 
     // Utilities.
     //-------------------------------------------------------------------------
-    static stealth::list expand(chain::stealth_compact::list& compact);
-    static history::list expand(chain::history_compact::list& compact);
+    static stealth::list expand(chain::stealth_record::list& record);
+    static history::list expand(chain::payment_record::list& record);
 };
 
 } // namespace client
