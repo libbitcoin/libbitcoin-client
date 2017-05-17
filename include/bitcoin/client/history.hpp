@@ -16,23 +16,43 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef LIBBITCOIN_CLIENT_HISTORY_HPP
+#define LIBBITCOIN_CLIENT_HISTORY_HPP
 
-#include <bitcoin/client/uniform_uint32_generator.hpp>
-
+#include <cstddef>
+#include <cstdint>
 #include <bitcoin/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-uniform_uint32_generator::uniform_uint32_generator()
-  : engine_(), distribution_(0, MAX_UINT32), source_(engine_, distribution_)
+/// This structure is used between client and API callers in v3.
+/// This structure models the client-server protocol in v1/v2.
+struct BCC_API history
 {
-}
+    typedef std::vector<history> list;
 
-uint32_t uniform_uint32_generator::operator()()
-{
-    return source_();
-}
+    /// If there is no output this is null_hash:max.
+    chain::output_point output;
+    size_t output_height;
 
-}
-}
+    /// The satoshi value of the output.
+    uint64_t value;
+
+    /// If there is no spend this is null_hash:max.
+    chain::input_point spend;
+
+    union
+    {
+        /// The height of the spend or max if no spend.
+        size_t spend_height;
+
+        /// During expansion this value temporarily doubles as a checksum.
+        uint64_t temporary_checksum;
+    };
+};
+
+} // namespace client
+} // namespace libbitcoin
+
+#endif

@@ -24,12 +24,14 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
+#include <bitcoin/client/history.hpp>
+#include <bitcoin/client/stealth.hpp>
 #include <bitcoin/client/stream.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-using std::placeholders::_1;
+using namespace std::placeholders;
 using namespace bc::chain;
 using namespace bc::wallet;
 
@@ -306,76 +308,68 @@ bool proxy::decode_transaction_index(reader& payload,
     return true;
 }
 
-stealth::list proxy::expand(stealth_compact::list& compact)
+stealth::list proxy::expand(stealth_record::list& records)
 {
-    // The sign byte of the ephmemeral key is fixed (0x02) by convention.
-    static const auto sign = to_array(ec_even_sign);
-
+    // TODO: just use stealth_record::list here.
     stealth::list result;
+    result.reserve(records.size());
 
-    for (const auto& in: compact)
+    for (const auto& in: records)
     {
-        stealth out;
-        out.ephemeral_public_key = splice(sign, in.ephemeral_public_key_hash);
-        out.public_key_hash = std::move(in.public_key_hash);
-        out.transaction_hash = std::move(in.transaction_hash);
-        result.emplace_back(std::move(out));
+        result.push_back(stealth
+        {
+            in.ephemeral_public_key(),
+            std::move(in.public_key_hash()),
+            std::move(in.transaction_hash())
+        });
     }
 
-    compact.clear();
     return result;
 }
 
-// Address hash is still reversed here, to be unreversed in expansion.
 bool proxy::decode_stealth(reader& payload, stealth_handler& handler)
 {
-    chain::stealth_compact::list compact;
+    stealth_record stealth;
+    stealth_record::list records;
 
     while (!payload.is_exhausted())
     {
-        chain::stealth_compact row;
-        row.ephemeral_public_key_hash = payload.read_hash();
-        row.public_key_hash = payload.read_short_hash();
-        row.transaction_hash = payload.read_hash();
-        compact.emplace_back(std::move(row));
-
-        if (!payload)
+        if (stealth.from_data(payload, true))
+            records.push_back(stealth);
+        else
             return false;
     }
 
-    handler(expand(compact));
+    handler(expand(records));
     return true;
 }
 
-history::list proxy::expand(history_compact::list& compact)
+history::list proxy::expand(payment_record::list& records)
 {
+    // TODO: can we use use history_record::list here?
     history::list result;
-    result.reserve(compact.size());
+    result.reserve(records.size());
 
     // Process and remove all outputs.
-    for (auto output = compact.begin(); output != compact.end();)
+    for (auto record = records.begin(); record != records.end();)
     {
-        if (output->kind == point_kind::output)
+        if (record->is_output())
         {
-            history row;
+            result.push_back(history
+            {
+                std::move(record->point()),
+                record->height(),
+                record->data(),
+                input_point{ null_hash, point::null_index },
+                { record->point().checksum() }
+            });
 
-            // Move the output to the result.
-            row.output = std::move(output->point);
-            row.output_height = output->height;
-            row.value = output->value;
-
-            // Initialize the spend to null.
-            row.spend = input_point{ null_hash, point::null_index };
-            row.temporary_checksum = row.output.checksum();
-
-            // Store the result and erase the output.
-            result.emplace_back(std::move(row));
-            output = compact.erase(output);
+            record = records.erase(record);
             continue;
         }
 
-        // Skip the spend.
-        ++output;
+        // Skip the input.
+        ++record;
     }
 
     // TODO: reduce to output set with distinct checksums, as a fault signal.
@@ -383,24 +377,23 @@ history::list proxy::expand(history_compact::list& compact)
     ////result.erase(std::unique(result.begin(), result.end()), result.end());
 
     // All outputs have been removed, process the spends.
-    for (auto& spend: compact)
+    for (auto& record: records)
     {
         auto found = false;
 
         // Update outputs with the corresponding spends.
         // This relies on the lucky avoidance of checksum hash collisions :<.
         // Ordering is insufficient since the server may write concurrently.
-        for (auto& row: result)
+        for (auto& history: result)
         {
             // The temporary_checksum is a union with spend_height, so we must
             // guard against reading temporary_checksum unless spend is null.
-            if (row.spend.is_null() &&
-                row.temporary_checksum == spend.previous_checksum)
+            if (history.spend.is_null() &&
+                history.temporary_checksum == record.data())
             {
                 // Move the spend to the row of its correlated output.
-                row.spend = std::move(spend.point);
-                row.spend_height = spend.height;
-
+                history.spend = std::move(record.point());
+                history.spend_height = record.height();
                 found = true;
                 break;
             }
@@ -412,27 +405,23 @@ history::list proxy::expand(history_compact::list& compact)
         // So this miscorrelation must be discarded as a fault signal.
         if (!found)
         {
-            history row;
-
-            // Initialize the output to null.
-            row.output = output_point{ null_hash, point::null_index };
-            row.output_height = max_uint64;
-            row.value = max_uint64;
-
-            // Move the spend to the row.
-            row.spend = std::move(spend.point);
-            row.spend_height = spend.height;
-            result.emplace_back(std::move(row));
+            result.push_back(history
+            {
+                output_point{ null_hash, point::null_index },
+                max_size_t,
+                max_uint64,
+                std::move(record.point()),
+                { record.height() }
+            });
         }
     }
 
-    compact.clear();
     result.shrink_to_fit();
 
     // Clear all remaining checksums from unspent rows.
-    for (auto& row: result)
-        if (row.spend.is_null())
-            row.spend_height = max_uint64;
+    for (auto& history: result)
+        if (history.spend.is_null())
+            history.spend_height = max_uint64;
 
     // TODO: sort by height and index of output, spend or both in order.
     return result;
@@ -441,22 +430,18 @@ history::list proxy::expand(history_compact::list& compact)
 // row.value || row.previous_checksum is a union, we just decode as row.value.
 bool proxy::decode_history(reader& payload, history_handler& handler)
 {
-    chain::history_compact::list compact;
+    payment_record payment;
+    payment_record::list records;
 
     while (!payload.is_exhausted())
     {
-        chain::history_compact row;
-        row.kind = static_cast<point_kind>(payload.read_byte());
-        const auto success = row.point.from_data(payload);
-        row.height = payload.read_4_bytes_little_endian();
-        row.value = payload.read_8_bytes_little_endian();
-        compact.emplace_back(std::move(row));
-
-        if (!success || !payload)
+        if (payment.from_data(payload, true))
+            records.push_back(payment);
+        else
             return false;
     }
 
-    handler(expand(compact));
+    handler(expand(records));
     return true;
 }
 

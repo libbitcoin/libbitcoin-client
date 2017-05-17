@@ -53,5 +53,11 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_client.hpp">
       <Filter>include\client</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\stealth.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\history.hpp">
+      <Filter>include\client</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

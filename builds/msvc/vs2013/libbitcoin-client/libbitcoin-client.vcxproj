@@ -81,7 +81,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\bitcoin\client.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\define.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\history.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_client.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\client\stealth.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\stream.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\dealer.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\client\proxy.hpp" />

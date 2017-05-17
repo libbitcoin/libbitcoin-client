@@ -19,10 +19,13 @@
 #ifndef LIBBITCOIN_CLIENT_PROXY_HPP
 #define LIBBITCOIN_CLIENT_PROXY_HPP
 
+#include <cstdint>
 #include <functional>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
+#include <bitcoin/client/history.hpp>
+#include <bitcoin/client/stealth.hpp>
 #include <bitcoin/client/stream.hpp>
 
 namespace libbitcoin {
@@ -46,10 +49,10 @@ public:
     typedef std::function<void(const code&)> result_handler;
     typedef std::function<void(size_t, size_t)> transaction_index_handler;
     typedef std::function<void(const chain::header&)> block_header_handler;
-    typedef std::function<void(const chain::history::list&)> history_handler;
-    typedef std::function<void(const chain::stealth::list&)> stealth_handler;
     typedef std::function<void(const chain::transaction&)> transaction_handler;
     typedef std::function<void(const chain::points_value&)> points_value_handler;
+    typedef std::function<void(const client::history::list&)> history_handler;
+    typedef std::function<void(const client::stealth::list&)> stealth_handler;
 
     // Fetchers.
     //-------------------------------------------------------------------------
@@ -90,7 +93,7 @@ public:
 
     void blockchain_fetch_history3(error_handler on_error,
         history_handler on_reply, const wallet::payment_address& address,
-        uint32_t from_height = 0);
+        uint32_t from_height=0);
 
     void blockchain_fetch_unspent_outputs(error_handler on_error,
         points_value_handler on_reply, const wallet::payment_address& address,
@@ -122,8 +125,8 @@ private:
 
     // Utilities.
     //-------------------------------------------------------------------------
-    static chain::stealth::list expand(chain::stealth_compact::list& compact);
-    static chain::history::list expand(chain::history_compact::list& compact);
+    static stealth::list expand(chain::stealth_record::list& record);
+    static history::list expand(chain::payment_record::list& record);
 };
 
 } // namespace client

@@ -16,38 +16,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef LIBBITCOIN_CLIENT_STEALTH_HPP
+#define LIBBITCOIN_CLIENT_STEALTH_HPP
 
-#ifndef LIBBITCOIN_CLIENT_UNIFORM_UINT32_GENERATOR_HPP
-#define LIBBITCOIN_CLIENT_UNIFORM_UINT32_GENERATOR_HPP
-
-#include <boost/random.hpp>
-#include <bitcoin/client/define.hpp>
-#include <bitcoin/client/random_number_generator.hpp>
+#include <vector>
+#include <bitcoin/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace client {
 
-class BCC_API uniform_uint32_generator : random_number_generator<uint32_t>
+/// This structure is used between client and API callers in v2/v3.
+/// The normal stealth row includes the sign byte of the ephemeral public key.
+struct BCC_API stealth
 {
-public:
+    typedef std::vector<stealth> list;
 
-    uniform_uint32_generator();
-
-    virtual uint32_t operator()();
-
-private:
-
-    boost::random::mt19937 engine_;
-
-    boost::random::uniform_int_distribution<uint32_t> distribution_;
-
-    boost::random::variate_generator<
-        boost::random::mt19937,
-        boost::random::uniform_int_distribution<uint32_t>> source_;
-
+    ec_compressed ephemeral_public_key;
+    short_hash public_key_hash;
+    hash_digest transaction_hash;
 };
 
-}
-}
+} // namespace client
+} // namespace libbitcoin
 
 #endif
