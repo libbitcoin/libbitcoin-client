@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <memory>
 #include <utility>
+#include <unordered_map>
+#include <vector>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
@@ -349,28 +351,26 @@ history::list proxy::expand(payment_record::list& records)
     // TODO: can we use use history_record::list here?
     history::list result;
     result.reserve(records.size());
+    std::vector<bool> is_deleted(records.size(), false);
+    std::unordered_multimap<uint64_t, size_t> result_cache;
 
-    std::vector<uint8_t> isDeleted(records.size(), 0);
-    
-    std::unordered_multimap<uint64_t, size_t> resultCache;
-    
     // Process and remove all outputs.
     for (auto record = records.begin(); record != records.end();)
     {
         if (record->is_output())
         {
+            const auto temporary_checksum = record->point().checksum();
             result.push_back(history
             {
                 std::move(record->point()),
                 record->height(),
                 record->data(),
                 input_point{ null_hash, point::null_index },
-                { record->point().checksum() }
+                { temporary_checksum }
             });
 
-            resultCache.insert(std::make_pair(result.back().temporary_checksum, result.size() - 1));
-
-            isDeleted[std::distance(records.begin(), record)] = 1;
+            result_cache.emplace(temporary_checksum, result.size() - 1);
+            is_deleted[std::distance(records.begin(), record)] = true;
         }
 
         // Skip the input.
@@ -382,24 +382,25 @@ history::list proxy::expand(payment_record::list& records)
     ////result.erase(std::unique(result.begin(), result.end()), result.end());
 
     // All outputs have been removed, process the spends.
-    size_t i = 0;
+    size_t index = 0;
     for (auto& record: records)
     {
-        size_t prevI = i;
-        i++;
-        if (isDeleted[prevI] == 1) {
+        const auto previous_index = index;
+        index++;
+
+        if (is_deleted[previous_index])
             continue;
-        }
-        
+
         auto found = false;
 
         // Update outputs with the corresponding spends.
         // This relies on the lucky avoidance of checksum hash collisions :<.
         // Ordering is insufficient since the server may write concurrently.
-        const auto foundInCache = resultCache.equal_range(record.data());
-        for (auto it = foundInCache.first; it != foundInCache.second; it++) 
+        const auto found_in_cache = result_cache.equal_range(record.data());
+        for (auto it = found_in_cache.first; it != found_in_cache.second; it++)
         {
-            auto &history = result.at(it->second);
+            auto& history = result[it->second];
+
             // The temporary_checksum is a union with spend_height, so we must
             // guard against reading temporary_checksum unless spend is null.
             if (history.spend.is_null())
