@@ -22,7 +22,6 @@
 #include <memory>
 #include <utility>
 #include <unordered_map>
-#include <vector>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
@@ -351,58 +350,49 @@ history::list proxy::expand(payment_record::list& records)
     // TODO: can we use use history_record::list here?
     history::list result;
     result.reserve(records.size());
-    std::vector<bool> is_deleted(records.size(), false);
-    std::unordered_multimap<uint64_t, size_t> result_cache;
+    std::unordered_multimap<uint64_t, size_t> output_checksums;
 
     // Process and remove all outputs.
-    for (auto record = records.begin(); record != records.end();)
+    for (const auto& record: records)
     {
-        if (record->is_output())
+        if (record.is_output())
         {
-            const auto temporary_checksum = record->point().checksum();
+            const auto temporary_checksum = record.point().checksum();
             result.push_back(history
             {
-                std::move(record->point()),
-                record->height(),
-                record->data(),
+                std::move(record.point()),
+                record.height(),
+                record.data(),
                 input_point{ null_hash, point::null_index },
                 { temporary_checksum }
             });
 
-            result_cache.emplace(temporary_checksum, result.size() - 1);
-            is_deleted[std::distance(records.begin(), record)] = true;
+            output_checksums.emplace(temporary_checksum, result.size() - 1);
         }
-
-        // Skip the input.
-        ++record;
     }
 
     // TODO: reduce to output set with distinct checksums, as a fault signal.
     ////std::sort(result.begin(), result.end());
     ////result.erase(std::unique(result.begin(), result.end()), result.end());
 
-    // All outputs have been removed, process the spends.
-    size_t index = 0;
+    // All outputs have been handled, process the spends.
     for (auto& record: records)
     {
-        const auto previous_index = index;
-        index++;
-
-        if (is_deleted[previous_index])
+        if (record.is_output())
             continue;
 
         auto found = false;
+        const auto matches = output_checksums.equal_range(record.data());
 
         // Update outputs with the corresponding spends.
         // This relies on the lucky avoidance of checksum hash collisions :<.
         // Ordering is insufficient since the server may write concurrently.
-        const auto found_in_cache = result_cache.equal_range(record.data());
-        for (auto it = found_in_cache.first; it != found_in_cache.second; it++)
+        for (auto match = matches.first; match != matches.second; match++)
         {
-            auto& history = result[it->second];
+            auto& history = result[match->second];
 
             // The temporary_checksum is a union with spend_height, so we must
-            // guard against reading temporary_checksum unless spend is null.
+            // guard against matching temporary_checksum unless spend is null.
             if (history.spend.is_null())
             {
                 // Move the spend to the row of its correlated output.
@@ -431,12 +421,12 @@ history::list proxy::expand(payment_record::list& records)
     }
 
     result.shrink_to_fit();
-    
+
     // Clear all remaining checksums from unspent rows.
     for (auto& history: result)
         if (history.spend.is_null())
             history.spend_height = max_uint64;
-        
+
     // TODO: sort by height and index of output, spend or both in order.
     return result;
 }
