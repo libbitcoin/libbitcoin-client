@@ -350,6 +350,10 @@ history::list proxy::expand(payment_record::list& records)
     history::list result;
     result.reserve(records.size());
 
+    std::vector<uint8_t> isDeleted(records.size(), 0);
+    
+    std::unordered_multimap<uint64_t, size_t> resultCache;
+    
     // Process and remove all outputs.
     for (auto record = records.begin(); record != records.end();)
     {
@@ -364,8 +368,9 @@ history::list proxy::expand(payment_record::list& records)
                 { record->point().checksum() }
             });
 
-            record = records.erase(record);
-            continue;
+            resultCache.insert(std::make_pair(result.back().temporary_checksum, result.size() - 1));
+
+            isDeleted[std::distance(records.begin(), record)] = 1;
         }
 
         // Skip the input.
@@ -377,19 +382,27 @@ history::list proxy::expand(payment_record::list& records)
     ////result.erase(std::unique(result.begin(), result.end()), result.end());
 
     // All outputs have been removed, process the spends.
+    size_t i = 0;
     for (auto& record: records)
     {
+        size_t prevI = i;
+        i++;
+        if (isDeleted[prevI] == 1) {
+            continue;
+        }
+        
         auto found = false;
 
         // Update outputs with the corresponding spends.
         // This relies on the lucky avoidance of checksum hash collisions :<.
         // Ordering is insufficient since the server may write concurrently.
-        for (auto& history: result)
+        const auto foundInCache = resultCache.equal_range(record.data());
+        for (auto it = foundInCache.first; it != foundInCache.second; it++) 
         {
+            auto &history = result.at(it->second);
             // The temporary_checksum is a union with spend_height, so we must
             // guard against reading temporary_checksum unless spend is null.
-            if (history.spend.is_null() &&
-                history.temporary_checksum == record.data())
+            if (history.spend.is_null())
             {
                 // Move the spend to the row of its correlated output.
                 history.spend = std::move(record.point());
@@ -417,12 +430,12 @@ history::list proxy::expand(payment_record::list& records)
     }
 
     result.shrink_to_fit();
-
+    
     // Clear all remaining checksums from unspent rows.
     for (auto& history: result)
         if (history.spend.is_null())
             history.spend_height = max_uint64;
-
+        
     // TODO: sort by height and index of output, spend or both in order.
     return result;
 }
