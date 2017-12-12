@@ -68,6 +68,16 @@ void proxy::transaction_pool_fetch_transaction(error_handler on_error,
             _1, on_reply));
 }
 
+void proxy::transaction_pool_fetch_transaction2(error_handler on_error,
+    transaction_handler on_reply, const hash_digest& tx_hash)
+{
+    const auto data = build_chunk({ tx_hash });
+
+    send_request("transaction_pool.fetch_transaction2", data, on_error,
+        std::bind(decode_transaction,
+            _1, on_reply));
+}
+
 void proxy::blockchain_broadcast(error_handler on_error,
     result_handler on_reply, const chain::block& block)
 {
@@ -90,6 +100,16 @@ void proxy::blockchain_fetch_transaction(error_handler on_error,
     const auto data = build_chunk({ tx_hash });
 
     send_request("blockchain.fetch_transaction", data, on_error,
+        std::bind(decode_transaction,
+            _1, on_reply));
+}
+
+void proxy::blockchain_fetch_transaction2(error_handler on_error,
+    transaction_handler on_reply, const hash_digest& tx_hash)
+{
+    const auto data = build_chunk({ tx_hash });
+
+    send_request("blockchain.fetch_transaction2", data, on_error,
         std::bind(decode_transaction,
             _1, on_reply));
 }
