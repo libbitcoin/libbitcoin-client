@@ -115,6 +115,19 @@ BOOST_AUTO_TEST_CASE(proxy__fetch_transaction__test)
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
+BOOST_AUTO_TEST_CASE(proxy__fetch_transaction2__test)
+{
+    PROXY_TEST_SETUP;
+
+    const auto on_reply = [](const chain::transaction&) {};
+    proxy.blockchain_fetch_transaction2(on_error, on_reply, hash_literal(hash_satoshi));
+
+    HANDLE_ROUTING_FRAMES(capture.out);
+    BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
+    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_transaction2");
+    BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
+}
+
 BOOST_AUTO_TEST_CASE(proxy__fetch_last__height_test)
 {
     PROXY_TEST_SETUP;
@@ -192,6 +205,19 @@ BOOST_AUTO_TEST_CASE(proxy__pool_fetch_transaction__test)
     HANDLE_ROUTING_FRAMES(capture.out);
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "transaction_pool.fetch_transaction");
+    BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
+}
+
+BOOST_AUTO_TEST_CASE(proxy__pool_fetch_transaction2__test)
+{
+    PROXY_TEST_SETUP;
+
+    const auto on_reply = [](const chain::transaction&) {};
+    proxy.transaction_pool_fetch_transaction2(on_error, on_reply, hash_literal(hash_satoshi));
+
+    HANDLE_ROUTING_FRAMES(capture.out);
+    BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
+    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "transaction_pool.fetch_transaction2");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), raw_satoshi);
 }
 
