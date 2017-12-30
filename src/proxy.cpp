@@ -45,18 +45,20 @@ proxy::proxy(stream& out, unknown_handler on_unknown_command,
 // Fetchers.
 //-----------------------------------------------------------------------------
 
+// This will fail if a witness tx is sent to a < v3.4 (pre-witness) server.
 void proxy::transaction_pool_broadcast(error_handler on_error,
     result_handler on_reply, const chain::transaction& tx)
 {
-    send_request("transaction_pool.broadcast", tx.to_data(), on_error,
+    send_request("transaction_pool.broadcast", tx.to_data(true, true), on_error,
         std::bind(decode_empty,
             _1, on_reply));
 }
 
+// This will fail if a witness tx is sent to a < v3.4 (pre-witness) server.
 void proxy::transaction_pool_validate2(error_handler on_error,
     result_handler on_reply, const chain::transaction& tx)
 {
-    send_request("transaction_pool.validate2", tx.to_data(), on_error,
+    send_request("transaction_pool.validate2", tx.to_data(true, true), on_error,
         std::bind(decode_empty,
             _1, on_reply));
 }
@@ -287,10 +289,11 @@ bool proxy::decode_empty(reader& payload, result_handler& handler)
     return true;
 }
 
+// Compatibility: This will accept witness transactions (from >= 3.4 server).
 bool proxy::decode_transaction(reader& payload, transaction_handler& handler)
 {
     transaction tx;
-    if (!tx.from_data(payload) || !payload.is_exhausted())
+    if (!tx.from_data(payload, true, true) || !payload.is_exhausted())
         return false;
 
     handler(tx);
