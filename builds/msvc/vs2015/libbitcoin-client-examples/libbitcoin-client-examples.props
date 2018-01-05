@@ -23,7 +23,6 @@
     <Import Project="$(SolutionDir)libbitcoin.import.props" />
     <Import Project="$(SolutionDir)libbitcoin-protocol.import.props" />
     <Import Project="$(SolutionDir)libbitcoin-client.import.props" />
-    <Import Project="$(SolutionDir)libbitcoin-consensus.import.props" />
   </ImportGroup>
 
   <PropertyGroup Condition="'$(NuGetPackageRoot)' == ''">
