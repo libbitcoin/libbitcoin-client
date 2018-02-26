@@ -70,15 +70,7 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\examples\console\client.cpp" />
-    <ClCompile Include="..\..\..\..\examples\console\connection.cpp" />
-    <ClCompile Include="..\..\..\..\examples\console\main.cpp" />
-    <ClCompile Include="..\..\..\..\examples\console\read_line.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\examples\console\client.hpp" />
-    <ClInclude Include="..\..\..\..\examples\console\connection.hpp" />
-    <ClInclude Include="..\..\..\..\examples\console\read_line.hpp" />
+    <ClCompile Include="..\..\..\..\examples\get_height\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
