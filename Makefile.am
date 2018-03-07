@@ -40,13 +40,13 @@ src_libbitcoin_client_la_SOURCES = \
     src/proxy.cpp \
     src/socket_stream.cpp
 
-# local: test/libbitcoin_client_test
+# local: test/libbitcoin-client-test
 #------------------------------------------------------------------------------
 if WITH_TESTS
 
-TESTS = libbitcoin_client_test_runner.sh
+TESTS = libbitcoin-client-test_runner.sh
 
-check_PROGRAMS = test/libbitcoin_client_test
+check_PROGRAMS = test/libbitcoin-client-test
 test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_CPPFLAGS} ${bitcoin_protocol_CPPFLAGS}
 test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
 test_libbitcoin_client_test_SOURCES = \
