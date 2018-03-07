@@ -164,7 +164,7 @@ void proxy::blockchain_fetch_stealth2(error_handler on_error,
 {
     const auto bits = prefix.size();
 
-    if (bits < stealth_address::min_filter_bits || 
+    if (bits < stealth_address::min_filter_bits ||
         bits > stealth_address::max_filter_bits)
     {
         on_error(error::bad_stream);
@@ -380,10 +380,10 @@ history::list proxy::expand(payment_record::list& records)
     {
         if (record.is_output())
         {
-            const auto temporary_checksum = record.point().checksum();
+            const auto temporary_checksum = record.data();
             result.push_back(history
             {
-                std::move(record.point()),
+                output_point{ record.hash(), record.index() },
                 record.height(),
                 record.data(),
                 input_point{ null_hash, point::null_index },
@@ -419,14 +419,14 @@ history::list proxy::expand(payment_record::list& records)
             if (history.spend.is_null())
             {
                 // Move the spend to the row of its correlated output.
-                history.spend = std::move(record.point());
+                history.spend = input_point{ record.hash(), record.index() };
                 history.spend_height = record.height();
                 found = true;
                 break;
             }
         }
 
-        // This will only happen if the history height cutoff comes between an 
+        // This will only happen if the history height cutoff comes between an
         // output and its spend. In this case we return just the spend.
         // This is not strictly sufficient because of checksum hash collisions,
         // So this miscorrelation must be discarded as a fault signal.
@@ -437,7 +437,7 @@ history::list proxy::expand(payment_record::list& records)
                 output_point{ null_hash, point::null_index },
                 max_size_t,
                 max_uint64,
-                std::move(record.point()),
+                input_point{ record.hash(), record.index() },
                 { record.height() }
             });
         }
