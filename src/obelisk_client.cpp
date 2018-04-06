@@ -165,7 +165,7 @@ void obelisk_client::monitor(uint32_t timeout_seconds)
     poller.add(transaction_socket_);
     auto delay = remaining(deadline);
 
-    while (delay)
+    while (delay > 0)
     {
         const auto identifiers = poller.wait(delay);
         if (identifiers.contains(socket_.id()))
