@@ -8,19 +8,25 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="include">
-      <UniqueIdentifier>{475E189D-F147-4122-0000-000000000001}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\bitcoin">
-      <UniqueIdentifier>{475E189D-F147-4122-0000-000000000002}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="include\bitcoin\client">
       <UniqueIdentifier>{475E189D-F147-4122-0000-000000000003}</UniqueIdentifier>
     </Filter>
-    <Filter Include="resource">
+    <Filter Include="include\bitcoin">
       <UniqueIdentifier>{475E189D-F147-4122-0000-000000000004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\bitcoin\client">
+      <UniqueIdentifier>{475E189D-F147-4122-0000-000000000005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{475E189D-F147-4122-0000-000000000006}</UniqueIdentifier>
     </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{475E189D-F147-4122-0000-000000000000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\.deps">
+      <UniqueIdentifier>{475E189D-F147-4122-0000-000000000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\.libs">
+      <UniqueIdentifier>{475E189D-F147-4122-0000-000000000002}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
