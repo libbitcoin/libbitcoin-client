@@ -10,12 +10,6 @@
     <Filter Include="src">
       <UniqueIdentifier>{A56A00C6-669B-4535-0000-000000000000}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\.deps">
-      <UniqueIdentifier>{A56A00C6-669B-4535-0000-000000000001}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\.libs">
-      <UniqueIdentifier>{A56A00C6-669B-4535-0000-000000000002}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\test\main.cpp">
