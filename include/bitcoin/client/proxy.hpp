@@ -40,7 +40,8 @@ public:
     /// Resend is unrelated to connections.
     /// Timeout is capped at max_int32 (vs. max_uint32).
     proxy(stream& out, unknown_handler on_unknown_command,
-        uint32_t timeout_milliseconds, uint8_t resends);
+        uint32_t timeout_milliseconds, uint8_t resends,
+        const bc::settings& bitcoin_settings);
 
     // Fetch handler types.
     //-------------------------------------------------------------------------
@@ -123,7 +124,7 @@ private:
         transaction_handler& handler);
     static bool decode_height(reader& payload, height_handler& handler);
     static bool decode_block_header(reader& payload,
-        block_header_handler& handler);
+        const bc::settings& bitcoin_settings, block_header_handler& handler);
     static bool decode_transaction_index(reader& payload,
         transaction_index_handler& handler);
     static bool decode_stealth(reader& payload, stealth_handler& handler);
@@ -133,6 +134,8 @@ private:
     //-------------------------------------------------------------------------
     static stealth::list expand(chain::stealth_record::list& record);
     static history::list expand(chain::payment_record::list& record);
+
+    const bc::settings& bitcoin_settings_;
 };
 
 } // namespace client

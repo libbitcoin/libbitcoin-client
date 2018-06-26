@@ -18,6 +18,7 @@
  */
 #include <iostream>
 #include <memory>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
@@ -63,7 +64,7 @@ int main(int argc, char* argv[])
     socket_stream stream(socket);
 
     // Wait 2 seconds for the connection, with no failure retries.
-    proxy proxy(stream, unknown_handler, 2000, 0);
+    proxy proxy(stream, unknown_handler, 2000, 0, bc::settings());
 
     // Make the request.
     proxy.blockchain_fetch_last_height(error_handler, completion_handler);

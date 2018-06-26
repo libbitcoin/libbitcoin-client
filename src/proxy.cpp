@@ -37,8 +37,10 @@ using namespace bc::chain;
 using namespace bc::wallet;
 
 proxy::proxy(stream& out, unknown_handler on_unknown_command,
-    uint32_t timeout_milliseconds, uint8_t resends)
-  : dealer(out, on_unknown_command, timeout_milliseconds, resends)
+    uint32_t timeout_milliseconds, uint8_t resends,
+    const bc::settings& bitcoin_settings)
+  : dealer(out, on_unknown_command, timeout_milliseconds, resends),
+    bitcoin_settings_(bitcoin_settings)
 {
 }
 
@@ -136,7 +138,7 @@ void proxy::blockchain_fetch_block_header(error_handler on_error,
 
     send_request("blockchain.fetch_block_header", data, on_error,
         std::bind(decode_block_header,
-            _1, on_reply));
+            _1, bitcoin_settings_, on_reply));
 }
 
 void proxy::blockchain_fetch_block_header(error_handler on_error,
@@ -146,7 +148,7 @@ void proxy::blockchain_fetch_block_header(error_handler on_error,
 
     send_request("blockchain.fetch_block_header", data, on_error,
         std::bind(decode_block_header,
-            _1, on_reply));
+            _1, bitcoin_settings_, on_reply));
 }
 
 void proxy::blockchain_fetch_transaction_index(error_handler on_error,
@@ -310,9 +312,10 @@ bool proxy::decode_height(reader& payload, height_handler& handler)
     return true;
 }
 
-bool proxy::decode_block_header(reader& payload, block_header_handler& handler)
+bool proxy::decode_block_header(reader& payload,
+    const bc::settings& bitcoin_settings, block_header_handler& handler)
 {
-    chain::header header;
+    chain::header header(bitcoin_settings);
     if (!header.from_data(payload) || !payload.is_exhausted())
         return false;
 
