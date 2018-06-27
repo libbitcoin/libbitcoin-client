@@ -38,7 +38,7 @@ public:
         return 0;
     }
 
-    virtual bool read(stream& stream) override
+    virtual bool read(stream& ) override
     {
         return false;
     }

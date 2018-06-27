@@ -185,7 +185,7 @@ bool dealer::send(const obelisk_message& message)
 }
 
 // Stream interface, not utilized on this class.
-bool dealer::read(stream& stream)
+bool dealer::read(stream& )
 {
     return false;
 }
