@@ -35,7 +35,7 @@ static uint32_t to_milliseconds(uint16_t seconds)
 {
     const auto milliseconds = static_cast<uint32_t>(seconds) * 1000;
     return std::min(milliseconds, max_uint32);
-};
+}
 
 static const auto on_unknown = [](const std::string&){};
 
