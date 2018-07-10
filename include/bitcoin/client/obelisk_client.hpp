@@ -20,6 +20,7 @@
 #define LIBBITCOIN_CLIENT_OBELISK_CLIENT_HPP
 
 #include <cstdint>
+#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/protocol.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/proxy.hpp>
@@ -51,10 +52,12 @@ public:
         transaction_update_handler;
 
     /// Construct an instance of the client using timeout/retries from channel.
-    obelisk_client(const connection_type& channel);
+    obelisk_client(const connection_type& channel,
+        const bc::settings& bitcoin_settings);
 
     /// Construct an instance of the client using the specified parameters.
-    obelisk_client(uint16_t timeout_seconds, uint8_t retries);
+    obelisk_client(uint16_t timeout_seconds, uint8_t retries,
+        const bc::settings& bitcoin_settings);
 
     /// Connect to the specified endpoint using the provided keys.
     virtual bool connect(const config::endpoint& address,
@@ -89,6 +92,7 @@ private:
     transaction_update_handler on_transaction_update_;
     socket_stream stream_;
     const uint8_t retries_;
+    const bc::settings& bitcoin_settings_;
 };
 
 } // namespace client
