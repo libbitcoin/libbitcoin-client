@@ -34,7 +34,7 @@ struct BCC_API history
 
     /// If there is no output this is null_hash:max.
     chain::output_point output;
-    size_t output_height;
+    uint64_t output_height;
 
     /// The satoshi value of the output.
     uint64_t value;
@@ -45,7 +45,7 @@ struct BCC_API history
     union
     {
         /// The height of the spend or max if no spend.
-        size_t spend_height;
+        uint64_t spend_height;
 
         /// During expansion this value temporarily doubles as a checksum.
         uint64_t temporary_checksum;
