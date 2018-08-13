@@ -98,7 +98,7 @@ public:
         stealth_handler on_reply, const binary& prefix,
         uint32_t from_height=0);
 
-    void blockchain_fetch_history3(error_handler on_error,
+    void blockchain_fetch_history4(error_handler on_error,
         history_handler on_reply, const wallet::payment_address& address,
         uint32_t from_height=0);
 
