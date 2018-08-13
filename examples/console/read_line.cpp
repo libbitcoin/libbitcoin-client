@@ -18,7 +18,6 @@
  */
 #include "read_line.hpp"
 
-#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -36,16 +35,16 @@ read_line::~read_line()
 {
     zmq::message message;
     message.enqueue_little_endian(signal_halt);
-    const auto ec = socket_.send(message);
-    assert(!ec);
+    DEBUG_ONLY(const auto ec =) socket_.send(message);
+    BITCOIN_ASSERT(!ec);
     thread_->join();
 }
 
 read_line::read_line(zmq::context& context)
   : socket_(context, zmq::socket::role::requester)
 {
-    const auto ec = socket_.bind({ "inproc://terminal" });
-    assert(!ec);
+    DEBUG_ONLY(const auto ec =) socket_.bind({ "inproc://terminal" });
+    BITCOIN_ASSERT(!ec);
 
     // The thread must be constructed after the socket is already bound.
     thread_ = std::make_shared<std::thread>(
@@ -58,20 +57,21 @@ void read_line::show_prompt()
     std::cout << "> " << std::flush;
     zmq::message message;
     message.enqueue_little_endian(signal_continue);
-    const auto ec = socket_.send(message);
-    assert(!ec);
+    DEBUG_ONLY(const auto ec =) socket_.send(message);
+    BITCOIN_ASSERT(!ec);
 }
 
 std::string read_line::get_line()
 {
+    code ec;
     zmq::poller poller;
     poller.add(socket_);
 
     if (poller.wait().contains(socket_.id()))
     {
         zmq::message message;
-        auto ec = socket_.receive(message);
-        assert(!ec);
+        ec = socket_.receive(message);
+        BITCOIN_ASSERT(!ec);
         return message.dequeue_text();
     }
 
@@ -82,14 +82,14 @@ void read_line::run(zmq::context& context)
 {
     zmq::socket socket(context, zmq::socket::role::replier);
     auto ec = socket.connect({ "inproc://terminal" });
-    assert(!ec);
+    BITCOIN_ASSERT(!ec);
 
     while (true)
     {
         uint32_t signal;
         zmq::message message;
         ec = socket.receive(message);
-        assert(!ec);
+        BITCOIN_ASSERT(!ec);
 
         if (!message.dequeue(signal) || signal == signal_halt)
             break;
@@ -102,7 +102,7 @@ void read_line::run(zmq::context& context)
         zmq::message response;
         response.enqueue(text);
         ec = socket.send(response);
-        assert(!ec);
+        BITCOIN_ASSERT(!ec);
     }
 }
 
