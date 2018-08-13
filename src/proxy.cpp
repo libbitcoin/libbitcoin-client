@@ -19,6 +19,7 @@
 #include <bitcoin/client/proxy.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <utility>
 #include <unordered_map>
@@ -138,7 +139,7 @@ void proxy::blockchain_fetch_block_header(error_handler on_error,
 
     send_request("blockchain.fetch_block_header", data, on_error,
         std::bind(decode_block_header,
-            _1, bitcoin_settings_, on_reply));
+            _1, std::ref(bitcoin_settings_), on_reply));
 }
 
 void proxy::blockchain_fetch_block_header(error_handler on_error,
@@ -148,7 +149,7 @@ void proxy::blockchain_fetch_block_header(error_handler on_error,
 
     send_request("blockchain.fetch_block_header", data, on_error,
         std::bind(decode_block_header,
-            _1, bitcoin_settings_, on_reply));
+            _1, std::ref(bitcoin_settings_), on_reply));
 }
 
 void proxy::blockchain_fetch_transaction_index(error_handler on_error,
