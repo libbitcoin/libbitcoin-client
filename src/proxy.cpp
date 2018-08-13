@@ -19,6 +19,7 @@
 #include <bitcoin/client/proxy.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <utility>
 #include <unordered_map>
