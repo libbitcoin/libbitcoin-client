@@ -186,10 +186,11 @@ void proxy::blockchain_fetch_stealth2(error_handler on_error,
             _1, on_reply));
 }
 
+// blockchain.fetch_history4 (v4.0) request unchanged but response differs.
 // blockchain.fetch_history3 (v3.1) does not accept a version byte.
 // blockchain.fetch_history2 (v3.0) ignored version and is obsoleted in v3.1.
 // blockchain.fetch_history (v1/v2) used hash reversal and is obsoleted in v3.
-void proxy::blockchain_fetch_history3(error_handler on_error,
+void proxy::blockchain_fetch_history4(error_handler on_error,
     history_handler on_reply, const payment_address& address,
     uint32_t from_height)
 {
@@ -199,7 +200,7 @@ void proxy::blockchain_fetch_history3(error_handler on_error,
         to_little_endian<uint32_t>(from_height)
     });
 
-    send_request("blockchain.fetch_history3", data, on_error,
+    send_request("blockchain.fetch_history4", data, on_error,
         std::bind(decode_history,
             _1, on_reply));
 }
@@ -232,7 +233,7 @@ void proxy::blockchain_fetch_unspent_outputs(error_handler on_error,
         on_reply(selected);
     };
 
-    send_request("blockchain.fetch_history3", data, on_error,
+    send_request("blockchain.fetch_history4", data, on_error,
         std::bind(decode_history,
             _1, std::move(select_from_history)));
 }
@@ -458,7 +459,6 @@ history::list proxy::expand(payment_record::list& records)
     return result;
 }
 
-// row.value || row.previous_checksum is a union, we just decode as row.value.
 bool proxy::decode_history(reader& payload, history_handler& handler)
 {
     payment_record payment;

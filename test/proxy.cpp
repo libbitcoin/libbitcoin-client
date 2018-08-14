@@ -90,16 +90,16 @@ static const char address_satoshi[] = "1PeChFbhxDD9NLbU21DfD55aQBC4ZTR3tE";
 
 BOOST_AUTO_TEST_SUITE(proxy_tests)
 
-BOOST_AUTO_TEST_CASE(proxy__fetch_history3__test)
+BOOST_AUTO_TEST_CASE(proxy__fetch_history4__test)
 {
     PROXY_TEST_SETUP;
 
     const auto on_reply = [](const history::list&) {};
-    proxy.blockchain_fetch_history3(on_error, on_reply, payment_address(address_satoshi), test_height);
+    proxy.blockchain_fetch_history4(on_error, on_reply, payment_address(address_satoshi), test_height);
 
     HANDLE_ROUTING_FRAMES(capture.out);
     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u);
-    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_history3");
+    BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_history4");
     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "f85beb6356d0813ddb0dbb14230a249fe931a13578563412");
 }
 

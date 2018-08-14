@@ -110,7 +110,7 @@ void client::cmd_history(std::stringstream& args)
     };
 
     pending_request_ = true;
-    connection_->proxy.blockchain_fetch_history3(error_handler(), handler,
+    connection_->proxy.blockchain_fetch_history4(error_handler(), handler,
         address.hash());
 }
 
