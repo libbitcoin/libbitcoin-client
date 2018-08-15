@@ -22,7 +22,6 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
-#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
@@ -46,7 +45,7 @@ static void on_update(const code&, uint16_t sequence, size_t,
 
 connection::connection(zmq::socket& socket, uint32_t timeout_ms)
   : stream(socket),
-    proxy(stream, on_unknown, timeout_ms, 0, bc::settings())
+    proxy(stream, on_unknown, timeout_ms, 0)
 {
     proxy.set_on_update(on_update);
 }

@@ -50,22 +50,18 @@ static const auto on_unknown = [](const std::string&){};
 
 // Retries is overloaded as configuration for resends as well.
 // Timeout is capped at ~ 25 days by signed/millsecond conversions.
-obelisk_client::obelisk_client(uint16_t timeout_seconds, uint8_t retries,
-    const bc::settings& bitcoin_settings)
+obelisk_client::obelisk_client(uint16_t timeout_seconds, uint8_t retries)
   : socket_(context_, zmq::socket::role::dealer),
     block_socket_(context_, zmq::socket::role::subscriber),
     transaction_socket_(context_, zmq::socket::role::subscriber),
     stream_(socket_),
     retries_(retries),
-    bitcoin_settings_(bitcoin_settings),
-    proxy(stream_, on_unknown, to_milliseconds(timeout_seconds), retries,
-        bitcoin_settings)
+    proxy(stream_, on_unknown, to_milliseconds(timeout_seconds), retries)
 {
 }
 
-obelisk_client::obelisk_client(const connection_type& channel,
-    const bc::settings& bitcoin_settings)
-  : obelisk_client(channel.timeout_seconds, channel.retries, bitcoin_settings)
+obelisk_client::obelisk_client(const connection_type& channel)
+  : obelisk_client(channel.timeout_seconds, channel.retries)
 {
 }
 
@@ -190,7 +186,7 @@ void obelisk_client::monitor(uint32_t timeout_seconds)
             message.dequeue(height);
             message.dequeue(data);
 
-            bc::chain::block block(bitcoin_settings_);
+            bc::chain::block block;
             block.from_data(data, true);
 
             on_block_update_(block);

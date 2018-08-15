@@ -20,7 +20,6 @@
 #include <string>
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test_suite.hpp>
-#include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client.hpp>
 
 using namespace bc;
@@ -82,7 +81,7 @@ static const char address_satoshi[] = "1PeChFbhxDD9NLbU21DfD55aQBC4ZTR3tE";
     static const auto on_error = [](const code&) {}; \
     static const auto on_unknown = [](const std::string&) {}; \
     stream_fixture capture; \
-    proxy proxy(capture, on_unknown, timeout_ms, retries, bc::settings())
+    proxy proxy(capture, on_unknown, timeout_ms, retries)
 
 // Allow REQ or unadressed DEALER client.
 #define HANDLE_ROUTING_FRAMES(stack) \
