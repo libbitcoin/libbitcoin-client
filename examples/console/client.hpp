@@ -24,7 +24,6 @@
 #include <sstream>
 #include <string>
 #include <bitcoin/client.hpp>
-#include "connection.hpp"
 #include "read_line.hpp"
 
 /**
@@ -49,32 +48,18 @@ private:
     /**
      * The commands.
      */
-    void cmd_exit();
-    void cmd_help();
+    void cmd_exit(std::stringstream& args);
+    void cmd_help(std::stringstream& args);
     void cmd_connect(std::stringstream& args);
     void cmd_disconnect(std::stringstream& args);
     void cmd_height(std::stringstream& args);
     void cmd_history(std::stringstream& args);
+    void cmd_header(std::stringstream& args);
 
     /**
      * Reads a command from the terminal thread, and processes it appropriately.
      */
     void command();
-
-    /**
-     * Obtains a simple error-handling functor object.
-     */
-    bc::client::proxy::error_handler error_handler();
-
-    /**
-     * Call this to display a new prompt once a request has finished.
-     */
-    void request_done();
-
-    /**
-     * Verifies a connection exists, and prints an error message otherwise.
-     */
-    bool check_connection();
 
     /**
      * Parses a string argument out of the command line, or prints an error
@@ -91,14 +76,17 @@ private:
         bc::wallet::payment_address& out);
 
     /**
+     * Reads a 64 byte hex encoded hash from the command-line, or
+     * prints an error if the hash is missing or invalid.
+     */
+    bool read_hash(std::stringstream& args, bc::hash_digest& out);
+
+    /**
      * Private members.
      */
     bool done_;
-    bool pending_request_;
-    bc::protocol::zmq::context context_;
     read_line terminal_;
-    bc::protocol::zmq::socket socket_;
-    std::shared_ptr<connection> connection_;
+    std::shared_ptr<bc::client::obelisk_client> connection_;
 };
 
 #endif

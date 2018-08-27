@@ -31,6 +31,15 @@ struct BCC_API stealth
 {
     typedef std::vector<stealth> list;
 
+    // Constructor provided for in-place construction.
+    stealth(const ec_compressed& ephemeral_public_key,
+        const short_hash& public_key_hash, const hash_digest& transaction_hash)
+      : ephemeral_public_key(ephemeral_public_key),
+        public_key_hash(public_key_hash),
+        transaction_hash(transaction_hash)
+    {
+    }
+
     ec_compressed ephemeral_public_key;
     short_hash public_key_hash;
     hash_digest transaction_hash;

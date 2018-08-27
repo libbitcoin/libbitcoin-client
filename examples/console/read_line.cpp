@@ -31,6 +31,16 @@ using namespace bc::protocol;
 uint32_t signal_halt = 0;
 uint32_t signal_continue = 1;
 
+read_line::read_line()
+  : socket_(context_, zmq::socket::role::requester)
+{
+    DEBUG_ONLY(const auto ec =) socket_.bind({ "inproc://terminal" });
+    BITCOIN_ASSERT(!ec);
+
+    // The thread must be constructed after the socket is already bound.
+    thread_ = std::make_shared<std::thread>(std::bind(&read_line::run, this));
+}
+
 read_line::~read_line()
 {
     zmq::message message;
@@ -38,18 +48,6 @@ read_line::~read_line()
     DEBUG_ONLY(const auto ec =) socket_.send(message);
     BITCOIN_ASSERT(!ec);
     thread_->join();
-}
-
-read_line::read_line(zmq::context& context)
-  : socket_(context, zmq::socket::role::requester)
-{
-    DEBUG_ONLY(const auto ec =) socket_.bind({ "inproc://terminal" });
-    BITCOIN_ASSERT(!ec);
-
-    // The thread must be constructed after the socket is already bound.
-    thread_ = std::make_shared<std::thread>(
-        std::bind(&read_line::run,
-            this, std::ref(context)));
 }
 
 void read_line::show_prompt()
@@ -78,9 +76,9 @@ std::string read_line::get_line()
     return{};
 }
 
-void read_line::run(zmq::context& context)
+void read_line::run()
 {
-    zmq::socket socket(context, zmq::socket::role::replier);
+    zmq::socket socket(context_, zmq::socket::role::replier);
     auto ec = socket.connect({ "inproc://terminal" });
     BITCOIN_ASSERT(!ec);
 

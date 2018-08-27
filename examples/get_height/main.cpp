@@ -35,45 +35,20 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Set up the server connection.
-    zmq::context context;
-    zmq::socket socket(context, zmq::socket::role::dealer);
-
-    if (socket.connect({ argv[1] }) != error::success)
+    const auto completion_handler = [](const code& ec, size_t height)
     {
-        std::cerr << "Cannot connect to " << argv[1] << std::endl;
-        return 1;
-    }
-
-    const auto unknown_handler = [](const std::string& command)
-    {
-        std::cout << "unknown command: " << command << std::endl;
+        if (ec)
+            std::cerr << "Failed retrieving height: " << ec.message() << std::endl;
+        else
+            std::cout << "Height: " << height << std::endl;
     };
 
-    const auto error_handler = [](const code& code)
-    {
-        std::cout << "error: " << code.message() << std::endl;
-    };
-
-    const auto completion_handler = [](size_t height)
-    {
-        std::cout << "height: " << height << std::endl;
-    };
-
-    socket_stream stream(socket);
-
-    // Wait 2 seconds for the connection, with no failure retries.
-    proxy proxy(stream, unknown_handler, 2000, 0);
+    obelisk_client client;
+    client.connect(bc::config::endpoint(argv[1]));
 
     // Make the request.
-    proxy.blockchain_fetch_last_height(error_handler, completion_handler);
-
-    zmq::poller poller;
-    poller.add(socket);
-
-    // Wait 1 second for the response.
-    if (poller.wait(1000).contains(socket.id()))
-        stream.read(proxy);
+    client.blockchain_fetch_last_height(completion_handler);
+    client.wait();
 
     return 0;
 }
