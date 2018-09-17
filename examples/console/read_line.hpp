@@ -50,8 +50,9 @@
 class read_line
 {
 public:
+    read_line();
+
     ~read_line();
-    read_line(bc::protocol::zmq::context& context);
 
     /**
      * Displays a command prompt and begins reading a line in the background.
@@ -67,8 +68,9 @@ public:
     virtual bc::protocol::zmq::socket& socket();
 
 private:
-    void run(bc::protocol::zmq::context& context);
+    void run();
 
+    bc::protocol::zmq::context context_;
     bc::protocol::zmq::socket socket_;
     std::shared_ptr<std::thread> thread_;
 };

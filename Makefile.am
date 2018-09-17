@@ -35,10 +35,7 @@ lib_LTLIBRARIES = src/libbitcoin-client.la
 src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
 src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
 src_libbitcoin_client_la_SOURCES = \
-    src/dealer.cpp \
-    src/obelisk_client.cpp \
-    src/proxy.cpp \
-    src/socket_stream.cpp
+    src/obelisk_client.cpp
 
 # local: test/libbitcoin-client-test
 #------------------------------------------------------------------------------
@@ -51,7 +48,7 @@ test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_BUILD_CPPFL
 test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
 test_libbitcoin_client_test_SOURCES = \
     test/main.cpp \
-    test/proxy.cpp
+    test/obelisk_client.cpp
 
 endif WITH_TESTS
 
@@ -65,8 +62,6 @@ examples_console_console_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${bitc
 examples_console_console_SOURCES = \
     examples/console/client.cpp \
     examples/console/client.hpp \
-    examples/console/connection.cpp \
-    examples/console/connection.hpp \
     examples/console/main.cpp \
     examples/console/read_line.cpp \
     examples/console/read_line.hpp
@@ -93,14 +88,10 @@ include_bitcoin_HEADERS = \
 
 include_bitcoin_clientdir = ${includedir}/bitcoin/client
 include_bitcoin_client_HEADERS = \
-    include/bitcoin/client/dealer.hpp \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/history.hpp \
     include/bitcoin/client/obelisk_client.hpp \
-    include/bitcoin/client/proxy.hpp \
-    include/bitcoin/client/socket_stream.hpp \
     include/bitcoin/client/stealth.hpp \
-    include/bitcoin/client/stream.hpp \
     include/bitcoin/client/version.hpp
 
 

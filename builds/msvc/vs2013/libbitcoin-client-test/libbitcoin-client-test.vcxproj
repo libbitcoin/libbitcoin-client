@@ -71,7 +71,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\test\main.cpp" />
-    <ClCompile Include="..\..\..\..\test\proxy.cpp" />
+    <ClCompile Include="..\..\..\..\test\obelisk_client.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
