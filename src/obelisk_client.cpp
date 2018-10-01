@@ -362,6 +362,35 @@ void obelisk_client::attach_handlers()
         block_header_handlers_.erase(handler);
     };
 
+    auto block_handler = [this](const std::string&, uint32_t id,
+        const data_chunk& payload)
+    {
+        auto handler = block_handlers_.find(id);
+        if (handler == block_handlers_.end())
+            return;
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        const auto ec = source.read_error_code();
+        if (ec)
+        {
+            handler->second(ec, {});
+            block_handlers_.erase(handler);
+            return;
+        }
+
+        chain::block block;
+        if (!block.from_data(source.read_bytes()))
+        {
+            handler->second(error::bad_stream, {});
+            block_handlers_.erase(handler);
+            return;
+        }
+
+        handler->second(ec, block);
+        block_handlers_.erase(handler);
+    };
+
     auto transaction_index_handler = [this](const std::string&, uint32_t id,
         const data_chunk& payload)
     {
@@ -568,6 +597,7 @@ void obelisk_client::attach_handlers()
     command_handlers_["blockchain.fetch_transaction"] = transaction_handler;
     command_handlers_["blockchain.fetch_transaction2"] = transaction_handler;
     command_handlers_["blockchain.fetch_last_height"] = height_handler;
+    command_handlers_["blockchain.fetch_block"] = block_handler;
     command_handlers_["blockchain.fetch_block_header"] = block_header_handler;
     command_handlers_["blockchain.fetch_transaction_index"] =
         transaction_index_handler;
@@ -585,6 +615,7 @@ bool obelisk_client::requests_outstanding()
         !result_handlers_.empty() ||
         !height_handlers_.empty() ||
         !transaction_index_handlers_.empty() ||
+        !block_handlers_.empty() ||
         !block_header_handlers_.empty() ||
         !transaction_handlers_.empty() ||
         !history_handlers_.empty() ||
@@ -602,6 +633,8 @@ void obelisk_client::clear_outstanding_requests(const bc::code& ec)
         handler.second(ec, {});
     for (auto& handler: transaction_index_handlers_)
         handler.second(ec, {}, {});
+    for (auto& handler: block_handlers_)
+        handler.second(ec, {});
     for (auto& handler: block_header_handlers_)
         handler.second(ec, {});
     for (auto& handler: transaction_handlers_)
@@ -616,6 +649,7 @@ void obelisk_client::clear_outstanding_requests(const bc::code& ec)
     result_handlers_.clear();
     height_handlers_.clear();
     transaction_index_handlers_.clear();
+    block_handlers_.clear();
     block_header_handlers_.clear();
     transaction_handlers_.clear();
     history_handlers_.clear();
@@ -710,6 +744,26 @@ void obelisk_client::blockchain_fetch_last_height(height_handler handler)
     const data_chunk data{};
     const auto id = ++last_request_index_;
     height_handlers_[id] = handler;
+    send_request(command, id, data);
+}
+
+void obelisk_client::blockchain_fetch_block(block_handler handler,
+    uint32_t height)
+{
+    static const std::string command = "blockchain.fetch_block";
+    const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
+    const auto id = ++last_request_index_;
+    block_handlers_[id] = handler;
+    send_request(command, id, data);
+}
+
+void obelisk_client::blockchain_fetch_block(block_handler handler,
+    const hash_digest& block_hash)
+{
+    static const std::string command = "blockchain.fetch_block";
+    const auto data = build_chunk({ block_hash });
+    const auto id = ++last_request_index_;
+    block_handlers_[id] = handler;
     send_request(command, id, data);
 }
 

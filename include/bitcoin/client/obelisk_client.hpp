@@ -64,6 +64,7 @@ public:
     typedef std::function<void(const code&)> result_handler;
     typedef std::function<void(const code&, size_t)> height_handler;
     typedef std::function<void(const code&, size_t, size_t)> transaction_index_handler;
+    typedef std::function<void(const code&, const chain::block&)> block_handler;
     typedef std::function<void(const code&, const chain::header&)> block_header_handler;
     typedef std::function<void(const code&, const chain::transaction&)> transaction_handler;
     typedef std::function<void(const code&, const chain::points_value&)> points_value_handler;
@@ -76,6 +77,7 @@ public:
     typedef std::unordered_map<uint32_t, result_handler> result_handler_map;
     typedef std::unordered_map<uint32_t, height_handler> height_handler_map;
     typedef std::unordered_map<uint32_t, transaction_index_handler> transaction_index_handler_map;
+    typedef std::unordered_map<uint32_t, block_handler> block_handler_map;
     typedef std::unordered_map<uint32_t, block_header_handler> block_header_handler_map;
     typedef std::unordered_map<uint32_t, transaction_handler> transaction_handler_map;
     typedef std::unordered_map<uint32_t, history_handler> history_handler_map;
@@ -114,10 +116,10 @@ public:
     void transaction_pool_validate2(result_handler handler,
         const chain::transaction& tx);
 
-    void transaction_pool_fetch_transaction(transaction_handler on_reply,
+    void transaction_pool_fetch_transaction(transaction_handler handler,
         const hash_digest& tx_hash);
 
-    void transaction_pool_fetch_transaction2(transaction_handler on_reply,
+    void transaction_pool_fetch_transaction2(transaction_handler handler,
         const hash_digest& tx_hash);
 
     void blockchain_broadcast(result_handler handler,
@@ -125,7 +127,7 @@ public:
 
     void blockchain_validate(result_handler handler, const chain::block& block);
 
-    void blockchain_fetch_transaction(transaction_handler on_reply,
+    void blockchain_fetch_transaction(transaction_handler handler,
         const hash_digest& tx_hash);
 
     void blockchain_fetch_transaction2(transaction_handler handler,
@@ -133,7 +135,12 @@ public:
 
     void blockchain_fetch_last_height(height_handler handler);
 
-    void blockchain_fetch_block_header(block_header_handler on_reply,
+    void blockchain_fetch_block(block_handler handler, uint32_t height);
+
+    void blockchain_fetch_block(block_handler handler,
+        const hash_digest& block_hash);
+
+    void blockchain_fetch_block_header(block_header_handler handler,
         uint32_t height);
 
     void blockchain_fetch_block_header(block_header_handler handler,
@@ -148,7 +155,7 @@ public:
     void blockchain_fetch_history4(history_handler handler,
         const wallet::payment_address& address, uint32_t from_height=0);
 
-    void blockchain_fetch_unspent_outputs(points_value_handler on_reply,
+    void blockchain_fetch_unspent_outputs(points_value_handler handler,
         const wallet::payment_address& address, uint64_t satoshi,
         wallet::select_outputs::algorithm algorithm);
 
@@ -203,6 +210,7 @@ private:
     result_handler_map result_handlers_;
     height_handler_map height_handlers_;
     transaction_index_handler_map transaction_index_handlers_;
+    block_handler_map block_handlers_;
     block_header_handler_map block_header_handlers_;
     transaction_handler_map transaction_handlers_;
     history_handler_map history_handlers_;
