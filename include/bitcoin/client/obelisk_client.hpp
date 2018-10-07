@@ -177,6 +177,8 @@ public:
 private:
     // Attach handlers for all supported client-server operations.
     void attach_handlers();
+    void handle_immediate(const std::string& command, uint32_t id,
+        const code& ec);
 
     // Determines if any requests have not been handled.
     bool requests_outstanding();

@@ -607,6 +607,21 @@ void obelisk_client::attach_handlers()
     command_handlers_["notification.stealth"] = notification_handler;
 }
 
+void obelisk_client::handle_immediate(const std::string& command, uint32_t id,
+    const code& ec)
+{
+    auto command_handler = command_handlers_.find(command);
+    if (command_handler == command_handlers_.end())
+        return;
+
+    const auto payload = build_chunk(
+    {
+        to_little_endian(static_cast<uint32_t>(ec.value()))
+    });
+
+    command_handler->second(command, id, payload);
+}
+
 bool obelisk_client::requests_outstanding()
 {
     // We have requests outstanding if any of the handler maps are not
@@ -667,7 +682,8 @@ void obelisk_client::transaction_pool_broadcast(result_handler handler,
     static const std::string command = "transaction_pool.broadcast";
     const auto id = ++last_request_index_;
     result_handlers_[id] = handler;
-    send_request(command, id, tx.to_data(true, true));
+    if (!send_request(command, id, tx.to_data(true, true)))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 // This will fail if a witness tx is sent to a < v3.4 (pre-witness) server.
@@ -677,7 +693,8 @@ void obelisk_client::transaction_pool_validate2(result_handler handler,
     static const std::string command = "transaction_pool.validate2";
     const auto id = ++last_request_index_;
     result_handlers_[id] = handler;
-    send_request(command, id, tx.to_data(true, true));
+    if (!send_request(command, id, tx.to_data(true, true)))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::transaction_pool_fetch_transaction(
@@ -687,7 +704,8 @@ void obelisk_client::transaction_pool_fetch_transaction(
     const auto data = build_chunk({ tx_hash });
     const auto id = ++last_request_index_;
     transaction_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::transaction_pool_fetch_transaction2(
@@ -697,7 +715,8 @@ void obelisk_client::transaction_pool_fetch_transaction2(
     const auto data = build_chunk({ tx_hash });
     const auto id = ++last_request_index_;
     transaction_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_broadcast(result_handler handler,
@@ -706,7 +725,8 @@ void obelisk_client::blockchain_broadcast(result_handler handler,
     static const std::string command = "blockchain.broadcast";
     const auto id = ++last_request_index_;
     result_handlers_[id] = handler;
-    send_request(command, id, block.to_data());
+    if (!send_request(command, id, block.to_data()))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_validate(result_handler handler,
@@ -715,7 +735,8 @@ void obelisk_client::blockchain_validate(result_handler handler,
     static const std::string command = "blockchain.validate";
     const auto id = ++last_request_index_;
     result_handlers_[id] = handler;
-    send_request(command, id, block.to_data());
+    if (!send_request(command, id, block.to_data()))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_transaction(
@@ -725,7 +746,8 @@ void obelisk_client::blockchain_fetch_transaction(
     const auto data = build_chunk({ tx_hash });
     const auto id = ++last_request_index_;
     transaction_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_transaction2(
@@ -735,7 +757,8 @@ void obelisk_client::blockchain_fetch_transaction2(
     const auto data = build_chunk({ tx_hash });
     const auto id = ++last_request_index_;
     transaction_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_last_height(height_handler handler)
@@ -744,7 +767,8 @@ void obelisk_client::blockchain_fetch_last_height(height_handler handler)
     const data_chunk data{};
     const auto id = ++last_request_index_;
     height_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_block(block_handler handler,
@@ -754,7 +778,8 @@ void obelisk_client::blockchain_fetch_block(block_handler handler,
     const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
     const auto id = ++last_request_index_;
     block_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_block(block_handler handler,
@@ -764,7 +789,8 @@ void obelisk_client::blockchain_fetch_block(block_handler handler,
     const auto data = build_chunk({ block_hash });
     const auto id = ++last_request_index_;
     block_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_block_header(block_header_handler handler,
@@ -774,7 +800,8 @@ void obelisk_client::blockchain_fetch_block_header(block_header_handler handler,
     const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
     const auto id = ++last_request_index_;
     block_header_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_block_header(block_header_handler handler,
@@ -784,7 +811,8 @@ void obelisk_client::blockchain_fetch_block_header(block_header_handler handler,
     const auto data = build_chunk({ block_hash });
     const auto id = ++last_request_index_;
     block_header_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_transaction_index(
@@ -794,7 +822,8 @@ void obelisk_client::blockchain_fetch_transaction_index(
     const auto data = build_chunk({ tx_hash });
     const auto id = ++last_request_index_;
     transaction_index_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_stealth2(stealth_handler handler,
@@ -819,7 +848,8 @@ void obelisk_client::blockchain_fetch_stealth2(stealth_handler handler,
 
     const auto id = ++last_request_index_;
     stealth_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 // blockchain.fetch_history4 (v4.0) request unchanged but response differs.
@@ -838,7 +868,8 @@ void obelisk_client::blockchain_fetch_history4(history_handler handler,
 
     const auto id = ++last_request_index_;
     history_handlers_[id] = handler;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 void obelisk_client::blockchain_fetch_unspent_outputs(
@@ -872,7 +903,8 @@ void obelisk_client::blockchain_fetch_unspent_outputs(
 
     const auto id = ++last_request_index_;
     history_handlers_[id] = select_from_history;
-    send_request(command, id, data);
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
 }
 
 // Subscribers.
@@ -888,7 +920,9 @@ void obelisk_client::subscribe_address(update_handler handler,
     const auto data = build_chunk({ address_hash });
     const auto id = ++last_request_index_;
     update_handlers_[id] = handler;
-    if (send_request(command, id, data))
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+    else
         handler(error::success, {}, {}, {});
 }
 
@@ -917,7 +951,9 @@ void obelisk_client::subscribe_stealth(update_handler handler,
     const auto id = ++last_request_index_;
     update_handlers_[id] = handler;
 
-    if (send_request(command, id, data))
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+    else
         handler(error::success, {}, {}, {});
 }
 
