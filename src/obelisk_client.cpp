@@ -586,6 +586,25 @@ void obelisk_client::attach_handlers()
         update_handlers_.erase(handler);
     };
 
+    auto hash_list_handler = [this](const std::string&, uint32_t id,
+        const data_chunk& payload)
+    {
+        auto handler = hash_list_handlers_.find(id);
+        if (handler == hash_list_handlers_.end())
+            return;
+
+        hash_list hashes;
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        const auto ec = source.read_error_code();
+        while (!source.is_exhausted())
+            hashes.push_back(source.read_hash());
+
+        handler->second(ec, hashes);
+        hash_list_handlers_.erase(handler);
+    };
+
     command_handlers_["transaction_pool.broadcast"] = result_handler;
     command_handlers_["transaction_pool.validate2"] = result_handler;
     command_handlers_["transaction_pool.fetch_transaction"] =
@@ -599,12 +618,17 @@ void obelisk_client::attach_handlers()
     command_handlers_["blockchain.fetch_last_height"] = height_handler;
     command_handlers_["blockchain.fetch_block"] = block_handler;
     command_handlers_["blockchain.fetch_block_header"] = block_header_handler;
+    command_handlers_["blockchain.fetch_block_height"] = height_handler;
     command_handlers_["blockchain.fetch_transaction_index"] =
         transaction_index_handler;
     command_handlers_["blockchain.fetch_stealth2"] = stealth_handler;
     command_handlers_["blockchain.fetch_history4"] = history_handler;
     command_handlers_["notification.address"] = notification_handler;
     command_handlers_["notification.stealth"] = notification_handler;
+    command_handlers_["blockchain.fetch_block_transaction_hashes"] =
+        hash_list_handler;
+    command_handlers_["blockchain.fetch_stealth_transaction_hashes"] =
+        hash_list_handler;
 }
 
 void obelisk_client::handle_immediate(const std::string& command, uint32_t id,
@@ -633,6 +657,7 @@ bool obelisk_client::requests_outstanding()
         !block_handlers_.empty() ||
         !block_header_handlers_.empty() ||
         !transaction_handlers_.empty() ||
+        !hash_list_handlers_.empty() ||
         !history_handlers_.empty() ||
         !stealth_handlers_.empty() ||
         !update_handlers_.empty();
@@ -654,6 +679,8 @@ void obelisk_client::clear_outstanding_requests(const bc::code& ec)
         handler.second(ec, {});
     for (auto& handler: transaction_handlers_)
         handler.second(ec, {});
+    for (auto& handler: hash_list_handlers_)
+        handler.second(ec, {});
     for (auto& handler: history_handlers_)
         handler.second(ec, {});
     for (auto& handler: stealth_handlers_)
@@ -667,6 +694,7 @@ void obelisk_client::clear_outstanding_requests(const bc::code& ec)
     block_handlers_.clear();
     block_header_handlers_.clear();
     transaction_handlers_.clear();
+    hash_list_handlers_.clear();
     history_handlers_.clear();
     stealth_handlers_.clear();
     update_handlers_.clear();
@@ -903,6 +931,61 @@ void obelisk_client::blockchain_fetch_unspent_outputs(
 
     const auto id = ++last_request_index_;
     history_handlers_[id] = select_from_history;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_block_height(height_handler handler,
+    const hash_digest& block_hash)
+{
+    static const std::string command = "blockchain.fetch_block_height";
+    const auto data = build_chunk({ block_hash });
+    const auto id = ++last_request_index_;
+    height_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_block_transaction_hashes(
+    hash_list_handler handler, uint32_t height)
+{
+    static const std::string command = "blockchain.fetch_block_transaction_hashes";
+    const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
+    const auto id = ++last_request_index_;
+    hash_list_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_block_transaction_hashes(
+    hash_list_handler handler, const hash_digest& block_hash)
+{
+    static const std::string command = "blockchain.fetch_block_transaction_hashes";
+    const auto data = build_chunk({ block_hash });
+    const auto id = ++last_request_index_;
+    hash_list_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
+    hash_list_handler handler, uint32_t height)
+{
+    static const std::string command = "blockchain.fetch_stealth_transaction_hashes";
+    const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
+    const auto id = ++last_request_index_;
+    hash_list_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
+    hash_list_handler handler, const hash_digest& block_hash)
+{
+    static const std::string command = "blockchain.fetch_stealth_transaction_hashes";
+    const auto data = build_chunk({ block_hash });
+    const auto id = ++last_request_index_;
+    hash_list_handlers_[id] = handler;
     if (!send_request(command, id, data))
         handle_immediate(command, id, error::network_unreachable);
 }
