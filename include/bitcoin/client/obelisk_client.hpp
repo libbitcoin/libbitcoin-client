@@ -19,7 +19,7 @@
 #ifndef LIBBITCOIN_CLIENT_OBELISK_CLIENT_HPP
 #define LIBBITCOIN_CLIENT_OBELISK_CLIENT_HPP
 
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/history.hpp>
 #include <bitcoin/client/stealth.hpp>
@@ -32,12 +32,12 @@ namespace client {
 struct BCC_API connection_settings
 {
     int32_t retries;
-    config::endpoint server;
-    config::endpoint block_server;
-    config::endpoint transaction_server;
-    config::authority socks;
-    config::sodium server_public_key;
-    config::sodium client_private_key;
+    system::config::endpoint server;
+    system::config::endpoint block_server;
+    system::config::endpoint transaction_server;
+    system::config::authority socks;
+    system::config::sodium server_public_key;
+    system::config::sodium client_private_key;
 };
 
 /// Client implements a router-dealer interface to communicate with
@@ -46,31 +46,33 @@ class BCC_API obelisk_client
 {
 public:
     typedef std::function<void(const std::string&, uint32_t,
-        const data_chunk&)> command_handler;
+        const system::data_chunk&)> command_handler;
     typedef std::unordered_map<std::string, command_handler> command_map;
 
     // Subscription/notification handler types.
     //-------------------------------------------------------------------------
 
-    typedef std::function<void(const code&, uint16_t, size_t,
-        const hash_digest&)> update_handler;
-    typedef std::function<void(const chain::block&)> block_update_handler;
-    typedef std::function<void(const chain::transaction&)>
+    typedef std::function<void(const system::code&, uint16_t, size_t,
+        const system::hash_digest&)> update_handler;
+    typedef std::function<void(const system::chain::block&)>
+        block_update_handler;
+    typedef std::function<void(const system::chain::transaction&)>
         transaction_update_handler;
 
     // Fetch handler types.
     //-------------------------------------------------------------------------
 
-    typedef std::function<void(const code&)> result_handler;
-    typedef std::function<void(const code&, size_t)> height_handler;
-    typedef std::function<void(const code&, size_t, size_t)> transaction_index_handler;
-    typedef std::function<void(const code&, const chain::block&)> block_handler;
-    typedef std::function<void(const code&, const chain::header&)> block_header_handler;
-    typedef std::function<void(const code&, const chain::transaction&)> transaction_handler;
-    typedef std::function<void(const code&, const chain::points_value&)> points_value_handler;
-    typedef std::function<void(const code&, const client::history::list&)> history_handler;
-    typedef std::function<void(const code&, const client::stealth::list&)> stealth_handler;
-    typedef std::function<void(const code&, const hash_list&)> hash_list_handler;
+
+    typedef std::function<void(const system::code&)> result_handler;
+    typedef std::function<void(const system::code&, size_t)> height_handler;
+    typedef std::function<void(const system::code&, size_t, size_t)> transaction_index_handler;
+    typedef std::function<void(const system::code&, const system::chain::block&)> block_handler;
+    typedef std::function<void(const system::code&, const system::chain::header&)> block_header_handler;
+    typedef std::function<void(const system::code&, const system::chain::transaction&)> transaction_handler;
+    typedef std::function<void(const system::code&, const system::chain::points_value&)> points_value_handler;
+    typedef std::function<void(const system::code&, const client::history::list&)> history_handler;
+    typedef std::function<void(const system::code&, const client::stealth::list&)> stealth_handler;
+    typedef std::function<void(const system::code&, const system::hash_list&)> hash_list_handler;
 
     // Used for mapping specific requests to specific handlers
     // (allowing support for different handlers for different client
@@ -92,13 +94,13 @@ public:
     ~obelisk_client();
 
     /// Connect to the specified endpoint using the provided keys.
-    bool connect(const config::endpoint& address,
-        const config::authority& socks_proxy,
-        const config::sodium& server_public_key,
-        const config::sodium& client_private_key);
+    bool connect(const system::config::endpoint& address,
+        const system::config::authority& socks_proxy,
+        const system::config::sodium& server_public_key,
+        const system::config::sodium& client_private_key);
 
     /// Connect to the specified endpoint.
-    bool connect(const config::endpoint& address);
+    bool connect(const system::config::endpoint& address);
 
     /// Connect using the provided settings.
     bool connect(const connection_settings& settings);
@@ -113,99 +115,101 @@ public:
     //-------------------------------------------------------------------------
 
     void transaction_pool_broadcast(result_handler handler,
-        const chain::transaction& tx);
+        const system::chain::transaction& tx);
 
     void transaction_pool_validate2(result_handler handler,
-        const chain::transaction& tx);
+        const system::chain::transaction& tx);
 
     void transaction_pool_fetch_transaction(transaction_handler handler,
-        const hash_digest& tx_hash);
+        const system::hash_digest& tx_hash);
 
     void transaction_pool_fetch_transaction2(transaction_handler handler,
-        const hash_digest& tx_hash);
+        const system::hash_digest& tx_hash);
 
     void blockchain_broadcast(result_handler handler,
-        const chain::block& block);
+        const system::chain::block& block);
 
-    void blockchain_validate(result_handler handler, const chain::block& block);
+    void blockchain_validate(result_handler handler,
+        const system::chain::block& block);
 
     void blockchain_fetch_transaction(transaction_handler handler,
-        const hash_digest& tx_hash);
+        const system::hash_digest& tx_hash);
 
     void blockchain_fetch_transaction2(transaction_handler handler,
-        const hash_digest& tx_hash);
+        const system::hash_digest& tx_hash);
 
     void blockchain_fetch_last_height(height_handler handler);
 
     void blockchain_fetch_block(block_handler handler, uint32_t height);
 
     void blockchain_fetch_block(block_handler handler,
-        const hash_digest& block_hash);
+        const system::hash_digest& block_hash);
 
     void blockchain_fetch_block_header(block_header_handler handler,
         uint32_t height);
 
     void blockchain_fetch_block_header(block_header_handler handler,
-        const hash_digest& block_hash);
+        const system::hash_digest& block_hash);
 
     void blockchain_fetch_transaction_index(transaction_index_handler handler,
-        const hash_digest& tx_hash);
+        const system::hash_digest& tx_hash);
 
     void blockchain_fetch_block_height(height_handler handler,
-        const hash_digest& block_hash);
+        const system::hash_digest& block_hash);
 
     void blockchain_fetch_block_transaction_hashes(
         hash_list_handler handler, uint32_t height);
 
     void blockchain_fetch_block_transaction_hashes(
-        hash_list_handler handler, const hash_digest& block_hash);
+        hash_list_handler handler, const system::hash_digest& block_hash);
 
     void blockchain_fetch_stealth_transaction_hashes(
         hash_list_handler handler, uint32_t height);
 
     void blockchain_fetch_stealth_transaction_hashes(
-        hash_list_handler handler, const hash_digest& block_hash);
+        hash_list_handler handler, const system::hash_digest& block_hash);
 
     void blockchain_fetch_history4(history_handler handler,
-        const wallet::payment_address& address, uint32_t from_height=0);
+        const system::wallet::payment_address& address,
+        uint32_t from_height=0);
 
     void blockchain_fetch_stealth2(stealth_handler handler,
-        const binary& prefix, uint32_t from_height=0);
+        const system::binary& prefix, uint32_t from_height=0);
 
     void blockchain_fetch_unspent_outputs(points_value_handler handler,
-        const wallet::payment_address& address, uint64_t satoshi,
-        wallet::select_outputs::algorithm algorithm);
+        const system::wallet::payment_address& address, uint64_t satoshi,
+        system::wallet::select_outputs::algorithm algorithm);
 
     // Subscribers.
     //-------------------------------------------------------------------------
 
     void subscribe_address(update_handler handler,
-        const short_hash& address_hash);
+        const system::short_hash& address_hash);
 
     void subscribe_stealth(update_handler handler,
-        const binary& stealth_prefix);
+        const system::binary& stealth_prefix);
 
-    bool subscribe_block(const config::endpoint& address,
+    bool subscribe_block(const system::config::endpoint& address,
         block_update_handler on_update);
 
-    bool subscribe_transaction(const config::endpoint& address,
+    bool subscribe_transaction(const system::config::endpoint& address,
         transaction_update_handler on_update);
 
 private:
     // Attach handlers for all supported client-server operations.
     void attach_handlers();
     void handle_immediate(const std::string& command, uint32_t id,
-        const code& ec);
+        const system::code& ec);
 
     // Determines if any requests have not been handled.
     bool requests_outstanding();
 
     // Calls all remaining/expired handlers with the specified error.
-    void clear_outstanding_requests(const bc::code& ec);
+    void clear_outstanding_requests(const system::code& ec);
 
     // Sends an outgoing request via the internal router.
     bool send_request(const std::string& command, uint32_t id,
-        const data_chunk& payload);
+        const system::data_chunk& payload);
 
     protocol::zmq::context context_;
 
@@ -223,7 +227,7 @@ private:
     transaction_update_handler on_transaction_update_;
     int32_t retries_;
     bool secure_;
-    config::endpoint worker_;
+    system::config::endpoint worker_;
     uint32_t last_request_index_;
     command_map command_handlers_;
     result_handler_map result_handlers_;

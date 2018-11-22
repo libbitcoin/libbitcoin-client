@@ -25,10 +25,10 @@
 #include <bitcoin/client.hpp>
 #include "read_line.hpp"
 
-using namespace bc::chain;
 using namespace bc::client;
 using namespace bc::protocol;
-using namespace bc::wallet;
+using namespace bc::system::chain;
+using namespace bc::system::wallet;
 
 client::client()
   : done_(false)
@@ -63,7 +63,7 @@ void client::cmd_connect(std::stringstream& args)
     std::cout << "Connecting to " << server << std::endl;
 
     connection_ = std::make_shared<bc::client::obelisk_client>(retries);
-    if (!connection_ || !connection_->connect(bc::config::endpoint(server)))
+    if (!connection_ || !connection_->connect(bc::system::config::endpoint(server)))
         std::cerr << "Failed to connect to " << server << std::endl;
 }
 
@@ -81,7 +81,7 @@ void client::cmd_height(std::stringstream&)
         return;
     }
 
-    auto handler = [this](const bc::code& ec, size_t height)
+    auto handler = [this](const bc::system::code& ec, size_t height)
     {
         if (ec)
             std::cerr << "Failed to retrieve height: " << ec.message()
@@ -106,9 +106,9 @@ void client::cmd_history(std::stringstream& args)
     if (!read_address(args, address))
         return;
 
-    auto handler = [this](const bc::code& ec, const history::list& history)
+    auto handler = [this](const bc::system::code& ec, const history::list& history)
     {
-        if (ec != bc::error::success)
+        if (ec != bc::system::error::success)
             std::cerr << "Failed to retrieve history: " << ec.message()
                       << std::endl;
         else
@@ -128,12 +128,11 @@ void client::cmd_header(std::stringstream& args)
         return;
     }
 
-    bc::hash_digest hash{};
+    bc::system::hash_digest hash{};
     if (!read_hash(args, hash))
         return;
 
-    auto handler = [this](const bc::code& ec,
-        const bc::chain::header& header)
+    auto handler = [this](const bc::system::code& ec, const header& header)
     {
         if (ec)
         {
@@ -142,14 +141,14 @@ void client::cmd_header(std::stringstream& args)
             return;
         }
 
-        std::cout << "Header          : " << bc::encode_base16(header.hash())
+        std::cout << "Header          : " << bc::system::encode_base16(header.hash())
             << std::endl;
         std::cout << "Bits            : " << header.bits() << std::endl;
         std::cout << "Merkle Tree Hash: "
-            << bc::encode_base16(header.merkle()) << std::endl;
+            << bc::system::encode_base16(header.merkle()) << std::endl;
         std::cout << "Nonce           : " << header.nonce() << std::endl;
         std::cout << "Previous Hash   : "
-            << bc::encode_base16(header.previous_block_hash()) << std::endl;
+            << bc::system::encode_base16(header.previous_block_hash()) << std::endl;
         std::cout << "Timestamp       : " << header.timestamp() << std::endl;
         std::cout << "Version         : " << header.version() << std::endl;
     };
@@ -238,14 +237,14 @@ bool client::read_address(std::stringstream& args, payment_address& out)
     return true;
 }
 
-bool client::read_hash(std::stringstream& args, bc::hash_digest& out)
+bool client::read_hash(std::stringstream& args, bc::system::hash_digest& out)
 {
     std::string hash_string;
     if (!read_string(args, hash_string, "error: no hash given"))
         return false;
 
-    bc::hash_digest hash{};
-    if (!bc::decode_hash(hash, hash_string))
+    bc::system::hash_digest hash{};
+    if (!bc::system::decode_hash(hash, hash_string))
     {
         std::cout << "Error: invalid hash " << hash_string << std::endl;
         return false;

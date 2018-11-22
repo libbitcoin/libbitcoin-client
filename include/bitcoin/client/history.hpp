@@ -21,7 +21,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -33,8 +33,9 @@ struct BCC_API history
     typedef std::vector<history> list;
 
     // Constructor provided for in-place construction.
-    history(const chain::output_point& output, uint64_t output_height,
-        uint64_t value, const chain::input_point& spend,
+    history(const system::chain::output_point& output,
+        uint64_t output_height, uint64_t value,
+        const system::chain::input_point& spend,
         uint64_t temporary_checksum)
       : output(output),
         output_height(output_height),
@@ -45,14 +46,14 @@ struct BCC_API history
     }
 
     /// If there is no output this is null_hash:max.
-    chain::output_point output;
+    system::chain::output_point output;
     uint64_t output_height;
 
     /// The satoshi value of the output.
     uint64_t value;
 
     /// If there is no spend this is null_hash:max.
-    chain::input_point spend;
+    system::chain::input_point spend;
 
     union
     {

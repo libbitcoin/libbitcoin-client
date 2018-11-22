@@ -22,9 +22,9 @@
 #include <boost/test/unit_test_suite.hpp>
 #include <bitcoin/client.hpp>
 
-using namespace bc;
+using namespace bc::system;
 using namespace bc::client;
-using namespace bc::wallet;
+using namespace bc::system::wallet;
 
 static const std::string mainnet_test_url = "tcp://mainnet.libbitcoin.net:9091";
 
