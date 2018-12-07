@@ -70,6 +70,7 @@ public:
     typedef std::function<void(const code&, const chain::points_value&)> points_value_handler;
     typedef std::function<void(const code&, const client::history::list&)> history_handler;
     typedef std::function<void(const code&, const client::stealth::list&)> stealth_handler;
+    typedef std::function<void(const code&, const hash_list&)> hash_list_handler;
 
     // Used for mapping specific requests to specific handlers
     // (allowing support for different handlers for different client
@@ -83,6 +84,7 @@ public:
     typedef std::unordered_map<uint32_t, history_handler> history_handler_map;
     typedef std::unordered_map<uint32_t, stealth_handler> stealth_handler_map;
     typedef std::unordered_map<uint32_t, update_handler> update_handler_map;
+    typedef std::unordered_map<uint32_t, hash_list_handler> hash_list_handler_map;
 
     /// Construct an instance of the client.
     obelisk_client(int32_t retries=5);
@@ -149,11 +151,26 @@ public:
     void blockchain_fetch_transaction_index(transaction_index_handler handler,
         const hash_digest& tx_hash);
 
-    void blockchain_fetch_stealth2(stealth_handler handler,
-        const binary& prefix, uint32_t from_height=0);
+    void blockchain_fetch_block_height(height_handler handler,
+        const hash_digest& block_hash);
+
+    void blockchain_fetch_block_transaction_hashes(
+        hash_list_handler handler, uint32_t height);
+
+    void blockchain_fetch_block_transaction_hashes(
+        hash_list_handler handler, const hash_digest& block_hash);
+
+    void blockchain_fetch_stealth_transaction_hashes(
+        hash_list_handler handler, uint32_t height);
+
+    void blockchain_fetch_stealth_transaction_hashes(
+        hash_list_handler handler, const hash_digest& block_hash);
 
     void blockchain_fetch_history4(history_handler handler,
         const wallet::payment_address& address, uint32_t from_height=0);
+
+    void blockchain_fetch_stealth2(stealth_handler handler,
+        const binary& prefix, uint32_t from_height=0);
 
     void blockchain_fetch_unspent_outputs(points_value_handler handler,
         const wallet::payment_address& address, uint64_t satoshi,
@@ -218,6 +235,7 @@ private:
     history_handler_map history_handlers_;
     stealth_handler_map stealth_handlers_;
     update_handler_map update_handlers_;
+    hash_list_handler_map hash_list_handlers_;
 };
 
 } // namespace client
