@@ -25,7 +25,7 @@
 #include <thread>
 #include <bitcoin/client.hpp>
 
-using namespace bc;
+using namespace bc::system;
 using namespace bc::protocol;
 
 uint32_t signal_halt = 0;

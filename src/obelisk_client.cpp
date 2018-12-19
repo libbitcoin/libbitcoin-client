@@ -23,11 +23,11 @@
 
 #include <bitcoin/protocol/zmq/message.hpp>
 
-using namespace bc;
-using namespace bc::chain;
-using namespace bc::config;
 using namespace bc::protocol;
-using namespace bc::wallet;
+using namespace bc::system;
+using namespace bc::system::chain;
+using namespace bc::system::config;
+using namespace bc::system::wallet;
 using namespace std::chrono;
 using namespace std::this_thread;
 using namespace std::placeholders;
@@ -157,7 +157,7 @@ void obelisk_client::wait(size_t timeout_milliseconds)
             if (message.size() == 4)
                 message.dequeue();
 
-            uint32_t id;
+            uint32_t id = 0;
             std::string command;
             data_chunk payload;
 
@@ -229,7 +229,7 @@ void obelisk_client::monitor(size_t timeout_milliseconds)
             message.dequeue(height);
             message.dequeue(data);
 
-            bc::chain::block block;
+            chain::block block;
             block.from_data(data, true);
 
             on_block_update_(block);
@@ -246,7 +246,7 @@ void obelisk_client::monitor(size_t timeout_milliseconds)
             message.dequeue(sequence);
             message.dequeue(data);
 
-            bc::chain::transaction transaction;
+            chain::transaction transaction;
             transaction.from_data(data, true, true);
 
             on_transaction_update_(transaction);
@@ -663,7 +663,7 @@ bool obelisk_client::requests_outstanding()
         !update_handlers_.empty();
 }
 
-void obelisk_client::clear_outstanding_requests(const bc::code& ec)
+void obelisk_client::clear_outstanding_requests(const code& ec)
 {
     // Clear the handler maps, but first fire the handlers with the
     // specified error.
@@ -821,8 +821,8 @@ void obelisk_client::blockchain_fetch_block(block_handler handler,
         handle_immediate(command, id, error::network_unreachable);
 }
 
-void obelisk_client::blockchain_fetch_block_header(block_header_handler handler,
-    uint32_t height)
+void obelisk_client::blockchain_fetch_block_header(
+    block_header_handler handler, uint32_t height)
 {
     static const std::string command = "blockchain.fetch_block_header";
     const auto data = build_chunk({ to_little_endian<uint32_t>(height) });

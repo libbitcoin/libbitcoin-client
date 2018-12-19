@@ -14,7 +14,7 @@
  * Maintainers: Do not include this header internal to this library.
  */
 
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/protocol.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/history.hpp>

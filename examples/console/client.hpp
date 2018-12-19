@@ -73,13 +73,13 @@ private:
      * the address is missing or invalid.
      */
     bool read_address(std::stringstream& args,
-        bc::wallet::payment_address& out);
+        bc::system::wallet::payment_address& out);
 
     /**
      * Reads a 64 byte hex encoded hash from the command-line, or
      * prints an error if the hash is missing or invalid.
      */
-    bool read_hash(std::stringstream& args, bc::hash_digest& out);
+    bool read_hash(std::stringstream& args, bc::system::hash_digest& out);
 
     /**
      * Private members.

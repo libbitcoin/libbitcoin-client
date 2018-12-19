@@ -20,7 +20,7 @@
 #define LIBBITCOIN_CLIENT_STEALTH_HPP
 
 #include <vector>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 
 namespace libbitcoin {
 namespace client {
@@ -32,17 +32,18 @@ struct BCC_API stealth
     typedef std::vector<stealth> list;
 
     // Constructor provided for in-place construction.
-    stealth(const ec_compressed& ephemeral_public_key,
-        const short_hash& public_key_hash, const hash_digest& transaction_hash)
+    stealth(const system::ec_compressed& ephemeral_public_key,
+        const system::short_hash& public_key_hash,
+        const system::hash_digest& transaction_hash)
       : ephemeral_public_key(ephemeral_public_key),
         public_key_hash(public_key_hash),
         transaction_hash(transaction_hash)
     {
     }
 
-    ec_compressed ephemeral_public_key;
-    short_hash public_key_hash;
-    hash_digest transaction_hash;
+    system::ec_compressed ephemeral_public_key;
+    system::short_hash public_key_hash;
+    system::hash_digest transaction_hash;
 };
 
 } // namespace client
