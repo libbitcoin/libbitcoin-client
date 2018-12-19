@@ -106,10 +106,10 @@ public:
     bool connect(const connection_settings& settings);
 
     /// Wait for server to respond to queries, until timeout.
-    void wait(size_t timeout_milliseconds=30000);
+    void wait(uint32_t timeout_milliseconds=30000);
 
     /// Monitor for subscription notifications, until timeout.
-    void monitor(size_t timeout_milliseconds=30000);
+    void monitor(uint32_t timeout_milliseconds=30000);
 
     // Fetchers.
     //-------------------------------------------------------------------------

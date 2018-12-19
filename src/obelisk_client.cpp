@@ -123,7 +123,7 @@ bool obelisk_client::connect(const endpoint& address)
 }
 
 // Used by query commands and fires handlers as needed.
-void obelisk_client::wait(size_t timeout_milliseconds)
+void obelisk_client::wait(uint32_t timeout_milliseconds)
 {
     zmq::poller poller;
     poller.add(socket_);
@@ -204,7 +204,7 @@ bool obelisk_client::subscribe_transaction(
 }
 
 // Used by subscribe-* commands, fires registered update handlers.
-void obelisk_client::monitor(size_t timeout_milliseconds)
+void obelisk_client::monitor(uint32_t timeout_milliseconds)
 {
     auto deadline = steady_clock::now() + milliseconds(timeout_milliseconds);
 
