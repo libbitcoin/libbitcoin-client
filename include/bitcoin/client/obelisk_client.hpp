@@ -62,7 +62,6 @@ public:
     // Fetch handler types.
     //-------------------------------------------------------------------------
 
-
     typedef std::function<void(const system::code&)> result_handler;
     typedef std::function<void(const system::code&, size_t)> height_handler;
     typedef std::function<void(const system::code&, size_t, size_t)> transaction_index_handler;
@@ -73,6 +72,7 @@ public:
     typedef std::function<void(const system::code&, const client::history::list&)> history_handler;
     typedef std::function<void(const system::code&, const client::stealth::list&)> stealth_handler;
     typedef std::function<void(const system::code&, const system::hash_list&)> hash_list_handler;
+    typedef std::function<void(const system::code&, const std::string&)> version_handler;
 
     // Used for mapping specific requests to specific handlers
     // (allowing support for different handlers for different client
@@ -87,6 +87,7 @@ public:
     typedef std::unordered_map<uint32_t, stealth_handler> stealth_handler_map;
     typedef std::unordered_map<uint32_t, update_handler> update_handler_map;
     typedef std::unordered_map<uint32_t, hash_list_handler> hash_list_handler_map;
+    typedef std::unordered_map<uint32_t, version_handler> version_handler_map;
 
     /// Construct an instance of the client.
     obelisk_client(int32_t retries=5);
@@ -113,6 +114,8 @@ public:
 
     // Fetchers.
     //-------------------------------------------------------------------------
+
+    void server_version(version_handler handler);
 
     void transaction_pool_broadcast(result_handler handler,
         const system::chain::transaction& tx);
@@ -240,6 +243,7 @@ private:
     stealth_handler_map stealth_handlers_;
     update_handler_map update_handlers_;
     hash_list_handler_map hash_list_handlers_;
+    version_handler_map version_handlers_;
 };
 
 } // namespace client

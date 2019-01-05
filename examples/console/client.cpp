@@ -44,10 +44,11 @@ void client::cmd_exit(std::stringstream&)
 void client::cmd_help(std::stringstream&)
 {
     std::cout << "Commands:" << std::endl;
-    std::cout << "  exit              - Leave the program" << std::endl;
+    std::cout << "  exit [ or quit ]  - Leave the program" << std::endl;
     std::cout << "  help              - Display this menu" << std::endl;
     std::cout << "  connect <server>  - Connect to a server" << std::endl;
     std::cout << "  disconnect        - Disconnect from the server" << std::endl;
+    std::cout << "  version           - Fetch the server's version" << std::endl;
     std::cout << "  height            - Fetch last block height" << std::endl;
     std::cout << "  header <hash>     - Fetch a block's header" << std::endl;
     std::cout << "  history <address> - Fetch an address' history" << std::endl;
@@ -72,6 +73,27 @@ void client::cmd_disconnect(std::stringstream&)
 {
     connection_.reset();
     std::cout << "Disconnected from server" << std::endl;
+}
+
+void client::cmd_version(std::stringstream&)
+{
+    if (!connection_)
+    {
+        std::cerr << "Connect to a server first." << std::endl;
+        return;
+    }
+
+    auto handler = [](const code& ec, const std::string& version)
+    {
+        if (ec)
+            std::cerr << "Failed to retrieve version: " << ec.message()
+                << std::endl;
+        else
+            std::cout << "Version: " << version << std::endl;
+    };
+
+    connection_->server_version(handler);
+    connection_->wait();
 }
 
 void client::cmd_height(std::stringstream&)
@@ -146,7 +168,7 @@ void client::cmd_header(std::stringstream& args)
             << std::endl;
         std::cout << "Bits            : " << header.bits() << std::endl;
         std::cout << "Merkle Tree Hash: "
-            << encode_base16(header.merkle()) << std::endl;
+            << encode_base16(header.merkle_root()) << std::endl;
         std::cout << "Nonce           : " << header.nonce() << std::endl;
         std::cout << "Previous Hash   : "
             << encode_base16(header.previous_block_hash()) << std::endl;
@@ -186,9 +208,11 @@ void client::command()
     static const handler_map handlers =
     {
         { "exit", [this](std::stringstream& args) { cmd_exit(args); } },
+        { "quit", [this](std::stringstream& args) { cmd_exit(args); } },
         { "help", [this](std::stringstream& args) { cmd_help(args); } },
         { "connect", [this](std::stringstream& args) { cmd_connect(args); } },
         { "disconnect", [this](std::stringstream& args) { cmd_disconnect(args); } },
+        { "version", [this](std::stringstream& args) { cmd_version(args); } },
         { "height", [this](std::stringstream& args) { cmd_height(args); } },
         { "history", [this](std::stringstream& args) { cmd_history(args); } },
         { "header", [this](std::stringstream& args) { cmd_header(args); } }

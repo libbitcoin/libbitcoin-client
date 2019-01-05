@@ -52,6 +52,7 @@ private:
     void cmd_help(std::stringstream& args);
     void cmd_connect(std::stringstream& args);
     void cmd_disconnect(std::stringstream& args);
+    void cmd_version(std::stringstream& args);
     void cmd_height(std::stringstream& args);
     void cmd_history(std::stringstream& args);
     void cmd_header(std::stringstream& args);

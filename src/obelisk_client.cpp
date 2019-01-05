@@ -288,6 +288,21 @@ void obelisk_client::attach_handlers()
         result_handlers_.erase(handler);
     };
 
+    auto version_handler = [this](const std::string&, uint32_t id,
+        const data_chunk& payload)
+    {
+        auto handler = version_handlers_.find(id);
+        if (handler == version_handlers_.end())
+            return;
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        const auto ec = source.read_error_code();
+        const auto version = source.read_bytes();
+        handler->second(ec, std::string(version.begin(), version.end()));
+        version_handlers_.erase(handler);
+    };
+
     auto transaction_handler = [this](const std::string&, uint32_t id,
         const data_chunk& payload)
     {
@@ -604,30 +619,34 @@ void obelisk_client::attach_handlers()
         hash_list_handlers_.erase(handler);
     };
 
-    command_handlers_["transaction_pool.broadcast"] = result_handler;
-    command_handlers_["transaction_pool.validate2"] = result_handler;
-    command_handlers_["transaction_pool.fetch_transaction"] =
-        transaction_handler;
-    command_handlers_["transaction_pool.fetch_transaction2"] =
-        transaction_handler;
-    command_handlers_["blockchain.broadcast"] = result_handler;
-    command_handlers_["blockchain.validate"] = result_handler;
-    command_handlers_["blockchain.fetch_transaction"] = transaction_handler;
-    command_handlers_["blockchain.fetch_transaction2"] = transaction_handler;
-    command_handlers_["blockchain.fetch_last_height"] = height_handler;
-    command_handlers_["blockchain.fetch_block"] = block_handler;
-    command_handlers_["blockchain.fetch_block_header"] = block_header_handler;
-    command_handlers_["blockchain.fetch_block_height"] = height_handler;
-    command_handlers_["blockchain.fetch_transaction_index"] =
-        transaction_index_handler;
-    command_handlers_["blockchain.fetch_stealth2"] = stealth_handler;
-    command_handlers_["blockchain.fetch_history4"] = history_handler;
-    command_handlers_["notification.address"] = notification_handler;
-    command_handlers_["notification.stealth"] = notification_handler;
-    command_handlers_["blockchain.fetch_block_transaction_hashes"] =
-        hash_list_handler;
-    command_handlers_["blockchain.fetch_stealth_transaction_hashes"] =
-        hash_list_handler;
+#define REGISTER_HANDLER(command, handler) \
+    command_handlers_[command] = handler
+
+    REGISTER_HANDLER("transaction_pool.broadcast", result_handler);
+    REGISTER_HANDLER("transaction_pool.validate2", result_handler);
+    REGISTER_HANDLER("transaction_pool.fetch_transaction", transaction_handler);
+    REGISTER_HANDLER("transaction_pool.fetch_transaction2",
+        transaction_handler);
+    REGISTER_HANDLER("blockchain.broadcast", result_handler);
+    REGISTER_HANDLER("blockchain.validate", result_handler);
+    REGISTER_HANDLER("blockchain.fetch_transaction", transaction_handler);
+    REGISTER_HANDLER("blockchain.fetch_transaction2", transaction_handler);
+    REGISTER_HANDLER("blockchain.fetch_last_height", height_handler);
+    REGISTER_HANDLER("blockchain.fetch_block", block_handler);
+    REGISTER_HANDLER("blockchain.fetch_block_header", block_header_handler);
+    REGISTER_HANDLER("blockchain.fetch_block_height", height_handler);
+    REGISTER_HANDLER("blockchain.fetch_transaction_index",
+        transaction_index_handler);
+    REGISTER_HANDLER("blockchain.fetch_stealth2", stealth_handler);
+    REGISTER_HANDLER("blockchain.fetch_history4", history_handler);
+    REGISTER_HANDLER("blockchain.fetch_transaction_hashes", hash_list_handler);
+    REGISTER_HANDLER("blockchain.fetch_stealth_transaction_hashes",
+        hash_list_handler);
+    REGISTER_HANDLER("notification.address", notification_handler);
+    REGISTER_HANDLER("notification.stealth", notification_handler);
+    REGISTER_HANDLER("server.version", version_handler);
+
+#undef REGISTER_HANDLER
 }
 
 void obelisk_client::handle_immediate(const std::string& command, uint32_t id,
@@ -659,48 +678,55 @@ bool obelisk_client::requests_outstanding()
         !hash_list_handlers_.empty() ||
         !history_handlers_.empty() ||
         !stealth_handlers_.empty() ||
-        !update_handlers_.empty();
+        !update_handlers_.empty() ||
+        !version_handlers_.empty();
 }
 
 void obelisk_client::clear_outstanding_requests(const code& ec)
 {
+#define INVOKE_HANDLER_0 handler.second(ec)
+#define INVOKE_HANDLER_1 handler.second(ec, {})
+#define INVOKE_HANDLER_2 handler.second(ec, {}, {})
+#define INVOKE_HANDLER_3 handler.second(ec, {}, {}, {})
+
+#define CLEAR_OUTSTANDING(handlers, ec, handler_version) \
+    for (auto& handler: handlers) \
+        INVOKE_HANDLER_##handler_version; \
+    handlers.clear()
+
     // Clear the handler maps, but first fire the handlers with the
     // specified error.
-    for (auto& handler: result_handlers_)
-        handler.second(ec);
-    for (auto& handler: height_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: transaction_index_handlers_)
-        handler.second(ec, {}, {});
-    for (auto& handler: block_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: block_header_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: transaction_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: hash_list_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: history_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: stealth_handlers_)
-        handler.second(ec, {});
-    for (auto& handler: update_handlers_)
-        handler.second(ec, {}, {}, {});
+    CLEAR_OUTSTANDING(result_handlers_, ec, 0);
+    CLEAR_OUTSTANDING(height_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(transaction_index_handlers_, ec, 2);
+    CLEAR_OUTSTANDING(block_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(block_header_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(transaction_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(hash_list_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(history_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(stealth_handlers_, ec, 1);
+    CLEAR_OUTSTANDING(update_handlers_, ec, 3);
+    CLEAR_OUTSTANDING(version_handlers_, ec, 1);
 
-    result_handlers_.clear();
-    height_handlers_.clear();
-    transaction_index_handlers_.clear();
-    block_handlers_.clear();
-    block_header_handlers_.clear();
-    transaction_handlers_.clear();
-    hash_list_handlers_.clear();
-    history_handlers_.clear();
-    stealth_handlers_.clear();
-    update_handlers_.clear();
+#undef CLEAR_OUTSTANDING
+#undef INVOKE_HANDLER_0
+#undef INVOKE_HANDLER_1
+#undef INVOKE_HANDLER_2
+#undef INVOKE_HANDLER_3
 }
 
 // Fetchers.
 //-----------------------------------------------------------------------------
+
+void obelisk_client::server_version(version_handler handler)
+{
+    static const std::string command = "server.version";
+    static const data_chunk empty{};
+    const auto id = ++last_request_index_;
+    version_handlers_[id] = handler;
+    if (!send_request(command, id, empty))
+        handle_immediate(command, id, error::network_unreachable);
+}
 
 // This will fail if a witness tx is sent to a < v3.4 (pre-witness) server.
 void obelisk_client::transaction_pool_broadcast(result_handler handler,
