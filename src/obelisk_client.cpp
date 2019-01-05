@@ -35,7 +35,6 @@ using namespace std::placeholders;
 namespace libbitcoin {
 namespace client {
 
-static const auto domain = "query";
 static const config::endpoint public_worker("inproc://public_client");
 static const config::endpoint secure_worker("inproc://secure_client");
 
