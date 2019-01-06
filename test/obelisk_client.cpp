@@ -38,9 +38,14 @@ static const char test_hash[] = "2d05f0c9c3e1c226e63b5fac240137687544cf631cd616f
     obelisk_client client(retries); \
     client.connect(config::endpoint(mainnet_test_url))
 
-BOOST_AUTO_TEST_SUITE(network)
-BOOST_AUTO_TEST_SUITE(client_tests)
+BOOST_AUTO_TEST_SUITE(stub)
 
+BOOST_AUTO_TEST_CASE(client__dummy_test__ok)
+{
+    BOOST_REQUIRE_EQUAL(true, true);
+}
+
+BOOST_AUTO_TEST_SUITE(network)
 /* BOOST_AUTO_TEST_CASE(client__fetch_history4__test) */
 /* { */
 /*     CLIENT_TEST_SETUP; */
