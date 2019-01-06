@@ -82,7 +82,7 @@ void client::cmd_height(std::stringstream&)
         return;
     }
 
-    auto handler = [this](const code& ec, size_t height)
+    auto handler = [](const code& ec, size_t height)
     {
         if (ec)
             std::cerr << "Failed to retrieve height: " << ec.message()
@@ -107,7 +107,7 @@ void client::cmd_history(std::stringstream& args)
     if (!read_address(args, address))
         return;
 
-    auto handler = [this](const code& ec, const history::list& history)
+    auto handler = [](const code& ec, const history::list& history)
     {
         if (ec != error::success)
             std::cerr << "Failed to retrieve history: " << ec.message()
@@ -133,7 +133,7 @@ void client::cmd_header(std::stringstream& args)
     if (!read_hash(args, hash))
         return;
 
-    auto handler = [this](const code& ec, const header& header)
+    auto handler = [](const code& ec, const header& header)
     {
         if (ec)
         {
