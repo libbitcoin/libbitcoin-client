@@ -1,5 +1,5 @@
 ###############################################################################
-#  Copyright (c) 2014-2018 libbitcoin-client developers (see COPYING).
+#  Copyright (c) 2014-2019 libbitcoin-client developers (see COPYING).
 #
 #         GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 #
@@ -158,6 +158,7 @@ endif()
 # Define ${CANONICAL_LIB_NAME} project.
 #------------------------------------------------------------------------------
 add_library( ${CANONICAL_LIB_NAME}
+    "../../src/.dirstamp"
     "../../src/obelisk_client.cpp" )
 
 # ${CANONICAL_LIB_NAME} project specific include directories.
@@ -193,11 +194,12 @@ endif()
 #------------------------------------------------------------------------------
 if (with-tests)
     add_executable( libbitcoin-client-test
+        "../../test/.dirstamp"
         "../../test/main.cpp"
         "../../test/obelisk_client.cpp" )
 
     add_test( NAME libbitcoin-client-test COMMAND libbitcoin-client-test
-            --run_test=*
+            --run_test=generated,obsolete,offline,config,stub
             --show_progress=no
             --detect_memory_leak=0
             --report_level=no
@@ -220,6 +222,7 @@ endif()
 #------------------------------------------------------------------------------
 if (with-examples)
     add_executable( console
+        "../../examples/console/.dirstamp"
         "../../examples/console/client.cpp"
         "../../examples/console/client.hpp"
         "../../examples/console/main.cpp"
@@ -242,6 +245,7 @@ endif()
 #------------------------------------------------------------------------------
 if (with-examples)
     add_executable( get_height
+        "../../examples/get_height/.dirstamp"
         "../../examples/get_height/main.cpp" )
 
 #     get_height project specific include directories.
