@@ -21,9 +21,11 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test_suite.hpp>
 #include <bitcoin/client.hpp>
+#include <bitcoin/protocol.hpp>
 
-using namespace bc::system;
 using namespace bc::client;
+using namespace bc::protocol;
+using namespace bc::system;
 using namespace bc::system::wallet;
 
 static const std::string mainnet_test_url = "tcp://mainnet.libbitcoin.net:9091";
@@ -46,6 +48,7 @@ BOOST_AUTO_TEST_CASE(client__dummy_test__ok)
 }
 
 BOOST_AUTO_TEST_SUITE(network)
+
 /* BOOST_AUTO_TEST_CASE(client__fetch_history4__test) */
 /* { */
 /*     CLIENT_TEST_SETUP; */
@@ -64,6 +67,82 @@ BOOST_AUTO_TEST_SUITE(network)
 
 /*     BOOST_REQUIRE_EQUAL(encoded_received, encoded_expected); */
 /* } */
+
+BOOST_AUTO_TEST_CASE(client__subscribe_address__test_ok_and_timeout)
+{
+    CLIENT_TEST_SETUP;
+
+    size_t times_called = 0;
+
+    // This should be called exactly twice.  Once for subscription
+    // success, and then again for subscription timeout.
+    auto on_done = [&times_called](const code& ec, uint16_t, size_t,
+        const hash_digest&)
+    {
+        if (++times_called == 1)
+            BOOST_REQUIRE_EQUAL(ec, error::success);
+        else
+            BOOST_REQUIRE_EQUAL(ec, error::channel_timeout);
+    };
+
+    const auto id = client.subscribe_address(on_done, payment_address(
+        test_address));
+    client.monitor(0);
+
+    BOOST_REQUIRE_EQUAL(id, 1);
+}
+
+BOOST_AUTO_TEST_CASE(client__unsubscribe_address__test_ok)
+{
+    CLIENT_TEST_SETUP;
+
+    bool subscribed = false;
+    uint32_t id = obelisk_client::null_subscription;
+
+    auto subscribe_handler = [&client, &subscribed, &id]()
+    {
+        const auto ten_minutes_in_ms = 600 * 1000;
+
+        auto on_done = [&subscribed](const code& ec, uint16_t, size_t,
+            const hash_digest&)
+        {
+            if (ec == error::success)
+                subscribed = true;
+        };
+
+        id = client.subscribe_address(on_done, payment_address(test_address));
+        BOOST_REQUIRE_EQUAL(id, 1);
+        client.monitor(ten_minutes_in_ms);
+    };
+
+    // Waits until subscribe handler is subscribed and then unsubscribes.
+    auto unsubscribe_handler = [&client, &subscribed, &id]()
+    {
+        zmq::poller poller;
+        while(!subscribed)
+            poller.wait(100);
+
+        bool unsubscribe_complete = false;
+
+        auto on_done = [&unsubscribe_complete](const code& ec)
+        {
+            BOOST_REQUIRE_EQUAL(ec, error::success);
+            unsubscribe_complete = true;
+        };
+
+        BOOST_REQUIRE(id != obelisk_client::null_subscription);
+        BOOST_REQUIRE(client.unsubscribe_address(on_done, id) == true);
+
+        poller.wait(500);
+        BOOST_REQUIRE(unsubscribe_complete == true);
+    };
+
+    std::thread unsubscriber(unsubscribe_handler);
+    std::thread subscriber(subscribe_handler);
+
+    subscriber.join();
+    unsubscriber.join();
+}
 
 BOOST_AUTO_TEST_CASE(client__fetch_transaction__test)
 {
@@ -317,19 +396,6 @@ BOOST_AUTO_TEST_CASE(client__pool_fetch_transaction2__test)
 
     BOOST_REQUIRE_EQUAL(received_hash, expected_hash);
 }
-
-/* BOOST_AUTO_TEST_CASE(client__subscribe__test) */
-/* { */
-/*     CLIENT_TEST_SETUP; */
-
-/*     const auto on_reply = [](const code&) {}; */
-/*     client.subscribe_address(on_error, on_reply, payment_address(address_satoshi)); */
-
-/*     HANDLE_ROUTING_FRAMES(capture.out); */
-/*     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u); */
-/*     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "subscribe.address"); */
-/*     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "f85beb6356d0813ddb0dbb14230a249fe931a135"); */
-/* } */
 
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
