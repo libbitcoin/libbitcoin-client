@@ -45,8 +45,7 @@ struct BCC_API connection_settings
 class BCC_API obelisk_client
 {
 public:
-    static const uint32_t null_subscription =
-        std::numeric_limits<uint32_t>::max();
+    static const auto null_subscription = bc::max_uint32;
 
     typedef std::function<void(const std::string&, uint32_t,
         const system::data_chunk&)> command_handler;
@@ -297,7 +296,7 @@ private:
     version_handler_map version_handlers_;
 
     // Protects subscription_handlers_
-    system::shared_mutex subscription_lock_;
+    system::upgrade_mutex subscription_lock_;
 };
 
 } // namespace client

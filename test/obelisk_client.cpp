@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(client__unsubscribe_address__test_ok)
         BOOST_REQUIRE(id != obelisk_client::null_subscription);
         BOOST_REQUIRE(client.unsubscribe_address(on_done, id) == true);
 
-        poller.wait(500);
+        poller.wait(2000);
         BOOST_REQUIRE(unsubscribe_complete == true);
     };
 

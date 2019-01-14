@@ -113,7 +113,7 @@ bool obelisk_client::connect(const endpoint& address)
 {
     const auto host_address = address.to_string();
 
-    auto connect_socket = [this, &host_address](zmq::socket& socket,
+    auto connect_socket = [&host_address](zmq::socket& socket,
         zmq::socket& dealer, zmq::socket& router, config::endpoint& worker)
     {
         if (socket.connect(host_address) == error::success)
@@ -134,13 +134,21 @@ bool obelisk_client::connect(const endpoint& address)
         return false;
     };
 
+    auto socket_connected = false;
+    auto subscribe_connected = false;
+
     for (auto attempt = 0; attempt < 1 + retries_; ++attempt)
     {
-        // subscribe_socket connection could be deferred/unused unless a
-        // subscribe call was made.
-        if (connect_socket(socket_, dealer_, router_, worker_) &&
-            connect_socket(subscribe_socket_, subscribe_dealer_,
-                subscribe_router_, subscribe_worker_))
+        if (!socket_connected)
+            socket_connected = connect_socket(socket_, dealer_, router_, worker_);
+
+        // subscribe_socket connection could be deferred/unused until a
+        // subscribe call is made.
+        if (!subscribe_connected)
+            subscribe_connected = connect_socket(subscribe_socket_, subscribe_dealer_,
+                subscribe_router_, subscribe_worker_);
+
+        if (socket_connected && subscribe_connected)
             return true;
 
         // Arbitrary delay between connection attempts.
@@ -155,6 +163,7 @@ void obelisk_client::forward_message(zmq::socket& source, zmq::socket& sink)
     // Forward incoming client router requests to the server.
     zmq::message packet;
     source.receive(packet);
+
     // Strip the router delimiter before forwarding.
     packet.dequeue();
     sink.send(packet);
@@ -318,9 +327,8 @@ bool obelisk_client::send_request(const std::string& command,
     message.enqueue(to_chunk(to_little_endian(id)));
     message.enqueue(payload);
 
-    return subscription ?
-        subscribe_dealer_.send(message) == error::success :
-        dealer_.send(message) == error::success;
+    return subscription ? !subscribe_dealer_.send(message) :
+        !dealer_.send(message);
 }
 
 // Handlers.
@@ -623,11 +631,13 @@ void obelisk_client::attach_handlers()
     {
         // Critical Section.
         ///////////////////////////////////////////////////////////////////////////
-        boost::lock_guard<system::shared_mutex> lock(subscription_lock_);
-
+        subscription_lock_.lock_upgrade();
         auto it = subscription_handlers_.find(id);
         if (it == subscription_handlers_.end())
+        {
+            subscription_lock_.unlock_upgrade();
             return;
+        }
 
         auto& handler = it->second.first;
         // [ code:4 ]     <- if this is nonzero then rest may be empty.
@@ -640,8 +650,10 @@ void obelisk_client::attach_handlers()
         const auto ec = source.read_error_code();
         if (ec)
         {
-            handler(ec, 0, 0, {});
+            handler(ec, {}, {}, {});
+            subscription_lock_.unlock_upgrade_and_lock();
             subscription_handlers_.erase(it);
+            subscription_lock_.unlock();
             return;
         }
 
@@ -651,15 +663,18 @@ void obelisk_client::attach_handlers()
 
         if (!source.is_exhausted())
         {
-            handler(error::bad_stream, 0, 0, {});
+            handler(error::bad_stream, {}, {}, {});
+            subscription_lock_.unlock_upgrade_and_lock();
             subscription_handlers_.erase(it);
+            subscription_lock_.unlock();
             return;
         }
 
+        subscription_lock_.unlock_upgrade();
+        ///////////////////////////////////////////////////////////////////////////
+
         // Caller must differentiate type of update if subscribed to multiple.
         handler(ec, sequence, height, tx_hash);
-
-        ///////////////////////////////////////////////////////////////////////////
     };
 
     // This handler locks subscription_handlers_ while running to avoid
@@ -670,19 +685,29 @@ void obelisk_client::attach_handlers()
     {
         // Critical Section.
         ///////////////////////////////////////////////////////////////////////////
-        boost::lock_guard<system::shared_mutex> lock(subscription_lock_);
-
+        subscription_lock_.lock_upgrade();
         auto it = unsubscription_handlers_.find(id);
         if (it == unsubscription_handlers_.end())
+        {
+            subscription_lock_.unlock_upgrade();
             return;
+        }
 
-        auto& handler = it->second.first;
+        const auto handler = it->second.first;
         const auto subscription = it->second.second;
+        subscription_lock_.unlock_upgrade();
+        ///////////////////////////////////////////////////////////////////////////
 
         data_source istream(payload);
         istream_reader source(istream);
         handler(source.read_error_code());
+
+        // Critical Section.
+        ///////////////////////////////////////////////////////////////////////////
+        subscription_lock_.lock();
         unsubscription_handlers_.erase(it);
+        subscription_lock_.unlock();
+        ///////////////////////////////////////////////////////////////////////////
 
         // Terminate any listener monitoring this subscription.
         terminate_unsubscriber(subscription);
@@ -777,7 +802,7 @@ bool obelisk_client::subscribe_requests_outstanding()
 {
     // Critical Section.
     ///////////////////////////////////////////////////////////////////////////
-    boost::lock_guard<system::shared_mutex> lock(subscription_lock_);
+    system::unique_lock lock(subscription_lock_);
     return !subscription_handlers_.empty() || !unsubscription_handlers_.empty();
     ///////////////////////////////////////////////////////////////////////////
 }
@@ -816,7 +841,7 @@ void obelisk_client::clear_outstanding_subscribe_requests(const code& ec)
 {
     // Critical Section.
     ///////////////////////////////////////////////////////////////////////////
-    boost::lock_guard<system::shared_mutex> lock(subscription_lock_);
+    system::unique_lock lock(subscription_lock_);
 
     for (auto& it: subscription_handlers_)
         it.second.first(ec, {}, {}, {});
@@ -1170,9 +1195,6 @@ uint32_t obelisk_client::subscribe_address(update_handler handler,
         return null_subscription;
     }
 
-    // NOTE: legacy behaviour is to call the hander with success to indicate
-    // subscription success.  Since we can now return null_subscription, we
-    // could skip this call here.
     handler(error::success, {}, {}, {});
     return id;
 }
@@ -1213,9 +1235,6 @@ uint32_t obelisk_client::subscribe_stealth(update_handler handler,
         return null_subscription;
     }
 
-    // NOTE: legacy behaviour is to call the hander with success to indicate
-    // subscription success.  Since we can now return null_subscription, we
-    // could skip this call here.
     handler(error::success, {}, {}, {});
     return id;
 }
@@ -1229,14 +1248,17 @@ bool obelisk_client::unsubscribe_address(result_handler handler,
 
     // Critical Section.
     ///////////////////////////////////////////////////////////////////////////
-    subscription_lock_.lock();
+    subscription_lock_.lock_upgrade();
     auto it = subscription_handlers_.find(subscription);
     if (it == subscription_handlers_.end())
+    {
+        subscription_lock_.unlock_upgrade();
         return false;
+    }
 
+    subscription_lock_.unlock_upgrade_and_lock();
     const auto id = ++last_request_index_;
     unsubscription_handlers_[id] = { handler, subscription };
-
     data = it->second.second;
     subscription_lock_.unlock();
     ///////////////////////////////////////////////////////////////////////////
@@ -1259,14 +1281,17 @@ bool obelisk_client::unsubscribe_stealth(result_handler handler,
 
     // Critical Section.
     ///////////////////////////////////////////////////////////////////////////
-    subscription_lock_.lock();
+    subscription_lock_.lock_upgrade();
     auto it = subscription_handlers_.find(subscription);
     if (it == subscription_handlers_.end())
+    {
+        subscription_lock_.unlock_upgrade();
         return false;
+    }
 
+    subscription_lock_.unlock_upgrade_and_lock();
     const auto id = ++last_request_index_;
     unsubscription_handlers_[id] = { handler, subscription };
-
     data = it->second.second;
     subscription_lock_.unlock();
     ///////////////////////////////////////////////////////////////////////////
@@ -1284,11 +1309,21 @@ bool obelisk_client::unsubscribe_stealth(result_handler handler,
 // unsubscription_handler).
 bool obelisk_client::terminate_unsubscriber(uint32_t subscription)
 {
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    subscription_lock_.lock_upgrade();
     auto it = subscription_handlers_.find(subscription);
     if (it == subscription_handlers_.end())
+    {
+        subscription_lock_.unlock_upgrade();
         return false;
+    }
 
+    subscription_lock_.unlock_upgrade_and_lock();
     subscription_handlers_.erase(it);
+    subscription_lock_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
     return true;
 }
 
