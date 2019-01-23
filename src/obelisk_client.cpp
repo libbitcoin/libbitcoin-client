@@ -436,7 +436,7 @@ void obelisk_client::attach_handlers()
         const auto ec = source.read_error_code();
         while (!source.is_exhausted())
         {
-            if (!stealth.from_data(source.read_bytes(), true))
+            if (!stealth.from_data(source, true))
             {
                 handler->second(ec, {});
                 stealth_handlers_.erase(handler);
@@ -473,7 +473,7 @@ void obelisk_client::attach_handlers()
         const auto ec = source.read_error_code();
         while (!source.is_exhausted())
         {
-            if (!payment.from_data(source.read_bytes(), true))
+            if (!payment.from_data(source, true))
             {
                 handler->second(ec, {});
                 history_handlers_.erase(handler);
@@ -639,7 +639,7 @@ void obelisk_client::attach_handlers()
         transaction_index_handler);
     REGISTER_HANDLER("blockchain.fetch_stealth2", stealth_handler);
     REGISTER_HANDLER("blockchain.fetch_history4", history_handler);
-    REGISTER_HANDLER("blockchain.fetch_transaction_hashes", hash_list_handler);
+    REGISTER_HANDLER("blockchain.fetch_block_transaction_hashes", hash_list_handler);
     REGISTER_HANDLER("blockchain.fetch_stealth_transaction_hashes",
         hash_list_handler);
     REGISTER_HANDLER("notification.address", notification_handler);
@@ -905,17 +905,27 @@ void obelisk_client::blockchain_fetch_stealth2(stealth_handler handler,
         handle_immediate(command, id, error::network_unreachable);
 }
 
-// blockchain.fetch_history4 (v4.0) request unchanged but response differs.
+void obelisk_client::blockchain_fetch_history4(history_handler handler,
+    const payment_address& address, uint32_t from_height)
+{
+    const auto hash = sha256_hash(address.output_script().to_data(false));
+
+    return blockchain_fetch_history4(handler, hash, from_height);
+}
+
+// blockchain.fetch_history4 (v4.0) request accepts script_hash instead of
+//   address_hash and response differs.
 // blockchain.fetch_history3 (v3.1) does not accept a version byte.
 // blockchain.fetch_history2 (v3.0) ignored version and is obsoleted in v3.1.
 // blockchain.fetch_history (v1/v2) used hash reversal and is obsoleted in v3.
 void obelisk_client::blockchain_fetch_history4(history_handler handler,
-    const payment_address& address, uint32_t from_height)
+    const hash_digest& script_hash, uint32_t from_height)
 {
     static const std::string command = "blockchain.fetch_history4";
+
     const auto data = build_chunk(
     {
-        address.hash(),
+        script_hash,
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -934,7 +944,7 @@ void obelisk_client::blockchain_fetch_unspent_outputs(
 
     const auto data = build_chunk(
     {
-        address.hash(),
+        sha256_hash(address.output_script().to_data(false)),
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -1018,8 +1028,14 @@ void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
 // Subscribers.
 //-----------------------------------------------------------------------------
 
+void obelisk_client::subscribe_address(update_handler handler,
+    const wallet::payment_address& address)
+{
+    return subscribe_address(handler, address.hash());
+}
+
 // address.subscribe is obsolete, but can pass through to address.subscribe2.
-// Ths is a simplified overload for a non-private payment address subscription.
+// This is a simplified overload for a non-private payment address subscription.
 void obelisk_client::subscribe_address(update_handler handler,
     const short_hash& address_hash)
 {

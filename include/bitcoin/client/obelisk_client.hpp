@@ -172,9 +172,13 @@ public:
     void blockchain_fetch_stealth_transaction_hashes(
         hash_list_handler handler, const system::hash_digest& block_hash);
 
+    // Provided for backwards compatibility.
     void blockchain_fetch_history4(history_handler handler,
         const system::wallet::payment_address& address,
         uint32_t from_height=0);
+
+    void blockchain_fetch_history4(history_handler handler,
+        const system::hash_digest& script_hash, uint32_t from_height=0);
 
     void blockchain_fetch_stealth2(stealth_handler handler,
         const system::binary& prefix, uint32_t from_height=0);
@@ -185,6 +189,9 @@ public:
 
     // Subscribers.
     //-------------------------------------------------------------------------
+
+    void subscribe_address(update_handler handler,
+        const system::wallet::payment_address& address);
 
     void subscribe_address(update_handler handler,
         const system::short_hash& address_hash);
