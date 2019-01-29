@@ -38,16 +38,25 @@ namespace client {
 static const config::endpoint public_worker("inproc://public_client");
 static const config::endpoint secure_worker("inproc://secure_client");
 
+static const config::endpoint public_subscribe_worker(
+    "inproc://public_subscribe_client");
+static const config::endpoint secure_subscribe_worker(
+    "inproc://secure_subscribe_client");
+
 obelisk_client::obelisk_client(int32_t retries)
   : socket_(context_, zmq::socket::role::dealer),
+    subscribe_socket_(context_, zmq::socket::role::dealer),
     block_socket_(context_, zmq::socket::role::subscriber),
     transaction_socket_(context_, zmq::socket::role::subscriber),
     dealer_(context_, zmq::socket::role::dealer),
     router_(context_, zmq::socket::role::router),
+    subscribe_dealer_(context_, zmq::socket::role::dealer),
+    subscribe_router_(context_, zmq::socket::role::router),
     retries_(retries),
     last_request_index_(0),
     secure_(false),
-    worker_(public_worker)
+    worker_(public_worker),
+    subscribe_worker_(public_subscribe_worker)
 {
     attach_handlers();
 }
@@ -56,7 +65,10 @@ obelisk_client::~obelisk_client()
 {
     dealer_.stop();
     router_.stop();
+    subscribe_dealer_.stop();
+    subscribe_router_.stop();
     socket_.stop();
+    subscribe_socket_.stop();
     block_socket_.stop();
     transaction_socket_.stop();
 }
@@ -73,21 +85,25 @@ bool obelisk_client::connect(const endpoint& address,
     const sodium& client_private_key)
 {
     // Ignore the setting if socks.port is zero (invalid).
-    if (socks_proxy && !socket_.set_socks_proxy(socks_proxy))
+    if (socks_proxy && (!socket_.set_socks_proxy(socks_proxy) ||
+        !subscribe_socket_.set_socks_proxy(socks_proxy)))
         return false;
 
     // Only apply the client (and server) key if server key is configured.
     if (server_public_key)
     {
-        if (!socket_.set_curve_client(server_public_key))
+        if (!socket_.set_curve_client(server_public_key) ||
+            !subscribe_socket_.set_curve_client(server_public_key))
             return false;
 
         // Generates arbitrary client keys if private key is not configured.
-        if (!socket_.set_certificate({ client_private_key }))
+        if (!socket_.set_certificate({ client_private_key }) ||
+            !subscribe_socket_.set_certificate({ client_private_key }))
             return false;
 
         secure_ = true;
         worker_ = secure_worker;
+        subscribe_worker_ = secure_subscribe_worker;
     }
 
     return connect(address);
@@ -97,28 +113,83 @@ bool obelisk_client::connect(const endpoint& address)
 {
     const auto host_address = address.to_string();
 
-    for (auto attempt = 0; attempt < 1 + retries_; ++attempt)
+    auto connect_socket = [&host_address](zmq::socket& socket,
+        zmq::socket& dealer, zmq::socket& router, config::endpoint& worker)
     {
-        if (socket_.connect(host_address) == error::success)
+        if (socket.connect(host_address) == error::success)
         {
-            // Bind internal router to inproc worker
-            auto ec = router_.bind(worker_);
+            // Bind internal router(s) to inproc worker
+            auto ec = router.bind(worker);
             if (ec)
                 return false;
 
-            // Connect internal socket to worker router
-            ec = dealer_.connect(worker_);
+            // Connect internal socket(s) to worker router
+            ec = dealer.connect(worker);
             if (ec)
                 return false;
 
             return true;
         }
 
+        return false;
+    };
+
+    auto socket_connected = false;
+    auto subscribe_connected = false;
+
+    for (auto attempt = 0; attempt < 1 + retries_; ++attempt)
+    {
+        if (!socket_connected)
+            socket_connected = connect_socket(socket_, dealer_, router_, worker_);
+
+        // subscribe_socket connection could be deferred/unused until a
+        // subscribe call is made.
+        if (!subscribe_connected)
+            subscribe_connected = connect_socket(subscribe_socket_, subscribe_dealer_,
+                subscribe_router_, subscribe_worker_);
+
+        if (socket_connected && subscribe_connected)
+            return true;
+
         // Arbitrary delay between connection attempts.
         sleep_for(asio::milliseconds((attempt + 1) * 100));
     }
 
     return false;
+}
+
+void obelisk_client::forward_message(zmq::socket& source, zmq::socket& sink)
+{
+    // Forward incoming client router requests to the server.
+    zmq::message packet;
+    source.receive(packet);
+
+    // Strip the router delimiter before forwarding.
+    packet.dequeue();
+    sink.send(packet);
+}
+
+void obelisk_client::process_response(zmq::socket& socket)
+{
+    // Process server responses.
+    zmq::message message;
+    socket.receive(message);
+
+    // Strip the delimiter if the server includes it.
+    if (message.size() == 4)
+        message.dequeue();
+
+    uint32_t id = 0;
+    std::string command;
+    data_chunk payload;
+
+    message.dequeue(command);
+    message.dequeue(id);
+    message.dequeue(payload);
+
+    const auto handler = command_handlers_.find(command);
+    if (handler != command_handlers_.end())
+        handler->second(command, id, payload);
 }
 
 // Used by query commands and fires handlers as needed.
@@ -138,36 +209,11 @@ void obelisk_client::wait(uint32_t timeout_milliseconds)
 
         // Forward incoming client router requests to the server.
         if (identifiers.contains(router_.id()))
-        {
-            zmq::message packet;
-            router_.receive(packet);
-            // Strip the router delimiter before forwarding.
-            packet.dequeue();
-            socket_.send(packet);
-        }
+            forward_message(router_, socket_);
 
         // Process server responses.
         if (identifiers.contains(socket_.id()))
-        {
-            zmq::message message;
-            socket_.receive(message);
-
-            // Strip the delimiter if the server includes it.
-            if (message.size() == 4)
-                message.dequeue();
-
-            uint32_t id = 0;
-            std::string command;
-            data_chunk payload;
-
-            message.dequeue(command);
-            message.dequeue(id);
-            message.dequeue(payload);
-
-            const auto handler = command_handlers_.find(command);
-            if (handler != command_handlers_.end())
-                handler->second(command, id, payload);
-        }
+            process_response(socket_);
     }
 
     // Timeout or otherwise notify any remaining requests.
@@ -202,12 +248,14 @@ bool obelisk_client::subscribe_transaction(
     return false;
 }
 
-// Used by subscribe-* commands, fires registered update handlers.
+// Used by watch-* and subscribe-* commands, fires registered update handlers.
 void obelisk_client::monitor(uint32_t timeout_milliseconds)
 {
     auto deadline = steady_clock::now() + milliseconds(timeout_milliseconds);
 
     zmq::poller poller;
+    poller.add(subscribe_router_);
+    poller.add(subscribe_socket_);
     poller.add(block_socket_);
     poller.add(transaction_socket_);
 
@@ -251,13 +299,25 @@ void obelisk_client::monitor(uint32_t timeout_milliseconds)
             on_transaction_update_(transaction);
         }
 
-    } while (steady_clock::now() < deadline);
+        // Forward incoming client subscribe router requests to the server.
+        if (identifiers.contains(subscribe_router_.id()))
+            forward_message(subscribe_router_, subscribe_socket_);
+
+        // Process server responses for subscribe calls.
+        if (identifiers.contains(subscribe_socket_.id()))
+            process_response(subscribe_socket_);
+
+    } while (!poller.terminated() && subscribe_requests_outstanding() &&
+        steady_clock::now() < deadline);
+
+    clear_outstanding_subscribe_requests((steady_clock::now() >= deadline) ?
+        error::channel_timeout : error::operation_failed);
 }
 
 // Create a message and send it to the internal router for forwarding
 // to the server.
 bool obelisk_client::send_request(const std::string& command,
-    uint32_t id, const data_chunk& payload)
+    uint32_t id, const data_chunk& payload, bool subscription)
 {
     zmq::message message;
     // First, add the required delimiter since we're sending to our
@@ -267,7 +327,8 @@ bool obelisk_client::send_request(const std::string& command,
     message.enqueue(to_chunk(to_little_endian(id)));
     message.enqueue(payload);
 
-    return dealer_.send(message) == error::success;
+    return subscription ? !subscribe_dealer_.send(message) :
+        !dealer_.send(message);
 }
 
 // Handlers.
@@ -562,13 +623,23 @@ void obelisk_client::attach_handlers()
         history_handlers_.erase(handler);
     };
 
+    // This handler locks subscription_handlers_ while running to avoid
+    // subscription handler state from changing while running (called from
+    // process_response).
     auto notification_handler = [this](const std::string&, uint32_t id,
         const data_chunk& payload)
     {
-        auto handler = update_handlers_.find(id);
-        if (handler == update_handlers_.end())
+        // Critical Section.
+        ///////////////////////////////////////////////////////////////////////////
+        subscription_lock_.lock_upgrade();
+        auto it = subscription_handlers_.find(id);
+        if (it == subscription_handlers_.end())
+        {
+            subscription_lock_.unlock_upgrade();
             return;
+        }
 
+        auto& handler = it->second.first;
         // [ code:4 ]     <- if this is nonzero then rest may be empty.
         // [ sequence:2 ] <- if out of order there was a lost message.
         // [ height:4 ]   <- 0 for unconfirmed or error tx (cannot notify genesis).
@@ -579,8 +650,10 @@ void obelisk_client::attach_handlers()
         const auto ec = source.read_error_code();
         if (ec)
         {
-            handler->second(ec, 0, 0, {});
-            update_handlers_.erase(handler);
+            handler(ec, {}, {}, {});
+            subscription_lock_.unlock_upgrade_and_lock();
+            subscription_handlers_.erase(it);
+            subscription_lock_.unlock();
             return;
         }
 
@@ -590,14 +663,54 @@ void obelisk_client::attach_handlers()
 
         if (!source.is_exhausted())
         {
-            handler->second(error::bad_stream, 0, 0, {});
-            update_handlers_.erase(handler);
+            handler(error::bad_stream, {}, {}, {});
+            subscription_lock_.unlock_upgrade_and_lock();
+            subscription_handlers_.erase(it);
+            subscription_lock_.unlock();
             return;
         }
 
+        subscription_lock_.unlock_upgrade();
+        ///////////////////////////////////////////////////////////////////////////
+
         // Caller must differentiate type of update if subscribed to multiple.
-        handler->second(ec, sequence, height, tx_hash);
-        update_handlers_.erase(handler);
+        handler(ec, sequence, height, tx_hash);
+    };
+
+    // This handler locks subscription_handlers_ while running to avoid
+    // (un)subscription handler state from changing while running (called from
+    // process_response).
+    auto unsubscribe_handler = [this](const std::string&, uint32_t id,
+        const data_chunk& payload)
+    {
+        // Critical Section.
+        ///////////////////////////////////////////////////////////////////////////
+        subscription_lock_.lock_upgrade();
+        auto it = unsubscription_handlers_.find(id);
+        if (it == unsubscription_handlers_.end())
+        {
+            subscription_lock_.unlock_upgrade();
+            return;
+        }
+
+        const auto handler = it->second.first;
+        const auto subscription = it->second.second;
+        subscription_lock_.unlock_upgrade();
+        ///////////////////////////////////////////////////////////////////////////
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        handler(source.read_error_code());
+
+        // Critical Section.
+        ///////////////////////////////////////////////////////////////////////////
+        subscription_lock_.lock();
+        unsubscription_handlers_.erase(it);
+        subscription_lock_.unlock();
+        ///////////////////////////////////////////////////////////////////////////
+
+        // Terminate any listener monitoring this subscription.
+        terminate_unsubscriber(subscription);
     };
 
     auto hash_list_handler = [this](const std::string&, uint32_t id,
@@ -642,8 +755,10 @@ void obelisk_client::attach_handlers()
     REGISTER_HANDLER("blockchain.fetch_block_transaction_hashes", hash_list_handler);
     REGISTER_HANDLER("blockchain.fetch_stealth_transaction_hashes",
         hash_list_handler);
-    REGISTER_HANDLER("notification.address", notification_handler);
-    REGISTER_HANDLER("notification.stealth", notification_handler);
+    REGISTER_HANDLER("subscribe.address", notification_handler);
+    REGISTER_HANDLER("subscribe.stealth", notification_handler);
+    REGISTER_HANDLER("unsubscribe.address", unsubscribe_handler);
+    REGISTER_HANDLER("unsubscribe.stealth", unsubscribe_handler);
     REGISTER_HANDLER("server.version", version_handler);
 
 #undef REGISTER_HANDLER
@@ -667,7 +782,7 @@ void obelisk_client::handle_immediate(const std::string& command, uint32_t id,
 bool obelisk_client::requests_outstanding()
 {
     // We have requests outstanding if any of the handler maps are not
-    // empty.
+    // empty, except update/notification handlers.
     return
         !result_handlers_.empty() ||
         !height_handlers_.empty() ||
@@ -678,8 +793,18 @@ bool obelisk_client::requests_outstanding()
         !hash_list_handlers_.empty() ||
         !history_handlers_.empty() ||
         !stealth_handlers_.empty() ||
-        !update_handlers_.empty() ||
         !version_handlers_.empty();
+}
+
+// We have subscribe requests outstanding if the subscription handler map is not
+// empty.
+bool obelisk_client::subscribe_requests_outstanding()
+{
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    system::unique_lock lock(subscription_lock_);
+    return !subscription_handlers_.empty() || !unsubscription_handlers_.empty();
+    ///////////////////////////////////////////////////////////////////////////
 }
 
 void obelisk_client::clear_outstanding_requests(const code& ec)
@@ -687,7 +812,6 @@ void obelisk_client::clear_outstanding_requests(const code& ec)
 #define INVOKE_HANDLER_0 handler.second(ec)
 #define INVOKE_HANDLER_1 handler.second(ec, {})
 #define INVOKE_HANDLER_2 handler.second(ec, {}, {})
-#define INVOKE_HANDLER_3 handler.second(ec, {}, {}, {})
 
 #define CLEAR_OUTSTANDING(handlers, ec, handler_version) \
     for (auto& handler: handlers) \
@@ -705,14 +829,28 @@ void obelisk_client::clear_outstanding_requests(const code& ec)
     CLEAR_OUTSTANDING(hash_list_handlers_, ec, 1);
     CLEAR_OUTSTANDING(history_handlers_, ec, 1);
     CLEAR_OUTSTANDING(stealth_handlers_, ec, 1);
-    CLEAR_OUTSTANDING(update_handlers_, ec, 3);
     CLEAR_OUTSTANDING(version_handlers_, ec, 1);
 
 #undef CLEAR_OUTSTANDING
 #undef INVOKE_HANDLER_0
 #undef INVOKE_HANDLER_1
 #undef INVOKE_HANDLER_2
-#undef INVOKE_HANDLER_3
+}
+
+void obelisk_client::clear_outstanding_subscribe_requests(const code& ec)
+{
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    system::unique_lock lock(subscription_lock_);
+
+    for (auto& it: subscription_handlers_)
+        it.second.first(ec, {}, {}, {});
+    for (auto& it: unsubscription_handlers_)
+        it.second.first(ec);
+
+    subscription_handlers_.clear();
+    unsubscription_handlers_.clear();
+    ///////////////////////////////////////////////////////////////////////////
 }
 
 // Fetchers.
@@ -1028,30 +1166,41 @@ void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
 // Subscribers.
 //-----------------------------------------------------------------------------
 
-void obelisk_client::subscribe_address(update_handler handler,
-    const wallet::payment_address& address)
+uint32_t obelisk_client::subscribe_address(update_handler handler,
+    const payment_address& address)
 {
     return subscribe_address(handler, address.hash());
 }
 
 // address.subscribe is obsolete, but can pass through to address.subscribe2.
 // This is a simplified overload for a non-private payment address subscription.
-void obelisk_client::subscribe_address(update_handler handler,
+uint32_t obelisk_client::subscribe_address(update_handler handler,
     const short_hash& address_hash)
 {
     static const std::string command = "subscribe.address";
     // [ address_hash:20 ]
     const auto data = build_chunk({ address_hash });
+
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    subscription_lock_.lock();
     const auto id = ++last_request_index_;
-    update_handlers_[id] = handler;
-    if (!send_request(command, id, data))
+    subscription_handlers_[id] = { handler, data };
+    subscription_lock_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    if (!send_request(command, id, data, true))
+    {
         handle_immediate(command, id, error::network_unreachable);
-    else
-        handler(error::success, {}, {}, {});
+        return null_subscription;
+    }
+
+    handler(error::success, {}, {}, {});
+    return id;
 }
 
 // This overload supports a prefix for either stealth or payment address.
-void obelisk_client::subscribe_stealth(update_handler handler,
+uint32_t obelisk_client::subscribe_stealth(update_handler handler,
     const binary& stealth_prefix)
 {
     static const std::string command = "subscribe.stealth";
@@ -1061,7 +1210,7 @@ void obelisk_client::subscribe_stealth(update_handler handler,
         bits > stealth_address::max_filter_bits)
     {
         handler(error::operation_failed, {}, {}, {});
-        return;
+        return null_subscription;
     }
 
     // [ prefix_bitsize:1 ]
@@ -1072,14 +1221,112 @@ void obelisk_client::subscribe_stealth(update_handler handler,
         stealth_prefix.blocks()
     });
 
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    subscription_lock_.lock();
     const auto id = ++last_request_index_;
-    update_handlers_[id] = handler;
+    subscription_handlers_[id] = { handler, data };
+    subscription_lock_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
 
-    if (!send_request(command, id, data))
+    if (!send_request(command, id, data, true))
+    {
         handle_immediate(command, id, error::network_unreachable);
-    else
-        handler(error::success, {}, {}, {});
+        return null_subscription;
+    }
+
+    handler(error::success, {}, {}, {});
+    return id;
 }
+
+bool obelisk_client::unsubscribe_address(result_handler handler,
+    uint32_t subscription)
+{
+    static const std::string command = "unsubscribe.address";
+
+    data_chunk data;
+
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    subscription_lock_.lock_upgrade();
+    auto it = subscription_handlers_.find(subscription);
+    if (it == subscription_handlers_.end())
+    {
+        subscription_lock_.unlock_upgrade();
+        return false;
+    }
+
+    subscription_lock_.unlock_upgrade_and_lock();
+    const auto id = ++last_request_index_;
+    unsubscription_handlers_[id] = { handler, subscription };
+    data = it->second.second;
+    subscription_lock_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    if (!send_request(command, id, data, true))
+    {
+        handle_immediate(command, id, error::network_unreachable);
+        return false;
+    }
+
+    return true;
+}
+
+bool obelisk_client::unsubscribe_stealth(result_handler handler,
+    uint32_t subscription)
+{
+    static const std::string command = "unsubscribe.stealth";
+
+    data_chunk data;
+
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    subscription_lock_.lock_upgrade();
+    auto it = subscription_handlers_.find(subscription);
+    if (it == subscription_handlers_.end())
+    {
+        subscription_lock_.unlock_upgrade();
+        return false;
+    }
+
+    subscription_lock_.unlock_upgrade_and_lock();
+    const auto id = ++last_request_index_;
+    unsubscription_handlers_[id] = { handler, subscription };
+    data = it->second.second;
+    subscription_lock_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    if (!send_request(command, id, data, true))
+    {
+        handle_immediate(command, id, error::network_unreachable);
+        return false;
+    }
+
+    return true;
+}
+
+// Must be called with subscription_lock_ locked (called from
+// unsubscription_handler).
+bool obelisk_client::terminate_unsubscriber(uint32_t subscription)
+{
+    // Critical Section.
+    ///////////////////////////////////////////////////////////////////////////
+    subscription_lock_.lock_upgrade();
+    auto it = subscription_handlers_.find(subscription);
+    if (it == subscription_handlers_.end())
+    {
+        subscription_lock_.unlock_upgrade();
+        return false;
+    }
+
+    subscription_lock_.unlock_upgrade_and_lock();
+    subscription_handlers_.erase(it);
+    subscription_lock_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    return true;
+}
+
 
 } // namespace client
 } // namespace libbitcoin

@@ -45,6 +45,8 @@ struct BCC_API connection_settings
 class BCC_API obelisk_client
 {
 public:
+    static const auto null_subscription = bc::max_uint32;
+
     typedef std::function<void(const std::string&, uint32_t,
         const system::data_chunk&)> command_handler;
     typedef std::unordered_map<std::string, command_handler> command_map;
@@ -85,7 +87,10 @@ public:
     typedef std::unordered_map<uint32_t, transaction_handler> transaction_handler_map;
     typedef std::unordered_map<uint32_t, history_handler> history_handler_map;
     typedef std::unordered_map<uint32_t, stealth_handler> stealth_handler_map;
-    typedef std::unordered_map<uint32_t, update_handler> update_handler_map;
+    typedef std::unordered_map<uint32_t, std::pair<update_handler,
+        system::data_chunk>> subscription_handler_map;
+    typedef std::unordered_map<uint32_t, std::pair<result_handler,
+        uint32_t>> unsubscription_handler_map;
     typedef std::unordered_map<uint32_t, hash_list_handler> hash_list_handler_map;
     typedef std::unordered_map<uint32_t, version_handler> version_handler_map;
 
@@ -190,13 +195,16 @@ public:
     // Subscribers.
     //-------------------------------------------------------------------------
 
-    void subscribe_address(update_handler handler,
+    // Subscribe to a payment address.  Return value can be used to unsubscribe.
+    uint32_t subscribe_address(update_handler handler,
         const system::wallet::payment_address& address);
 
-    void subscribe_address(update_handler handler,
+    // Subscribe to an address hash.  Return value can be used to unsubscribe.
+    uint32_t subscribe_address(update_handler handler,
         const system::short_hash& address_hash);
 
-    void subscribe_stealth(update_handler handler,
+    // Subscribe to a stealth prefix.  Return value can be used to unsubscribe.
+    uint32_t subscribe_stealth(update_handler handler,
         const system::binary& stealth_prefix);
 
     bool subscribe_block(const system::config::endpoint& address,
@@ -205,26 +213,54 @@ public:
     bool subscribe_transaction(const system::config::endpoint& address,
         transaction_update_handler on_update);
 
+    // Unsubscribers.
+    //-------------------------------------------------------------------------
+
+    bool unsubscribe_address(result_handler handler, uint32_t subscription);
+
+    bool unsubscribe_stealth(result_handler handler, uint32_t subscription);
+
 private:
     // Attach handlers for all supported client-server operations.
     void attach_handlers();
+
+    // Used to handle a request immediately, on early detection of error.
     void handle_immediate(const std::string& command, uint32_t id,
         const system::code& ec);
 
     // Determines if any requests have not been handled.
     bool requests_outstanding();
 
+    // Determines if any notification requests have not been handled.
+    bool subscribe_requests_outstanding();
+
     // Calls all remaining/expired handlers with the specified error.
     void clear_outstanding_requests(const system::code& ec);
 
+    // Calls all remaining/expired notification handlers with the specified
+    // error.
+    void clear_outstanding_subscribe_requests(const system::code& ec);
+
     // Sends an outgoing request via the internal router.
     bool send_request(const std::string& command, uint32_t id,
-        const system::data_chunk& payload);
+        const system::data_chunk& payload, bool subscription=false);
+
+    // Forward incoming client router requests to the server.
+    void forward_message(protocol::zmq::socket& source,
+        protocol::zmq::socket& sink);
+
+    // Process server responses.
+    void process_response(protocol::zmq::socket& socket);
+
+    // After notifying the server of unsubscribe, this terminates any client
+    // side monitoring state for the subscription.
+    bool terminate_unsubscriber(uint32_t subscription);
 
     protocol::zmq::context context_;
 
     // Sockets that connect to external libbitcoin services.
     protocol::zmq::socket socket_;
+    protocol::zmq::socket subscribe_socket_;
     protocol::zmq::socket block_socket_;
     protocol::zmq::socket transaction_socket_;
 
@@ -233,11 +269,17 @@ private:
     protocol::zmq::socket dealer_;
     protocol::zmq::socket router_;
 
+    // Internal socket pair for client subscription request forwarding to router
+    // (that then forwards to server).
+    protocol::zmq::socket subscribe_dealer_;
+    protocol::zmq::socket subscribe_router_;
+
     block_update_handler on_block_update_;
     transaction_update_handler on_transaction_update_;
     int32_t retries_;
     bool secure_;
     system::config::endpoint worker_;
+    system::config::endpoint subscribe_worker_;
     uint32_t last_request_index_;
     command_map command_handlers_;
     result_handler_map result_handlers_;
@@ -248,9 +290,13 @@ private:
     transaction_handler_map transaction_handlers_;
     history_handler_map history_handlers_;
     stealth_handler_map stealth_handlers_;
-    update_handler_map update_handlers_;
+    subscription_handler_map subscription_handlers_;
+    unsubscription_handler_map unsubscription_handlers_;
     hash_list_handler_map hash_list_handlers_;
     version_handler_map version_handlers_;
+
+    // Protects subscription_handlers_
+    system::upgrade_mutex subscription_lock_;
 };
 
 } // namespace client
