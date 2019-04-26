@@ -755,9 +755,11 @@ void obelisk_client::attach_handlers()
     REGISTER_HANDLER("blockchain.fetch_block_transaction_hashes", hash_list_handler);
     REGISTER_HANDLER("blockchain.fetch_stealth_transaction_hashes",
         hash_list_handler);
-    REGISTER_HANDLER("subscribe.address", notification_handler);
+    REGISTER_HANDLER("subscribe.key", notification_handler);
+    REGISTER_HANDLER("notification.key", notification_handler);
     REGISTER_HANDLER("subscribe.stealth", notification_handler);
-    REGISTER_HANDLER("unsubscribe.address", unsubscribe_handler);
+    REGISTER_HANDLER("notification.stealth", notification_handler);
+    REGISTER_HANDLER("unsubscribe.key", unsubscribe_handler);
     REGISTER_HANDLER("unsubscribe.stealth", unsubscribe_handler);
     REGISTER_HANDLER("server.version", version_handler);
 
@@ -1043,27 +1045,19 @@ void obelisk_client::blockchain_fetch_stealth2(stealth_handler handler,
         handle_immediate(command, id, error::network_unreachable);
 }
 
-void obelisk_client::blockchain_fetch_history4(history_handler handler,
-    const payment_address& address, uint32_t from_height)
-{
-    const auto hash = sha256_hash(address.output_script().to_data(false));
-
-    return blockchain_fetch_history4(handler, hash, from_height);
-}
-
-// blockchain.fetch_history4 (v4.0) request accepts script_hash instead of
+// blockchain.fetch_history4 (v4.0) request accepts key instead of
 //   address_hash and response differs.
 // blockchain.fetch_history3 (v3.1) does not accept a version byte.
 // blockchain.fetch_history2 (v3.0) ignored version and is obsoleted in v3.1.
 // blockchain.fetch_history (v1/v2) used hash reversal and is obsoleted in v3.
 void obelisk_client::blockchain_fetch_history4(history_handler handler,
-    const hash_digest& script_hash, uint32_t from_height)
+    const hash_digest& key, uint32_t from_height)
 {
     static const std::string command = "blockchain.fetch_history4";
 
     const auto data = build_chunk(
     {
-        script_hash,
+        key,
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -1074,7 +1068,7 @@ void obelisk_client::blockchain_fetch_history4(history_handler handler,
 }
 
 void obelisk_client::blockchain_fetch_unspent_outputs(
-    points_value_handler handler, const payment_address& address,
+    points_value_handler handler, const hash_digest& key,
     uint64_t satoshi, select_outputs::algorithm algorithm)
 {
     static constexpr uint32_t from_height = 0;
@@ -1082,7 +1076,7 @@ void obelisk_client::blockchain_fetch_unspent_outputs(
 
     const auto data = build_chunk(
     {
-        sha256_hash(address.output_script().to_data(false)),
+        key,
         to_little_endian<uint32_t>(from_height)
     });
 
@@ -1166,20 +1160,13 @@ void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
 // Subscribers.
 //-----------------------------------------------------------------------------
 
-uint32_t obelisk_client::subscribe_address(update_handler handler,
-    const payment_address& address)
+// subscribe.address is renamed to subscribe.key (v4.0), input key differs.
+uint32_t obelisk_client::subscribe_key(update_handler handler,
+    const hash_digest& key)
 {
-    return subscribe_address(handler, address.hash());
-}
-
-// address.subscribe is obsolete, but can pass through to address.subscribe2.
-// This is a simplified overload for a non-private payment address subscription.
-uint32_t obelisk_client::subscribe_address(update_handler handler,
-    const short_hash& address_hash)
-{
-    static const std::string command = "subscribe.address";
-    // [ address_hash:20 ]
-    const auto data = build_chunk({ address_hash });
+    static const std::string command = "subscribe.key";
+    // [ key:32 ]
+    const auto data = build_chunk({ key });
 
     // Critical Section.
     ///////////////////////////////////////////////////////////////////////////
@@ -1239,10 +1226,11 @@ uint32_t obelisk_client::subscribe_stealth(update_handler handler,
     return id;
 }
 
-bool obelisk_client::unsubscribe_address(result_handler handler,
+// unsubscribe.address is renamed to unsubscribe.key (v4.0), input key differs.
+bool obelisk_client::unsubscribe_key(result_handler handler,
     uint32_t subscription)
 {
-    static const std::string command = "unsubscribe.address";
+    static const std::string command = "unsubscribe.key";
 
     data_chunk data;
 
