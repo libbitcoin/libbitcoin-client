@@ -177,31 +177,22 @@ public:
     void blockchain_fetch_stealth_transaction_hashes(
         hash_list_handler handler, const system::hash_digest& block_hash);
 
-    // Provided for backwards compatibility.
     void blockchain_fetch_history4(history_handler handler,
-        const system::wallet::payment_address& address,
-        uint32_t from_height=0);
-
-    void blockchain_fetch_history4(history_handler handler,
-        const system::hash_digest& script_hash, uint32_t from_height=0);
+        const system::hash_digest& key, uint32_t from_height=0);
 
     void blockchain_fetch_stealth2(stealth_handler handler,
         const system::binary& prefix, uint32_t from_height=0);
 
     void blockchain_fetch_unspent_outputs(points_value_handler handler,
-        const system::wallet::payment_address& address, uint64_t satoshi,
+        const system::hash_digest& key, uint64_t satoshi,
         system::wallet::select_outputs::algorithm algorithm);
 
     // Subscribers.
     //-------------------------------------------------------------------------
 
-    // Subscribe to a payment address.  Return value can be used to unsubscribe.
-    uint32_t subscribe_address(update_handler handler,
-        const system::wallet::payment_address& address);
-
-    // Subscribe to an address hash.  Return value can be used to unsubscribe.
-    uint32_t subscribe_address(update_handler handler,
-        const system::short_hash& address_hash);
+    // Subscribe to a payment key.  Return value can be used to unsubscribe.
+    uint32_t subscribe_key(update_handler handler,
+        const system::hash_digest& key);
 
     // Subscribe to a stealth prefix.  Return value can be used to unsubscribe.
     uint32_t subscribe_stealth(update_handler handler,
@@ -216,7 +207,7 @@ public:
     // Unsubscribers.
     //-------------------------------------------------------------------------
 
-    bool unsubscribe_address(result_handler handler, uint32_t subscription);
+    bool unsubscribe_key(result_handler handler, uint32_t subscription);
 
     bool unsubscribe_stealth(result_handler handler, uint32_t subscription);
 

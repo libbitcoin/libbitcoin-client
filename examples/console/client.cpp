@@ -139,7 +139,8 @@ void client::cmd_history(std::stringstream& args)
                 std::cout << "History value: " << row.value << std::endl;
     };
 
-    connection_->blockchain_fetch_history4(handler, address.hash());
+    const auto key = sha256_hash(address.output_script().to_data(false));
+    connection_->blockchain_fetch_history4(handler, key);
     connection_->wait();
 }
 
