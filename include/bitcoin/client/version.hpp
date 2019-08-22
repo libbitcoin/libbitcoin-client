@@ -12,9 +12,9 @@
  * For interpretation of the versioning scheme see: http://semver.org
  */
 
-#define LIBBITCOIN_CLIENT_VERSION "3.4.0"
+#define LIBBITCOIN_CLIENT_VERSION "3.6.0"
 #define LIBBITCOIN_CLIENT_MAJOR_VERSION 3
-#define LIBBITCOIN_CLIENT_MINOR_VERSION 4
+#define LIBBITCOIN_CLIENT_MINOR_VERSION 6
 #define LIBBITCOIN_CLIENT_PATCH_VERSION 0
 
 #endif
