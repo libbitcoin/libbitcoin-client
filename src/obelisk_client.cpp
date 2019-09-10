@@ -554,9 +554,10 @@ void obelisk_client::attach_handlers()
             if (!record.is_output())
                 continue;
 
-            const auto temporary_checksum = record.data();
+            output_point output{ record.hash(), record.index() };
+            const auto temporary_checksum = output.checksum();
             result.emplace_back(
-                output_point{ record.hash(), record.index() },
+                output,
                 record.height(),
                 record.data(),
                 input_point{ null_hash, chain::point::null_index },
