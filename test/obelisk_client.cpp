@@ -51,6 +51,8 @@ BOOST_AUTO_TEST_CASE(client__dummy_test__ok)
     BOOST_REQUIRE_EQUAL(true, true);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE(network)
 
 BOOST_AUTO_TEST_CASE(client__fetch_history4__test)
@@ -412,5 +414,4 @@ BOOST_AUTO_TEST_CASE(client__pool_fetch_transaction2__test)
     BOOST_REQUIRE_EQUAL(received_hash, expected_hash);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
