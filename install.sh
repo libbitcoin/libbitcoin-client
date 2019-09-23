@@ -58,7 +58,7 @@ configure_options()
     display_message "configure options:"
     for OPTION in "$@"; do
         if [[ $OPTION ]]; then
-            display_message $OPTION
+            display_message "$OPTION"
         fi
     done
 
@@ -75,19 +75,17 @@ create_directory()
 
 display_heading_message()
 {
-    echo
-    echo "********************** $@ **********************"
-    echo
+    printf "\n********************** %s **********************\n" "$@"
 }
 
 display_message()
 {
-    echo "$@"
+    printf "%s\n" "$@"
 }
 
 display_error()
 {
-    >&2 echo "$@"
+    >&2 printf "%s\n" "$@"
 }
 
 initialize_git()
@@ -107,7 +105,7 @@ make_current_directory()
 
     ./autogen.sh
     configure_options "$@"
-    make_jobs $JOBS
+    make_jobs "$JOBS"
     make install
     configure_links
 }
@@ -120,7 +118,7 @@ make_jobs()
 
     # Avoid setting -j1 (causes problems on Travis).
     if [[ $JOBS > $SEQUENTIAL ]]; then
-        make -j$JOBS "$@"
+        make -j"$JOBS" "$@"
     else
         make "$@"
     fi
@@ -136,7 +134,7 @@ make_tests()
 
     # Build and run unit tests relative to the primary directory.
     # VERBOSE=1 ensures test runner output sent to console (gcc).
-    make_jobs $JOBS check "VERBOSE=1"
+    make_jobs "$JOBS" check "VERBOSE=1"
     local RESULT=$?
 
     # Test runners emit to the test.log file.
@@ -213,13 +211,13 @@ done
 # Configure build parallelism.
 #------------------------------------------------------------------------------
 SEQUENTIAL=1
-OS=`uname -s`
+OS=$(uname -s)
 if [[ $PARALLEL ]]; then
     display_message "Using shell-defined PARALLEL value."
 elif [[ $OS == Linux ]]; then
-    PARALLEL=`nproc`
+    PARALLEL=$(nproc)
 elif [[ ($OS == Darwin) || ($OS == OpenBSD) ]]; then
-    PARALLEL=`sysctl -n hw.ncpu`
+    PARALLEL=$(sysctl -n hw.ncpu)
 else
     display_error "Unsupported system: $OS"
     display_error "  Explicit shell-definition of PARALLEL will avoid system detection."
@@ -267,7 +265,7 @@ CONFIGURE_OPTIONS=("${CONFIGURE_OPTIONS[@]/--build-*/}")
 
 # Always set a prefix (required on OSX and for lib detection).
 #------------------------------------------------------------------------------
-if [[ !($PREFIX) ]]; then
+if [[ ! ($PREFIX) ]]; then
     PREFIX="/usr/local"
     CONFIGURE_OPTIONS=( "${CONFIGURE_OPTIONS[@]}" "--prefix=$PREFIX")
 else
@@ -421,8 +419,8 @@ build_from_tarball()
     shift 7
 
     # For some platforms we need to set ICU pkg-config path.
-    if [[ !($BUILD) ]]; then
-        if [[ $ARCHIVE == $ICU_ARCHIVE ]]; then
+    if [[ ! ($BUILD) ]]; then
+        if [[ $ARCHIVE == "$ICU_ARCHIVE" ]]; then
             initialize_icu_packages
         fi
         return
@@ -430,14 +428,14 @@ build_from_tarball()
 
     # Because libpng doesn't actually use pkg-config to locate zlib.
     # Because ICU tools don't know how to locate internal dependencies.
-    if [[ ($ARCHIVE == $ICU_ARCHIVE) || ($ARCHIVE == $PNG_ARCHIVE) ]]; then
-        local SAVE_LDFLAGS=$LDFLAGS
+    if [[ ($ARCHIVE == "$ICU_ARCHIVE") || ($ARCHIVE == "$PNG_ARCHIVE") ]]; then
+        local SAVE_LDFLAGS="$LDFLAGS"
         export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
     fi
 
     # Because libpng doesn't actually use pkg-config to locate zlib.h.
-    if [[ ($ARCHIVE == $PNG_ARCHIVE) ]]; then
-        local SAVE_CPPFLAGS=$CPPFLAGS
+    if [[ ($ARCHIVE == "$PNG_ARCHIVE") ]]; then
+        local SAVE_CPPFLAGS="$CPPFLAGS"
         export CPPFLAGS="-I$PREFIX/include $CPPFLAGS"
     fi
 
@@ -450,31 +448,31 @@ build_from_tarball()
     push_directory "$EXTRACT"
 
     # Extract the source locally.
-    wget --output-document $ARCHIVE $URL
-    tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
+    wget --output-document "$ARCHIVE" "$URL"
+    tar --extract --file "$ARCHIVE" "--$COMPRESSION" --strip-components=1
     push_directory "$PUSH_DIR"
 
     # Enable static only zlib build.
-    if [[ $ARCHIVE == $ZLIB_ARCHIVE ]]; then
+    if [[ $ARCHIVE == "$ZLIB_ARCHIVE" ]]; then
         patch_zlib_configuration
     fi
 
     # Join generated and command line options.
     local CONFIGURATION=("${OPTIONS[@]}" "$@")
 
-    if [[ $ARCHIVE == $MBEDTLS_ARCHIVE ]]; then
-        make -j $JOBS lib
+    if [[ $ARCHIVE == "$MBEDTLS_ARCHIVE" ]]; then
+        make -j "$JOBS" lib
         make DESTDIR=$PREFIX install
     else
         configure_options "${CONFIGURATION[@]}"
-        make_jobs $JOBS --silent
+        make_jobs "$JOBS" --silent
         make install
     fi
 
     configure_links
 
     # Enable shared only zlib build.
-    if [[ $ARCHIVE == $ZLIB_ARCHIVE ]]; then
+    if [[ $ARCHIVE == "$ZLIB_ARCHIVE" ]]; then
         clean_zlib_build
     fi
 
@@ -483,7 +481,7 @@ build_from_tarball()
 
     # Restore flags to prevent side effects.
     export LDFLAGS=$SAVE_LDFLAGS
-    export CPPFLAGS=$SAVE_LCPPFLAGS
+    export CPPFLAGS=$SAVE_CPPFLAGS
 
     pop_directory
 }
@@ -499,8 +497,8 @@ circumvent_boost_icu_detection()
     local REGEX_TEST="libs/regex/build/has_icu_test.cpp"
     local LOCALE_TEST="libs/locale/build/has_icu_test.cpp"
 
-    echo $SUCCESS > $REGEX_TEST
-    echo $SUCCESS > $LOCALE_TEST
+    printf "%s" "$SUCCESS" > $REGEX_TEST
+    printf "%s" "$SUCCESS" > $LOCALE_TEST
 
     # display_message "Hack: ICU detection modified, will always indicate found."
 }
@@ -541,20 +539,23 @@ initialize_boost_icu_configuration()
         BOOST_ICU_POSIX="off"
 
         # Extract ICU libs from package config variables and augment with -ldl.
-        ICU_LIBS="`pkg-config icu-i18n --libs` -ldl"
+        ICU_LIBS="$(pkg-config icu-i18n --libs) -ldl"
 
         # This is a hack for boost m4 scripts that fail with ICU dependency.
         # See custom edits in ax-boost-locale.m4 and ax_boost_regex.m4.
-        export BOOST_ICU_LIBS="${ICU_LIBS[@]}"
+        export BOOST_ICU_LIBS=("${ICU_LIBS[@]}")
 
         # Extract ICU prefix directory from package config variable.
-        ICU_PREFIX=`pkg-config icu-i18n --variable=prefix`
+        ICU_PREFIX=$(pkg-config icu-i18n --variable=prefix)
     fi
 }
 
 # Because boost doesn't use autoconfig.
 build_from_tarball_boost()
 {
+    local SAVE_IFS="$IFS"
+    IFS=' '
+
     local URL=$1
     local ARCHIVE=$2
     local COMPRESSION=$3
@@ -563,7 +564,7 @@ build_from_tarball_boost()
     local BUILD=$6
     shift 6
 
-    if [[ !($BUILD) ]]; then
+    if [[ ! ($BUILD) ]]; then
         return
     fi
 
@@ -576,8 +577,8 @@ build_from_tarball_boost()
     push_directory "$EXTRACT"
 
     # Extract the source locally.
-    wget --output-document $ARCHIVE $URL
-    tar --extract --file $ARCHIVE --$COMPRESSION --strip-components=1
+    wget --output-document "$ARCHIVE" "$URL"
+    tar --extract --file "$ARCHIVE" "--$COMPRESSION" --strip-components=1
 
     initialize_boost_configuration
     initialize_boost_icu_configuration
@@ -594,7 +595,7 @@ build_from_tarball_boost()
     display_message "boost.locale.posix    : $BOOST_ICU_POSIX"
     display_message "-sNO_BZIP2            : 1"
     display_message "-sICU_PATH            : $ICU_PREFIX"
-    display_message "-sICU_LINK            : ${ICU_LIBS[@]}"
+    display_message "-sICU_LINK            : " "${ICU_LIBS[*]}"
     display_message "-sZLIB_LIBPATH        : $PREFIX/lib"
     display_message "-sZLIB_INCLUDE        : $PREFIX/include"
     display_message "-j                    : $JOBS"
@@ -602,7 +603,7 @@ build_from_tarball_boost()
     display_message "-q                    : [stop at the first error]"
     display_message "--reconfigure         : [ignore cached configuration]"
     display_message "--prefix              : $PREFIX"
-    display_message "BOOST_OPTIONS         : $@"
+    display_message "BOOST_OPTIONS         : $*"
     display_message "--------------------------------------------------------------------"
 
     # boost_iostreams
@@ -626,7 +627,7 @@ build_from_tarball_boost()
         "boost.locale.posix=$BOOST_ICU_POSIX" \
         "-sNO_BZIP2=1" \
         "-sICU_PATH=$ICU_PREFIX" \
-        "-sICU_LINK=${ICU_LIBS[@]}" \
+        "-sICU_LINK=${ICU_LIBS[*]}" \
         "-sZLIB_LIBPATH=$PREFIX/lib" \
         "-sZLIB_INCLUDE=$PREFIX/include" \
         "-j $JOBS" \
@@ -638,6 +639,8 @@ build_from_tarball_boost()
 
     pop_directory
     pop_directory
+
+    IFS="$SAVE_IFS"
 }
 
 # Standard build from github.
@@ -656,14 +659,14 @@ build_from_github()
     display_heading_message "Download $FORK/$BRANCH"
 
     # Clone the repository locally.
-    git clone --depth 1 --branch $BRANCH --single-branch "https://github.com/$FORK"
+    git clone --depth 1 --branch "$BRANCH" --single-branch "https://github.com/$FORK"
 
     # Join generated and command line options.
     local CONFIGURATION=("${OPTIONS[@]}" "$@")
 
     # Build the local repository clone.
     push_directory "$REPO"
-    make_current_directory $JOBS "${CONFIGURATION[@]}"
+    make_current_directory "$JOBS" "${CONFIGURATION[@]}"
     pop_directory
     pop_directory
 }
@@ -682,7 +685,7 @@ build_from_local()
     local CONFIGURATION=("${OPTIONS[@]}" "$@")
 
     # Build the current directory.
-    make_current_directory $JOBS "${CONFIGURATION[@]}"
+    make_current_directory "$JOBS" "${CONFIGURATION[@]}"
 }
 
 # Because Travis alread has downloaded the primary repo.
@@ -697,13 +700,13 @@ build_from_travis()
 
     # The primary build is not downloaded if we are running in Travis.
     if [[ $TRAVIS == true ]]; then
-        build_from_local "Local $TRAVIS_REPO_SLUG" $JOBS "${OPTIONS[@]}" "$@"
-        make_tests $JOBS
+        build_from_local "Local $TRAVIS_REPO_SLUG" "$JOBS" "${OPTIONS[@]}" "$@"
+        make_tests "$JOBS"
     else
-        build_from_github $ACCOUNT $REPO $BRANCH $JOBS "${OPTIONS[@]}" "$@"
+        build_from_github "$ACCOUNT" "$REPO" "$BRANCH" "$JOBS" "${OPTIONS[@]}" "$@"
         push_directory "$BUILD_DIR"
         push_directory "$REPO"
-        make_tests $JOBS
+        make_tests "$JOBS"
         pop_directory
         pop_directory
     fi
@@ -714,12 +717,12 @@ build_from_travis()
 #==============================================================================
 build_all()
 {
-    build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
-    build_from_tarball $ZMQ_URL $ZMQ_ARCHIVE gzip . $PARALLEL "$BUILD_ZMQ" "${ZMQ_OPTIONS[@]}" "$@"
-    build_from_github libbitcoin secp256k1 version5 $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
-    build_from_github libbitcoin libbitcoin-system master $PARALLEL ${BITCOIN_SYSTEM_OPTIONS[@]} "$@"
-    build_from_github libbitcoin libbitcoin-protocol master $PARALLEL ${BITCOIN_PROTOCOL_OPTIONS[@]} "$@"
-    build_from_travis libbitcoin libbitcoin-client master $PARALLEL ${BITCOIN_CLIENT_OPTIONS[@]} "$@"
+    build_from_tarball_boost "$BOOST_URL" "$BOOST_ARCHIVE" bzip2 . "$PARALLEL" "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
+    build_from_tarball "$ZMQ_URL" "$ZMQ_ARCHIVE" gzip . "$PARALLEL" "$BUILD_ZMQ" "${ZMQ_OPTIONS[@]}" "$@"
+    build_from_github libbitcoin secp256k1 version5 "$PARALLEL" "${SECP256K1_OPTIONS[@]}" "$@"
+    build_from_github libbitcoin libbitcoin-system master "$PARALLEL" "${BITCOIN_SYSTEM_OPTIONS[@]}" "$@"
+    build_from_github libbitcoin libbitcoin-protocol master "$PARALLEL" "${BITCOIN_PROTOCOL_OPTIONS[@]}" "$@"
+    build_from_travis libbitcoin libbitcoin-client master "$PARALLEL" "${BITCOIN_CLIENT_OPTIONS[@]}" "$@"
 }
 
 
