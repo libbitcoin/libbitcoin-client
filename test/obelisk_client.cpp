@@ -59,9 +59,9 @@ BOOST_AUTO_TEST_CASE(client__fetch_history4__test)
 {
     CLIENT_TEST_SETUP;
 
-    const uint32_t expected_height = 923346;
+    const uint64_t expected_height = 923346;
     const std::string expected_hash = "c331a7e31978f1b7ba4a60c6ebfce6eb713ab1542ddf2fd67bbf0824f9d1a353";
-    uint32_t received_height = 0;
+    uint64_t received_height = 0;
     std::string received_hash;
 
     const auto on_done = [&received_hash, &received_height](const code& ec, const history::list& rows)
