@@ -466,6 +466,95 @@ void obelisk_client::attach_handlers()
         block_handlers_.erase(handler);
     };
 
+    auto compact_filter_handler = [this](const std::string&, uint32_t id,
+        const data_chunk& payload)
+    {
+        auto handler = compact_filter_handlers_.find(id);
+        if (handler == compact_filter_handlers_.end())
+            return;
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        const auto ec = source.read_error_code();
+        if (ec)
+        {
+            handler->second(ec, {});
+            compact_filter_handlers_.erase(handler);
+            return;
+        }
+
+        message::compact_filter response;
+        if (!response.from_data(source.read_bytes()))
+        {
+            handler->second(error::bad_stream, {});
+            compact_filter_handlers_.erase(handler);
+            return;
+        }
+
+        handler->second(ec, response);
+        compact_filter_handlers_.erase(handler);
+    };
+
+    auto compact_filter_checkpoint_handler = [this](const std::string&,
+        uint32_t id, const data_chunk& payload)
+    {
+        auto handler = compact_filter_checkpoint_handlers_.find(id);
+        if (handler == compact_filter_checkpoint_handlers_.end())
+            return;
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        const auto ec = source.read_error_code();
+        if (ec)
+        {
+            handler->second(ec, {});
+            compact_filter_checkpoint_handlers_.erase(handler);
+            return;
+        }
+
+        message::compact_filter_checkpoint response;
+        const auto version = message::compact_filter_checkpoint::version_minimum;
+        if (!response.from_data(version, source.read_bytes()))
+        {
+            handler->second(error::bad_stream, {});
+            compact_filter_checkpoint_handlers_.erase(handler);
+            return;
+        }
+
+        handler->second(ec, response);
+        compact_filter_checkpoint_handlers_.erase(handler);
+    };
+
+    auto compact_filter_headers_handler = [this](const std::string&,
+        uint32_t id, const data_chunk& payload)
+    {
+        auto handler = compact_filter_headers_handlers_.find(id);
+        if (handler == compact_filter_headers_handlers_.end())
+            return;
+
+        data_source istream(payload);
+        istream_reader source(istream);
+        const auto ec = source.read_error_code();
+        if (ec)
+        {
+            handler->second(ec, {});
+            compact_filter_headers_handlers_.erase(handler);
+            return;
+        }
+
+        message::compact_filter_headers response;
+        const auto version = message::compact_filter_headers::version_minimum;
+        if (!response.from_data(version, source.read_bytes()))
+        {
+            handler->second(error::bad_stream, {});
+            compact_filter_headers_handlers_.erase(handler);
+            return;
+        }
+
+        handler->second(ec, response);
+        compact_filter_headers_handlers_.erase(handler);
+    };
+
     auto transaction_index_handler = [this](const std::string&, uint32_t id,
         const data_chunk& payload)
     {
@@ -749,6 +838,9 @@ void obelisk_client::attach_handlers()
     REGISTER_HANDLER("blockchain.fetch_block", block_handler);
     REGISTER_HANDLER("blockchain.fetch_block_header", block_header_handler);
     REGISTER_HANDLER("blockchain.fetch_block_height", height_handler);
+    REGISTER_HANDLER("blockchain.fetch_compact_filter", compact_filter_handler);
+    REGISTER_HANDLER("blockchain.fetch_compact_filter_checkpoint", compact_filter_checkpoint_handler);
+    REGISTER_HANDLER("blockchain.fetch_compact_filter_headers", compact_filter_headers_handler);
     REGISTER_HANDLER("blockchain.fetch_transaction_index",
         transaction_index_handler);
     REGISTER_HANDLER("blockchain.fetch_stealth2", stealth_handler);
@@ -796,7 +888,10 @@ bool obelisk_client::requests_outstanding()
         !hash_list_handlers_.empty() ||
         !history_handlers_.empty() ||
         !stealth_handlers_.empty() ||
-        !version_handlers_.empty();
+        !version_handlers_.empty() ||
+        !compact_filter_handlers_.empty() ||
+        !compact_filter_checkpoint_handlers_.empty() ||
+        !compact_filter_headers_handlers_.empty();
 }
 
 // We have subscribe requests outstanding if the subscription handler map is not
@@ -1135,6 +1230,103 @@ void obelisk_client::blockchain_fetch_block_transaction_hashes(
     if (!send_request(command, id, data))
         handle_immediate(command, id, error::network_unreachable);
 }
+
+void obelisk_client::blockchain_fetch_compact_filter(
+    compact_filter_handler handler, uint8_t filter_type, uint32_t height)
+{
+    static const std::string command = "blockchain.fetch_compact_filter";
+    const auto data = build_chunk({
+        to_array(filter_type),
+        to_little_endian<uint32_t>(height)
+    });
+
+    const auto id = ++last_request_index_;
+    compact_filter_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_compact_filter(
+    compact_filter_handler handler, uint8_t filter_type,
+    const system::hash_digest& block_hash)
+{
+    static const std::string command = "blockchain.fetch_compact_filter";
+    const auto data = build_chunk({
+        to_array(filter_type),
+        block_hash
+    });
+
+    const auto id = ++last_request_index_;
+    compact_filter_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_compact_filter_headers(
+    compact_filter_headers_handler handler, uint8_t filter_type,
+    uint32_t start_height, const system::hash_digest& stop_hash)
+{
+    static const std::string command = "blockchain.fetch_compact_filter_headers";
+    const auto data = build_chunk({
+        to_array(filter_type),
+        to_little_endian<uint32_t>(start_height),
+        stop_hash
+    });
+
+    const auto id = ++last_request_index_;
+    compact_filter_headers_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_compact_filter_headers(
+    compact_filter_headers_handler handler, uint8_t filter_type,
+    uint32_t start_height, uint32_t stop_height)
+{
+    static const std::string command = "blockchain.fetch_compact_filter_headers";
+    const auto data = build_chunk({
+        to_array(filter_type),
+        to_little_endian<uint32_t>(start_height),
+        to_little_endian<uint32_t>(stop_height)
+    });
+
+    const auto id = ++last_request_index_;
+    compact_filter_headers_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+void obelisk_client::blockchain_fetch_compact_filter_checkpoint(
+    compact_filter_checkpoint_handler handler, uint8_t filter_type,
+    const system::hash_digest& stop_hash)
+{
+    static const std::string command = "blockchain.fetch_compact_filter_checkpoint";
+    const auto data = build_chunk({
+        to_array(filter_type),
+        stop_hash
+    });
+
+    const auto id = ++last_request_index_;
+    compact_filter_checkpoint_handlers_[id] = handler;
+    if (!send_request(command, id, data))
+        handle_immediate(command, id, error::network_unreachable);
+}
+
+//void obelisk_client::blockchain_fetch_compact_filter_checkpoint(
+//    compact_filter_checkpoint_handler handler, uint8_t filter_type,
+//    uint32_t stop_height)
+//{
+//    static const std::string command = "blockchain.fetch_compact_filter_checkpoint";
+//    const auto data = build_chunk({
+//        to_array(filter_type),
+//        to_little_endian<uint32_t>(stop_height)
+//    });
+//
+//    const auto id = ++last_request_index_;
+//    compact_filter_checkpoint_handlers_[id] = handler;
+//    if (!send_request(command, id, data))
+//        handle_immediate(command, id, error::network_unreachable);
+//}
 
 void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
     hash_list_handler handler, uint32_t height)

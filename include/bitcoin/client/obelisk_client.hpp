@@ -69,6 +69,9 @@ public:
     typedef std::function<void(const system::code&, size_t, size_t)> transaction_index_handler;
     typedef std::function<void(const system::code&, const system::chain::block&)> block_handler;
     typedef std::function<void(const system::code&, const system::chain::header&)> block_header_handler;
+    typedef std::function<void(const system::code&, const system::message::compact_filter&)> compact_filter_handler;
+    typedef std::function<void(const system::code&, const system::message::compact_filter_checkpoint&)> compact_filter_checkpoint_handler;
+    typedef std::function<void(const system::code&, const system::message::compact_filter_headers&)> compact_filter_headers_handler;
     typedef std::function<void(const system::code&, const system::chain::transaction&)> transaction_handler;
     typedef std::function<void(const system::code&, const system::chain::points_value&)> points_value_handler;
     typedef std::function<void(const system::code&, const client::history::list&)> history_handler;
@@ -84,6 +87,9 @@ public:
     typedef std::unordered_map<uint32_t, transaction_index_handler> transaction_index_handler_map;
     typedef std::unordered_map<uint32_t, block_handler> block_handler_map;
     typedef std::unordered_map<uint32_t, block_header_handler> block_header_handler_map;
+    typedef std::unordered_map<uint32_t, compact_filter_handler> compact_filter_handler_map;
+    typedef std::unordered_map<uint32_t, compact_filter_checkpoint_handler> compact_filter_checkpoint_handler_map;
+    typedef std::unordered_map<uint32_t, compact_filter_headers_handler> compact_filter_headers_handler_map;
     typedef std::unordered_map<uint32_t, transaction_handler> transaction_handler_map;
     typedef std::unordered_map<uint32_t, history_handler> history_handler_map;
     typedef std::unordered_map<uint32_t, stealth_handler> stealth_handler_map;
@@ -170,6 +176,28 @@ public:
 
     void blockchain_fetch_block_transaction_hashes(
         hash_list_handler handler, const system::hash_digest& block_hash);
+
+    void blockchain_fetch_compact_filter(compact_filter_handler handler,
+        uint8_t filter_type, uint32_t height);
+
+    void blockchain_fetch_compact_filter(compact_filter_handler handler,
+        uint8_t filter_type, const system::hash_digest& block_hash);
+
+    void blockchain_fetch_compact_filter_headers(
+        compact_filter_headers_handler handler, uint8_t filter_type,
+        uint32_t start_height, const system::hash_digest& stop_hash);
+
+    void blockchain_fetch_compact_filter_headers(
+        compact_filter_headers_handler handler, uint8_t filter_type,
+        uint32_t start_height, uint32_t stop_height);
+
+    void blockchain_fetch_compact_filter_checkpoint(
+        compact_filter_checkpoint_handler handler, uint8_t filter_type,
+        const system::hash_digest& stop_hash);
+
+//    void blockchain_fetch_compact_filter_checkpoint(
+//        compact_filter_checkpoint_handler handler, uint8_t filter_type,
+//        uint32_t stop_height);
 
     void blockchain_fetch_stealth_transaction_hashes(
         hash_list_handler handler, uint32_t height);
@@ -278,6 +306,9 @@ private:
     transaction_index_handler_map transaction_index_handlers_;
     block_handler_map block_handlers_;
     block_header_handler_map block_header_handlers_;
+    compact_filter_handler_map compact_filter_handlers_;
+    compact_filter_checkpoint_handler_map compact_filter_checkpoint_handlers_;
+    compact_filter_headers_handler_map compact_filter_headers_handlers_;
     transaction_handler_map transaction_handlers_;
     history_handler_map history_handlers_;
     stealth_handler_map stealth_handlers_;
