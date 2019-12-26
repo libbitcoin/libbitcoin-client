@@ -91,7 +91,6 @@ include_bitcoin_client_HEADERS = \
     include/bitcoin/client/define.hpp \
     include/bitcoin/client/history.hpp \
     include/bitcoin/client/obelisk_client.hpp \
-    include/bitcoin/client/stealth.hpp \
     include/bitcoin/client/version.hpp
 
 

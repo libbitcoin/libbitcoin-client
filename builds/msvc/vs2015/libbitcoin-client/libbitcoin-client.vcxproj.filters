@@ -41,9 +41,6 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\client\obelisk_client.hpp">
       <Filter>include\bitcoin\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\bitcoin\client\stealth.hpp">
-      <Filter>include\bitcoin\client</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\bitcoin\client\version.hpp">
       <Filter>include\bitcoin\client</Filter>
     </ClInclude>

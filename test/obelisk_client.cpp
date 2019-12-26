@@ -29,7 +29,7 @@ using namespace bc::system;
 using namespace bc::system::wallet;
 
 // FIXME: This points to a temporary v4 testnet instance.
-static const std::string testnet_test_url = "tcp://testnet2.libbitcoin.net:29091";
+static const std::string testnet_url = "tcp://testnet2.libbitcoin.net:29091";
 
 // Arbitrary values for test cases (from testnet block 800,001).
 static const uint32_t test_height = 800001;
@@ -42,7 +42,7 @@ static const char test_block_hash[] = "00000000002889eccd1262e2b7fe893b9839574d9
 #define CLIENT_TEST_SETUP \
     static const uint32_t retries = 0; \
     obelisk_client client(retries); \
-    client.connect(config::endpoint(testnet_test_url))
+    client.connect(config::endpoint(testnet_url))
 
 BOOST_AUTO_TEST_SUITE(stub)
 
@@ -340,40 +340,6 @@ BOOST_AUTO_TEST_CASE(client__fetch_transaction__index_test)
 
     BOOST_REQUIRE_EQUAL(received_block, expected_block);
     BOOST_REQUIRE_EQUAL(received_index, expected_index);
-}
-
-/* BOOST_AUTO_TEST_CASE(client__fetch_stealth2__test) */
-/* { */
-/*     CLIENT_TEST_SETUP; */
-
-/*     const auto on_reply = [](const stealth::list&) {}; */
-/*     const std::vector<uint8_t> raw_prefix{ 0xff, 0xff, 0x00, 0x00 }; */
-/*     const binary prefix(16, raw_prefix); */
-/*     client.blockchain_fetch_stealth2(on_error, on_reply, prefix, test_height); */
-
-/*     HANDLE_ROUTING_FRAMES(capture.out); */
-/*     BOOST_REQUIRE_EQUAL(capture.out.size(), 3u); */
-/*     BOOST_REQUIRE_EQUAL(to_string(capture.out[0]), "blockchain.fetch_stealth2"); */
-/*     BOOST_REQUIRE_EQUAL(encode_base16(capture.out[2]), "10ffff78563412"); */
-/* } */
-
-BOOST_AUTO_TEST_CASE(client__stealth_public__test)
-{
-    /* CLIENT_TEST_SETUP; */
-
-    /* const std::string expected_hash = std::string(test_hash); */
-
-    /* std::string received_hash; */
-    /* const auto on_done = [&received_hash](const code& ec, const chain::transaction& tx) */
-    /* { */
-    /*     if (ec == error::success) */
-    /*         received_hash = encode_base16(tx.hash()); */
-    /* }; */
-
-    /* client.transaction_pool_fetch_transaction(on_done, hash_literal(test_hash)); */
-    /* client.wait(); */
-
-    /* BOOST_REQUIRE_EQUAL(received_hash, expected_hash); */
 }
 
 BOOST_AUTO_TEST_CASE(client__pool_fetch_transaction__test)
