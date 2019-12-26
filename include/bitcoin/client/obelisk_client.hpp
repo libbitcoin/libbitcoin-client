@@ -22,7 +22,6 @@
 #include <bitcoin/system.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/history.hpp>
-#include <bitcoin/client/stealth.hpp>
 #include <bitcoin/protocol.hpp>
 
 namespace libbitcoin {
@@ -75,7 +74,6 @@ public:
     typedef std::function<void(const system::code&, const system::chain::transaction&)> transaction_handler;
     typedef std::function<void(const system::code&, const system::chain::points_value&)> points_value_handler;
     typedef std::function<void(const system::code&, const client::history::list&)> history_handler;
-    typedef std::function<void(const system::code&, const client::stealth::list&)> stealth_handler;
     typedef std::function<void(const system::code&, const system::hash_list&)> hash_list_handler;
     typedef std::function<void(const system::code&, const std::string&)> version_handler;
 
@@ -92,7 +90,6 @@ public:
     typedef std::unordered_map<uint32_t, compact_filter_headers_handler> compact_filter_headers_handler_map;
     typedef std::unordered_map<uint32_t, transaction_handler> transaction_handler_map;
     typedef std::unordered_map<uint32_t, history_handler> history_handler_map;
-    typedef std::unordered_map<uint32_t, stealth_handler> stealth_handler_map;
     typedef std::unordered_map<uint32_t, std::pair<update_handler,
         system::data_chunk>> subscription_handler_map;
     typedef std::unordered_map<uint32_t, std::pair<result_handler,
@@ -199,17 +196,8 @@ public:
 //        compact_filter_checkpoint_handler handler, uint8_t filter_type,
 //        uint32_t stop_height);
 
-    void blockchain_fetch_stealth_transaction_hashes(
-        hash_list_handler handler, uint32_t height);
-
-    void blockchain_fetch_stealth_transaction_hashes(
-        hash_list_handler handler, const system::hash_digest& block_hash);
-
     void blockchain_fetch_history4(history_handler handler,
         const system::hash_digest& key, uint32_t from_height=0);
-
-    void blockchain_fetch_stealth2(stealth_handler handler,
-        const system::binary& prefix, uint32_t from_height=0);
 
     void blockchain_fetch_unspent_outputs(points_value_handler handler,
         const system::hash_digest& key, uint64_t satoshi,
@@ -222,10 +210,6 @@ public:
     uint32_t subscribe_key(update_handler handler,
         const system::hash_digest& key);
 
-    // Subscribe to a stealth prefix.  Return value can be used to unsubscribe.
-    uint32_t subscribe_stealth(update_handler handler,
-        const system::binary& stealth_prefix);
-
     bool subscribe_block(const system::config::endpoint& address,
         block_update_handler on_update);
 
@@ -236,8 +220,6 @@ public:
     //-------------------------------------------------------------------------
 
     bool unsubscribe_key(result_handler handler, uint32_t subscription);
-
-    bool unsubscribe_stealth(result_handler handler, uint32_t subscription);
 
 private:
     // Attach handlers for all supported client-server operations.
@@ -311,7 +293,6 @@ private:
     compact_filter_headers_handler_map compact_filter_headers_handlers_;
     transaction_handler_map transaction_handlers_;
     history_handler_map history_handlers_;
-    stealth_handler_map stealth_handlers_;
     subscription_handler_map subscription_handlers_;
     unsubscription_handler_map unsubscription_handlers_;
     hash_list_handler_map hash_list_handlers_;

@@ -571,43 +571,6 @@ void obelisk_client::attach_handlers()
         transaction_index_handlers_.erase(handler);
     };
 
-    auto stealth_handler = [this](const std::string&, uint32_t id,
-        const data_chunk& payload)
-    {
-        auto handler = stealth_handlers_.find(id);
-        if (handler == stealth_handlers_.end())
-            return;
-
-        stealth_record stealth;
-        stealth_record::list records;
-
-        data_source istream(payload);
-        istream_reader source(istream);
-        const auto ec = source.read_error_code();
-        while (!source.is_exhausted())
-        {
-            if (!stealth.from_data(source, true))
-            {
-                handler->second(ec, {});
-                stealth_handlers_.erase(handler);
-                return;
-            }
-
-            records.push_back(stealth);
-        }
-
-        // Expand records.
-        stealth::list result;
-        result.reserve(records.size());
-
-        for (const auto& in: records)
-            result.emplace_back(in.ephemeral_public_key(), in.public_key_hash(),
-                in.transaction_hash());
-
-        handler->second(ec, result);
-        stealth_handlers_.erase(handler);
-    };
-
     auto history_handler = [this](const std::string&, uint32_t id,
         const data_chunk& payload)
     {
@@ -843,17 +806,11 @@ void obelisk_client::attach_handlers()
     REGISTER_HANDLER("blockchain.fetch_compact_filter_headers", compact_filter_headers_handler);
     REGISTER_HANDLER("blockchain.fetch_transaction_index",
         transaction_index_handler);
-    REGISTER_HANDLER("blockchain.fetch_stealth2", stealth_handler);
     REGISTER_HANDLER("blockchain.fetch_history4", history_handler);
     REGISTER_HANDLER("blockchain.fetch_block_transaction_hashes", hash_list_handler);
-    REGISTER_HANDLER("blockchain.fetch_stealth_transaction_hashes",
-        hash_list_handler);
     REGISTER_HANDLER("subscribe.key", notification_handler);
     REGISTER_HANDLER("notification.key", notification_handler);
-    REGISTER_HANDLER("subscribe.stealth", notification_handler);
-    REGISTER_HANDLER("notification.stealth", notification_handler);
     REGISTER_HANDLER("unsubscribe.key", unsubscribe_handler);
-    REGISTER_HANDLER("unsubscribe.stealth", unsubscribe_handler);
     REGISTER_HANDLER("server.version", version_handler);
 
 #undef REGISTER_HANDLER
@@ -887,7 +844,6 @@ bool obelisk_client::requests_outstanding()
         !transaction_handlers_.empty() ||
         !hash_list_handlers_.empty() ||
         !history_handlers_.empty() ||
-        !stealth_handlers_.empty() ||
         !version_handlers_.empty() ||
         !compact_filter_handlers_.empty() ||
         !compact_filter_checkpoint_handlers_.empty() ||
@@ -926,7 +882,6 @@ void obelisk_client::clear_outstanding_requests(const code& ec)
     CLEAR_OUTSTANDING(transaction_handlers_, ec, 1);
     CLEAR_OUTSTANDING(hash_list_handlers_, ec, 1);
     CLEAR_OUTSTANDING(history_handlers_, ec, 1);
-    CLEAR_OUTSTANDING(stealth_handlers_, ec, 1);
     CLEAR_OUTSTANDING(version_handlers_, ec, 1);
 
 #undef CLEAR_OUTSTANDING
@@ -1111,32 +1066,6 @@ void obelisk_client::blockchain_fetch_transaction_index(
     const auto data = build_chunk({ tx_hash });
     const auto id = ++last_request_index_;
     transaction_index_handlers_[id] = handler;
-    if (!send_request(command, id, data))
-        handle_immediate(command, id, error::network_unreachable);
-}
-
-void obelisk_client::blockchain_fetch_stealth2(stealth_handler handler,
-    const binary& prefix, uint32_t from_height)
-{
-    static const std::string command = "blockchain.fetch_stealth2";
-    const auto bits = prefix.size();
-
-    if (bits < stealth_address::min_filter_bits ||
-        bits > stealth_address::max_filter_bits)
-    {
-        handler(error::operation_failed, {});
-        return;
-    }
-
-    const auto data = build_chunk(
-    {
-        to_array(static_cast<uint8_t>(prefix.size())),
-        prefix.blocks(),
-        to_little_endian<uint32_t>(from_height)
-    });
-
-    const auto id = ++last_request_index_;
-    stealth_handlers_[id] = handler;
     if (!send_request(command, id, data))
         handle_immediate(command, id, error::network_unreachable);
 }
@@ -1328,28 +1257,6 @@ void obelisk_client::blockchain_fetch_compact_filter_checkpoint(
 //        handle_immediate(command, id, error::network_unreachable);
 //}
 
-void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
-    hash_list_handler handler, uint32_t height)
-{
-    static const std::string command = "blockchain.fetch_stealth_transaction_hashes";
-    const auto data = build_chunk({ to_little_endian<uint32_t>(height) });
-    const auto id = ++last_request_index_;
-    hash_list_handlers_[id] = handler;
-    if (!send_request(command, id, data))
-        handle_immediate(command, id, error::network_unreachable);
-}
-
-void obelisk_client::blockchain_fetch_stealth_transaction_hashes(
-    hash_list_handler handler, const hash_digest& block_hash)
-{
-    static const std::string command = "blockchain.fetch_stealth_transaction_hashes";
-    const auto data = build_chunk({ block_hash });
-    const auto id = ++last_request_index_;
-    hash_list_handlers_[id] = handler;
-    if (!send_request(command, id, data))
-        handle_immediate(command, id, error::network_unreachable);
-}
-
 // Subscribers.
 //-----------------------------------------------------------------------------
 
@@ -1379,84 +1286,11 @@ uint32_t obelisk_client::subscribe_key(update_handler handler,
     return id;
 }
 
-// This overload supports a prefix for either stealth or payment address.
-uint32_t obelisk_client::subscribe_stealth(update_handler handler,
-    const binary& stealth_prefix)
-{
-    static const std::string command = "subscribe.stealth";
-    const auto bits = stealth_prefix.size();
-
-    if (bits < stealth_address::min_filter_bits ||
-        bits > stealth_address::max_filter_bits)
-    {
-        handler(error::operation_failed, {}, {}, {});
-        return null_subscription;
-    }
-
-    // [ prefix_bitsize:1 ]
-    // [ prefix_blocks:...]
-    const auto data = build_chunk(
-    {
-        to_array(static_cast<uint8_t>(bits)),
-        stealth_prefix.blocks()
-    });
-
-    // Critical Section.
-    ///////////////////////////////////////////////////////////////////////////
-    subscription_lock_.lock();
-    const auto id = ++last_request_index_;
-    subscription_handlers_[id] = { handler, data };
-    subscription_lock_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
-    if (!send_request(command, id, data, true))
-    {
-        handle_immediate(command, id, error::network_unreachable);
-        return null_subscription;
-    }
-
-    handler(error::success, {}, {}, {});
-    return id;
-}
-
 // unsubscribe.address is renamed to unsubscribe.key (v4.0), input key differs.
 bool obelisk_client::unsubscribe_key(result_handler handler,
     uint32_t subscription)
 {
     static const std::string command = "unsubscribe.key";
-
-    data_chunk data;
-
-    // Critical Section.
-    ///////////////////////////////////////////////////////////////////////////
-    subscription_lock_.lock_upgrade();
-    auto it = subscription_handlers_.find(subscription);
-    if (it == subscription_handlers_.end())
-    {
-        subscription_lock_.unlock_upgrade();
-        return false;
-    }
-
-    subscription_lock_.unlock_upgrade_and_lock();
-    const auto id = ++last_request_index_;
-    unsubscription_handlers_[id] = { handler, subscription };
-    data = it->second.second;
-    subscription_lock_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
-    if (!send_request(command, id, data, true))
-    {
-        handle_immediate(command, id, error::network_unreachable);
-        return false;
-    }
-
-    return true;
-}
-
-bool obelisk_client::unsubscribe_stealth(result_handler handler,
-    uint32_t subscription)
-{
-    static const std::string command = "unsubscribe.stealth";
 
     data_chunk data;
 
