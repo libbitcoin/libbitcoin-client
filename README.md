@@ -16,4 +16,10 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
+If you installed [libbitcoin](https://github.com/libbitcoin/libbitcoin) to `/usr/local` (the default) and linking fails, retry by setting `PKG_CONFIG_PATH` beforehand:
+```
+$ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+$ ./configure && make
+```
+
 libbitcoin-client is now installed in `/usr/local/`.
