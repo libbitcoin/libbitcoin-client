@@ -39,7 +39,7 @@ class BCC_API dealer
 public:
     typedef std::function<void(const code&)> error_handler;
     typedef std::function<void(const std::string&)> unknown_handler;
-    typedef std::function<void(const code&, uint16_t, size_t,
+    typedef std::function<void(const code&, uint16_t sequence, size_t height,
         const hash_digest&)> update_handler;
 
     /// Resend is unrelated to connections.
