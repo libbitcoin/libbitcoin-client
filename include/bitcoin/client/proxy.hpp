@@ -20,7 +20,7 @@
 #define LIBBITCOIN_CLIENT_PROXY_HPP
 
 #include <functional>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/stream.hpp>

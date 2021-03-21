@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/stream.hpp>
 

@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <memory>
 #include <utility>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/client/dealer.hpp>
 #include <bitcoin/client/define.hpp>
 #include <bitcoin/client/stream.hpp>
