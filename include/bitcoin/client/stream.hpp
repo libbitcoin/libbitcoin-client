@@ -20,7 +20,7 @@
 #define LIBBITCOIN_CLIENT_STREAM_HPP
 
 #include <cstdint>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/client/define.hpp>
 
 namespace libbitcoin {

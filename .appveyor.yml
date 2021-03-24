@@ -1,10 +1,10 @@
 ###############################################################################
-#  Copyright (c) 2014-2015 libbitcoin-client developers (see COPYING).
+#  Copyright (c) 2014-2020 libbitcoin-client developers (see COPYING).
 #
 #         GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 #
 ###############################################################################
-version: 3.6.0.{build}-{branch}
+version: 3.7.0.{build}-{branch}
 
 image: Visual Studio 2013
 
@@ -15,16 +15,16 @@ environment:
   matrix:
     - configuration: StaticDebug
       platform: x64
-      BOOST_UNIT_TEST_OPTIONS: "--run_test=* --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
+      BOOST_UNIT_TEST_OPTIONS: "--run_test=generated,obsolete,offline,config,stub --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
     - configuration: StaticRelease
       platform: x64
-      BOOST_UNIT_TEST_OPTIONS: "--run_test=* --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
+      BOOST_UNIT_TEST_OPTIONS: "--run_test=generated,obsolete,offline,config,stub --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
     - configuration: StaticDebug
       platform: Win32
-      BOOST_UNIT_TEST_OPTIONS: "--run_test=* --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
+      BOOST_UNIT_TEST_OPTIONS: "--run_test=generated,obsolete,offline,config,stub --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
     - configuration: StaticRelease
       platform: Win32
-      BOOST_UNIT_TEST_OPTIONS: "--run_test=* --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
+      BOOST_UNIT_TEST_OPTIONS: "--run_test=generated,obsolete,offline,config,stub --show_progress=no --detect_memory_leak=0 --report_level=no --build_info=yes"
 
 matrix:
   fast_finish: true

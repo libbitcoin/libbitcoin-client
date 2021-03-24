@@ -1,5 +1,5 @@
 ###############################################################################
-#  Copyright (c) 2014-2015 libbitcoin-client developers (see COPYING).
+#  Copyright (c) 2014-2020 libbitcoin-client developers (see COPYING).
 #
 #         GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 #
@@ -32,8 +32,8 @@ doc_DATA = \
 # src/libbitcoin-client.la => ${libdir}
 #------------------------------------------------------------------------------
 lib_LTLIBRARIES = src/libbitcoin-client.la
-src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
-src_libbitcoin_client_la_LIBADD = ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
+src_libbitcoin_client_la_CPPFLAGS = -I${srcdir}/include ${bitcoin_system_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
+src_libbitcoin_client_la_LIBADD = ${bitcoin_system_LIBS} ${bitcoin_protocol_LIBS}
 src_libbitcoin_client_la_SOURCES = \
     src/dealer.cpp \
     src/obelisk_client.cpp \
@@ -47,8 +47,8 @@ if WITH_TESTS
 TESTS = libbitcoin-client-test_runner.sh
 
 check_PROGRAMS = test/libbitcoin-client-test
-test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
-test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
+test_libbitcoin_client_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_system_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
+test_libbitcoin_client_test_LDADD = src/libbitcoin-client.la ${boost_unit_test_framework_LIBS} ${bitcoin_system_LIBS} ${bitcoin_protocol_LIBS}
 test_libbitcoin_client_test_SOURCES = \
     test/main.cpp \
     test/proxy.cpp
@@ -60,8 +60,8 @@ endif WITH_TESTS
 if WITH_EXAMPLES
 
 noinst_PROGRAMS = examples/console/console
-examples_console_console_CPPFLAGS = -I${srcdir}/include ${bitcoin_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
-examples_console_console_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
+examples_console_console_CPPFLAGS = -I${srcdir}/include ${bitcoin_system_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
+examples_console_console_LDADD = src/libbitcoin-client.la ${bitcoin_system_LIBS} ${bitcoin_protocol_LIBS}
 examples_console_console_SOURCES = \
     examples/console/client.cpp \
     examples/console/client.hpp \
@@ -78,8 +78,8 @@ endif WITH_EXAMPLES
 if WITH_EXAMPLES
 
 noinst_PROGRAMS += examples/get_height/get_height
-examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
-examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_LIBS} ${bitcoin_protocol_LIBS}
+examples_get_height_get_height_CPPFLAGS = -I${srcdir}/include ${bitcoin_system_BUILD_CPPFLAGS} ${bitcoin_protocol_BUILD_CPPFLAGS}
+examples_get_height_get_height_LDADD = src/libbitcoin-client.la ${bitcoin_system_LIBS} ${bitcoin_protocol_LIBS}
 examples_get_height_get_height_SOURCES = \
     examples/get_height/main.cpp
 

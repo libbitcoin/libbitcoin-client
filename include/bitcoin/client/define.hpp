@@ -19,7 +19,7 @@
 #ifndef LIBBITCOIN_CLIENT_DEFINE_HPP
 #define LIBBITCOIN_CLIENT_DEFINE_HPP
 
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 
 // We use the generic helper definitions in libbitcoin to define BCX_API
 // and BCX_INTERNAL. BCX_API is used for the public API symbols. It either DLL

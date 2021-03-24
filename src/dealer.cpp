@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <string>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <bitcoin/system.hpp>
 #include <bitcoin/client/stream.hpp>
 
 // A REQ socket always adds a delimiter.
