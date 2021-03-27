@@ -197,7 +197,7 @@ if (with-tests)
         "../../test/obelisk_client.cpp" )
 
     add_test( NAME libbitcoin-client-test COMMAND libbitcoin-client-test
-            --run_test=generated,obsolete,offline,config,stub
+            --run_test=*
             --show_progress=no
             --detect_memory_leak=0
             --report_level=no
