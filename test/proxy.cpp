@@ -51,10 +51,10 @@ public:
 };
 
 // Shoves data into a std::string object.
-static std::string to_string(data_slice data)
+static std::string to_string(const data_chunk& data)
 {
-    // zmq strings are not null terminated by convention.
-    return std::string(data.begin(), data.end()) + "\0";
+    // zmq strings are not null terminated but std::string null terminates.
+    return std::string(data.begin(), data.end());
 }
 
 static void remove_optional_delimiter(data_stack& stack)
