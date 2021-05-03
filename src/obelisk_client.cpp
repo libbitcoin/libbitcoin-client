@@ -81,8 +81,8 @@ bool obelisk_client::connect(const connection_settings& settings)
 }
 
 bool obelisk_client::connect(const endpoint& address,
-    const authority& socks_proxy, const sodium& server_public_key,
-    const sodium& client_private_key)
+    const authority& socks_proxy, const zmq::sodium& server_public_key,
+    const zmq::sodium& client_private_key)
 {
     // Ignore the setting if socks.port is zero (invalid).
     if (socks_proxy && (!socket_.set_socks_proxy(socks_proxy) ||

@@ -35,8 +35,8 @@ struct BCC_API connection_settings
     system::config::endpoint block_server;
     system::config::endpoint transaction_server;
     system::config::authority socks;
-    system::config::sodium server_public_key;
-    system::config::sodium client_private_key;
+    protocol::zmq::sodium server_public_key;
+    protocol::zmq::sodium client_private_key;
 };
 
 /// Client implements a router-dealer interface to communicate with
@@ -105,8 +105,8 @@ public:
     /// Connect to the specified endpoint using the provided keys.
     bool connect(const system::config::endpoint& address,
         const system::config::authority& socks_proxy,
-        const system::config::sodium& server_public_key,
-        const system::config::sodium& client_private_key);
+        const protocol::zmq::sodium& server_public_key,
+        const protocol::zmq::sodium& client_private_key);
 
     /// Connect to the specified endpoint.
     bool connect(const system::config::endpoint& address);
