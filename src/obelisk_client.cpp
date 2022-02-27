@@ -1094,7 +1094,7 @@ void obelisk_client::blockchain_fetch_history4(history_handler handler,
 
 void obelisk_client::blockchain_fetch_unspent_outputs(
     points_value_handler handler, const hash_digest& key,
-    uint64_t satoshi, select_outputs::algorithm algorithm)
+    uint64_t satoshi, chain::points_value::selection algorithm)
 {
     static constexpr uint32_t from_height = 0;
     static const std::string command = "blockchain.fetch_history4";
@@ -1117,7 +1117,7 @@ void obelisk_client::blockchain_fetch_unspent_outputs(
 
         unspent.points.shrink_to_fit();
         chain::points_value selected;
-        select_outputs::select(selected, unspent, satoshi, algorithm);
+        chain::points_value::select(selected, unspent, satoshi, algorithm);
         handler(error::success, selected);
     };
 

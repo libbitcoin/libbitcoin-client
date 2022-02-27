@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(client__fetch_unspent_outputs__test)
     };
 
     client.blockchain_fetch_unspent_outputs(on_done, hash_literal(test_utxo_key),
-        satoshis, wallet::select_outputs::algorithm::individual);
+        satoshis, chain::points_value::selection::individual);
     client.wait();
 
     BOOST_REQUIRE_EQUAL(received_hash, expected_hash);

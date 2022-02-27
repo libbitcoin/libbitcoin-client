@@ -201,7 +201,7 @@ public:
 
     void blockchain_fetch_unspent_outputs(points_value_handler handler,
         const system::hash_digest& key, uint64_t satoshi,
-        system::wallet::select_outputs::algorithm algorithm);
+        system::chain::points_value::selection algorithm);
 
     // Subscribers.
     //-------------------------------------------------------------------------
