@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- |  Copyright (c) 2014-2020 libbitcoin-client developers (see COPYING).
+ |  Copyright (c) 2014-2021 libbitcoin-client developers (see COPYING).
  |
  |         GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
  |
@@ -118,5 +118,8 @@
     <ProjectReference Include="..\libbitcoin-client\libbitcoin-client.vcxproj">
       <Project>{475E189D-F147-4122-B5FE-5BCF1153696E}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\debug.natvis" />
   </ItemGroup>
 </Project>
