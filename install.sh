@@ -426,7 +426,7 @@ build_from_tarball()
     # Because ICU tools don't know how to locate internal dependencies.
     if [[ ($ARCHIVE == "$ICU_ARCHIVE") ]]; then
         local SAVE_LDFLAGS="$LDFLAGS"
-        export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
+        export LDFLAGS="$LDFLAGS -L$PREFIX/lib"
     fi
 
     display_heading_message "Download $ARCHIVE"
