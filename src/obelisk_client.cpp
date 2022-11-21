@@ -81,8 +81,8 @@ bool obelisk_client::connect(const connection_settings& settings)
 }
 
 bool obelisk_client::connect(const endpoint& address,
-    const authority& socks_proxy, const sodium& server_public_key,
-    const sodium& client_private_key)
+    const authority& socks_proxy, const zmq::sodium& server_public_key,
+    const zmq::sodium& client_private_key)
 {
     // Ignore the setting if socks.port is zero (invalid).
     if (socks_proxy && (!socket_.set_socks_proxy(socks_proxy) ||
@@ -1094,7 +1094,7 @@ void obelisk_client::blockchain_fetch_history4(history_handler handler,
 
 void obelisk_client::blockchain_fetch_unspent_outputs(
     points_value_handler handler, const hash_digest& key,
-    uint64_t satoshi, select_outputs::algorithm algorithm)
+    uint64_t satoshi, chain::points_value::selection algorithm)
 {
     static constexpr uint32_t from_height = 0;
     static const std::string command = "blockchain.fetch_history4";
@@ -1117,7 +1117,7 @@ void obelisk_client::blockchain_fetch_unspent_outputs(
 
         unspent.points.shrink_to_fit();
         chain::points_value selected;
-        select_outputs::select(selected, unspent, satoshi, algorithm);
+        chain::points_value::select(selected, unspent, satoshi, algorithm);
         handler(error::success, selected);
     };
 

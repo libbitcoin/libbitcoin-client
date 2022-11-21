@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <_PropertySheetDisplayName>Libbitcoin Client Test Common Settings</_PropertySheetDisplayName>
+    <_PropertySheetDisplayName>Libbitcoin Client Examples</_PropertySheetDisplayName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
@@ -11,13 +11,9 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalIncludeDirectories>$(RepoRoot)include\;(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(DefaultLinkage)' == 'dynamic'">BOOST_TEST_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <PostBuildEvent Condition="'$(DebugOrRelease)' == 'release'">
-      <Command>"$(TargetPath)" --run_test=* --result_code=no --detect_memory_leak=0 --report_level=no --build_info=yes</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
 
   <!-- Dependencies -->
@@ -60,9 +56,8 @@
     <Message Text="Linkage-secp256k1 : $(Linkage-secp256k1)" Importance="high"/>
     <Message Text="Linkage-libzmq    : $(Linkage-libzmq)" Importance="high"/>
     <Message Text="Linkage-_system   : $(Linkage-libbitcoin-system)" Importance="high"/>
-    <Message Text="Linkage-_client   : $(Linkage-libbitcoin-client)" Importance="high"/>
     <Message Text="Linkage-_protocol : $(Linkage-libbitcoin-protocol)" Importance="high"/>
+    <Message Text="Linkage-_client   : $(Linkage-libbitcoin-client)" Importance="high"/>
   </Target>
 
 </Project>
-
