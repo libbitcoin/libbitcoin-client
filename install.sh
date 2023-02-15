@@ -789,7 +789,7 @@ build_all()
     create_from_github libbitcoin libbitcoin-protocol version3 "yes"
     build_from_github libbitcoin-protocol "$PARALLEL" false "yes" "${BITCOIN_PROTOCOL_OPTIONS[@]}" "$@"
     if [[ ! ($CI == true) ]]; then
-        create_from_github libbitcoin libbitcoin-client version3
+        create_from_github libbitcoin libbitcoin-client version3 "yes"
         build_from_github libbitcoin-client "$PARALLEL" true "yes" "${BITCOIN_CLIENT_OPTIONS[@]}" "$@"
     else
         push_directory "$PRESUMED_CI_PROJECT_PATH"
